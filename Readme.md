@@ -1,0 +1,16 @@
+// // MQTT topics from the old project
+// #define MQTT_TOPIC_PUMP_APPROVAL        "detpos/local_server/1"
+// #define MQTT_TOPIC_PUMP_REQUEST         "detpos/device/permit/1"
+// #define MQTT_TOPIC_PUMP_PRESET          "detpos/local_server/preset"
+// #define MQTT_TOPIC_PUMP_LIVE            "detpos/device/livedata/1"
+// #define MQTT_TOPIC_PUMP_FINAL           "detpos/device/Final/1"
+// #define MQTT_TOPIC_WH_REQUEST           "detpos/device/whreq"
+// #define MQTT_TOPIC_PRICE_CHANGE         "detpos/local_server/price"
+// #define MQTT_TOPIC_PRICE_REQUEST        "detpos/device/pricereq/1"
+// #define MQTT_TOPIC_ACTIVE               "detpos/device/active/1"
+// #define MQTT_TOPIC_DEVICE               "1"
+// #define MQTT_TOPIC_DEVICE_ID            "detpos/local_server/initial1/det/0A0000"
+// #define MQTT_TOPIC_RESET                "detpos/hmi/reset"
+// #define MQTT_TOPIC_RELOAD               "detpos/local_server/reload/1"
+// #define MQTT_TOPIC_PUMP_FINAL_RELOAD    "detpos/device/Reload/1"
+

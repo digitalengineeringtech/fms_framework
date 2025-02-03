@@ -73,6 +73,9 @@
 # 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
 # 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+
 // #include <freertos/FreeRTOS.h>
 // #include <freertos/task.h>
 // #include <freertos/semphr.h>
@@ -82,7 +85,6 @@
 
 
 // Device details
-
 
 
 // WiFi configuration
@@ -115,8 +117,10 @@
 // SD card file configuration
 
 
-// MQTT topics from the old project
-# 106 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+
+
+
+
 WiFiClient wf_client;
 PubSubClient mqtt_client(wf_client);
 
@@ -140,20 +144,29 @@ SemaphoreHandle_t serialMutex; // Mutex to protect the buffer test code
 
 volatile uint8_t serialBuffer[4]; // Buffer to store received hex value // test code  
 volatile uint8_t bufferIndex = 0; // Index for the buffer // test code 
+bool use_uart_command = true; // use uart command flag // test code
+
 void addLog(byte loglevel, const char *line);
+# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+// Created: 2019-04-10 15:00:00
+
+int seriallog_level = 1;
+
+void fms_log_print(const char *line) {
+  byte loglevel = 1;
+  if (true) {
+    char mxtime[9];
+    struct tm rtcTime;
+    if (getLocalTime(&rtcTime)) snprintf(mxtime, sizeof(mxtime), ("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
+    if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/("%s %s\n", mxtime, line);
+  }
+}
+
+void fms_chip_info_log(){
+  printChipInfo(); // build in chip-debug-report.cpp
+}
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 # 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
-# 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
-
-// int seriallog_level = 1;
-// void addLog(byte loglevel, const char *line) {
-//   if (SHOW_SYS_LOG) {
-//     char mxtime[9];
-//     struct tm rtcTime;
-//     if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-//     if (loglevel <= seriallog_level) Serial.printf("%s %s\n", mxtime, line);  // on and off serial print optional feature;
-//   }
-// }
 
 void event_receive(void *arg) {
   uint32_t rv;
@@ -171,36 +184,37 @@ int app_cpu = 0;
 
 
 void setup() {
-  printChipInfo();
-  sysCfg.bootcount++;
+log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Setup", app_cpu);
+if (fms_uart_cli_begin(use_uart_command,115200)) log_printf /* in build in chip-debug-report.cpp*/("UART CLI Begin\n"); // serial begin 
 
+/***********************************************************************/
+  sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-  Serial0.begin(115200);
+
+  log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+
   serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) ); // for serial interrupt control 
   
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  serialMutex != 
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
- __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 36, __PRETTY_FUNCTION__, 
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+ __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 29, __PRETTY_FUNCTION__, 
+# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "serialMutex != NULL"
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                             ;
+
   vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 31 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
                    1000 
-# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 31 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                    ));
-  //chip_report_printf("=========== Setup Start ===========\n");
-
-
-  // sd card load
-  fms_sd_begin();
-  printAfterSetupInfo();
+  fms_sd_begin(); // start sd card
+  fms_log_print("intializing task");
   // start create task
   fms_task_create();
 }
@@ -211,40 +225,23 @@ void loop() {
   BaseType_t rc;
   //Serial.println("Main Loop");
   rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
-# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
       __null 
-# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
       );
   
-# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 54, __PRETTY_FUNCTION__, 
-# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 44, __PRETTY_FUNCTION__, 
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "rc == pdPASS"
-# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                      ;
-}
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
-static void cli_task(void *arg) {
-  BaseType_t rc;
-  for (;;) {
-    log_printf("  CLI TERMINAL     : %lu cli\n",1 );
-    rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino" 3 4
-        __null 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
-        );
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino" 3
-              1000 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
-              ) / ( TickType_t ) 1000U ) ));
-  }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg) {
@@ -441,6 +438,43 @@ void __attribute__((section(".iram1" "." "0"))) serialEvent() {
     //  }
     //}
   }
+}
+# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+static void cli_task(void *arg) {
+  BaseType_t rc;
+  for (;;) {
+   fms_log_print("uart cli is running");
+    rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
+# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+        __null 
+# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+        );
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+              1000 
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+              ) / ( TickType_t ) 1000U ) ));
+  }
+}
+
+
+bool fms_uart_cli_begin(bool flag, int baudrate) {
+  if(flag){
+     uart_t *uart = uartBegin(UART_NUM_0, baudrate, SERIAL_8N1, 3, 1, 256, 0, false, 112);
+     if(uart == 
+# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+               __null
+# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+                   ){
+      fms_log_print("cli uart begin fail");
+      return false;
+     }
+     else{
+       fms_log_print("cli uart begin success");
+       return true;
+     }
+  }
+
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {

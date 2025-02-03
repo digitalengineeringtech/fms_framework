@@ -1,12 +1,14 @@
 #include <Arduino.h>
-#line 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+void fms_log_print(const char *line);
+#line 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+void fms_chip_info_log();
+#line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void event_receive(void *arg);
-#line 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
-static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
@@ -15,11 +17,15 @@ void fms_sd_begin();
 static void sd_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
 void fms_task_create();
+#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+static void cli_task(void *arg);
+#line 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+bool fms_uart_cli_begin(bool flag, int baudrate);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
 static void wifi_task(void *arg);
-#line 0 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 0 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 
 /*
@@ -68,6 +74,9 @@ static void wifi_task(void *arg);
 #include <Preferences.h>
 #include "time.h"
 #include "LittleFS.h"
+#include "chip-debug-report.h"
+#include "esp32-hal-uart.h"
+
 // #include <freertos/FreeRTOS.h>
 // #include <freertos/task.h>
 // #include <freertos/semphr.h>
@@ -79,7 +88,6 @@ static void wifi_task(void *arg);
 // Device details
 #define DEVICE_ID                       "fms_001"               // device id
 #define SHOW_SYS_LOG                     true      
-
 // WiFi configuration
 #define WIFI_SSID                       "wifitest"                     // wifi ssid
 #define WIFI_PASSWORD                   "12345678"                     // wifi password
@@ -110,21 +118,9 @@ static void wifi_task(void *arg);
 // SD card file configuration
 #define SD_CARD_CONFIG_FILE_NAME        "/fms.txt"              // sd card file name change it to your file name
 
-// MQTT topics from the old project
-#define MQTT_TOPIC_PUMP_APPROVAL        "detpos/local_server/1"
-#define MQTT_TOPIC_PUMP_REQUEST         "detpos/device/permit/1"
-#define MQTT_TOPIC_PUMP_PRESET          "detpos/local_server/preset"
-#define MQTT_TOPIC_PUMP_LIVE            "detpos/device/livedata/1"
-#define MQTT_TOPIC_PUMP_FINAL           "detpos/device/Final/1"
-#define MQTT_TOPIC_WH_REQUEST           "detpos/device/whreq"
-#define MQTT_TOPIC_PRICE_CHANGE         "detpos/local_server/price"
-#define MQTT_TOPIC_PRICE_REQUEST        "detpos/device/pricereq/1"
-#define MQTT_TOPIC_ACTIVE               "detpos/device/active/1"
-#define MQTT_TOPIC_DEVICE               "1"
-#define MQTT_TOPIC_DEVICE_ID            "detpos/local_server/initial1/det/0A0000"
-#define MQTT_TOPIC_RESET                "detpos/hmi/reset"
-#define MQTT_TOPIC_RELOAD               "detpos/local_server/reload/1"
-#define MQTT_TOPIC_PUMP_FINAL_RELOAD    "detpos/device/Reload/1"
+#define fms_log_printf                   log_printf             // in build in chip-debug-report.cpp
+#define fms_cli_serial                   Serial                // cli serial port
+
 
 WiFiClient wf_client;
 PubSubClient mqtt_client(wf_client);
@@ -149,21 +145,31 @@ SemaphoreHandle_t serialMutex;                   // Mutex to protect the buffer 
 
 volatile uint8_t serialBuffer[4];                // Buffer to store received hex value // test code  
 volatile uint8_t bufferIndex                = 0; // Index for the buffer // test code 
+bool use_uart_command                       = true;                    // use uart command flag // test code
+
 void addLog(byte loglevel, const char *line);
 #endif
+#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+// Created: 2019-04-10 15:00:00
+
+int seriallog_level = 1;
+
+void fms_log_print(const char *line) {
+  byte loglevel = 1;
+  if (SHOW_SYS_LOG) {
+    char mxtime[9];
+    struct tm rtcTime;
+    if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
+    if (loglevel <= seriallog_level) fms_log_printf("%s %s\n", mxtime, line);
+  }
+}
+
+void  fms_chip_info_log(){
+  printChipInfo(); // build in chip-debug-report.cpp
+}
+
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 #include "fms_header.h"
-#include "chip-debug-report.h"
-
-// int seriallog_level = 1;
-// void addLog(byte loglevel, const char *line) {
-//   if (SHOW_SYS_LOG) {
-//     char mxtime[9];
-//     struct tm rtcTime;
-//     if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-//     if (loglevel <= seriallog_level) Serial.printf("%s %s\n", mxtime, line);  // on and off serial print optional feature;
-//   }
-// }
 
 void event_receive(void *arg) {
   uint32_t rv;
@@ -178,23 +184,24 @@ void event_receive(void *arg) {
 int app_cpu = 0;
 
 
- #define chip_report_printf log_printf
+
 
 void setup() {
-  printChipInfo();
-  sysCfg.bootcount++;
+fms_log_printf("CPU %d: Setup", app_cpu);
+if (fms_uart_cli_begin(use_uart_command,115200)) fms_log_printf("UART CLI Begin\n"); // serial begin 
 
+/***********************************************************************/
+  sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-  Serial.begin(115200);
+
+  fms_log_printf("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+
   serialMutex = xSemaphoreCreateMutex(); // for serial interrupt control 
   assert(serialMutex != NULL);
+
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  //chip_report_printf("=========== Setup Start ===========\n");
-  
-  
-  // sd card load
-  fms_sd_begin();
-  printAfterSetupInfo();
+  fms_sd_begin(); // start sd card
+  fms_log_print("intializing task");
   // start create task
   fms_task_create();
 }
@@ -206,16 +213,6 @@ void loop() {
   //Serial.println("Main Loop");
   rc = xTaskNotify(heventTask, 0b0001, eSetBits);
   assert(rc == pdPASS);
-}
-
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
-static void cli_task(void *arg) {
-  BaseType_t rc;
-  for (;;) {
-    chip_report_printf("  CLI TERMINAL     : %lu cli\n",1 );
-    rc = xTaskNotify(heventTask, 4, eSetBits);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
 }
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
@@ -325,6 +322,31 @@ void IRAM_ATTR serialEvent() {
     //  }
     //}
   }
+}
+#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+static void cli_task(void *arg) {
+  BaseType_t rc;
+  for (;;) {
+   fms_log_print("uart cli is running");
+    rc = xTaskNotify(heventTask, 4, eSetBits);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+
+
+bool fms_uart_cli_begin(bool flag, int baudrate) {
+  if(flag){
+     uart_t *uart = uartBegin(UART_NUM_0, baudrate, SERIAL_8N1, 3, 1, 256, 0, false, 112);
+     if(uart == NULL){
+      fms_log_print("cli uart begin fail");
+      return false;
+     }
+     else{
+       fms_log_print("cli uart begin success");
+       return true;
+     }
+  }
+
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {

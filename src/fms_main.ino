@@ -1,15 +1,4 @@
 #include "fms_header.h"
-#include "chip-debug-report.h"
-
-int seriallog_level = 1;
-void addLog(byte loglevel, const char *line) {
-  if (SHOW_SYS_LOG) {
-    char mxtime[9];
-    struct tm rtcTime;
-    if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-    if (loglevel <= seriallog_level) Serial.printf("%s %s\n", mxtime, line);  // on and off serial print optional feature;
-  }
-}
 
 void event_receive(void *arg) {
   uint32_t rv;
@@ -24,23 +13,24 @@ void event_receive(void *arg) {
 int app_cpu = 0;
 
 
- #define chip_report_printf log_printf
+
 
 void setup() {
-  printChipInfo();
+fms_log_printf("CPU %d: Setup", app_cpu);
+if (fms_uart_cli_begin(use_uart_command,115200)) fms_log_printf("uart cli begin\n"); // serial begin 
+
+/***********************************************************************/
   sysCfg.bootcount++;
-  Serial.println("helloworld");
   app_cpu = xPortGetCoreID();
-  Serial.begin(115200);
+
+  fms_log_printf("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+
   serialMutex = xSemaphoreCreateMutex(); // for serial interrupt control 
   assert(serialMutex != NULL);
+
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  //chip_report_printf("=========== Setup Start ===========\n");
-  
-  
-  // sd card load
-  fms_sd_begin();
-  printAfterSetupInfo();
+  fms_sd_begin(); // start sd card
+  fms_log_print("intializing task");
   // start create task
   fms_task_create();
 }

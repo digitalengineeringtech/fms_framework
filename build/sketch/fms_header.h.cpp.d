@@ -217,5 +217,6 @@ d:\2025\ iih\ office\Project\FMS\ Framework\fms_main\build\sketch\fms_header.h.c
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.1.0\libraries\Network\src/NetworkUdp.h \
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.1.0\libraries\Preferences\src/Preferences.h \
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.1.0\libraries\LittleFS\src/LittleFS.h \
- d:\2025\ iih\ office\Project\FMS\ Framework\fms_main\src/fms_header.h \
- C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.1.0\cores\esp32/chip-debug-report.h
+ C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.1.0\cores\esp32/chip-debug-report.h \
+ C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.1.0\cores\esp32/esp32-hal-uart.h \
+ d:\2025\ iih\ office\Project\FMS\ Framework\fms_main\src/fms_header.h
