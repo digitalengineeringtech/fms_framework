@@ -1,36 +1,10 @@
-
 /*
-# author 
-    Trion 30.1.2025 
-# project
-    Fuel Management System (FMS)
-# date
-    30/01/2025
-# version
-    1.0.0
-
-+-------------------+       +-------------------+       +-------------------+
-|                   |       |                   |       |                   |
-|     Task 1        |       |     Queue         |       |     Task 2        |
-|  (Producer)       |       |  (Data Buffer)    |       |  (Consumer)       |
-|                   |       |                   |       |                   |
-| 1. Generate       |       |                   |       | 1. Wait for       |
-|    Random Number  |       |                   |       |    Semaphore      |
-|                   |       |                   |       |                   |
-| 2. Send Number    | ----> |  Store Number     | <---- | 2. Receive Number |
-|    to Queue       |       |    in Queue       |       |    from Queue     |
-|                   |       |                   |       |                   |
-| 3. Give Semaphore | ----> |                   |       | 3. Process Number |
-|    (Signal Task 2)|       |                   |       |    (Print to Serial)
-|                   |       |                   |       |                   |
-+-------------------+       +-------------------+       +-------------------+
-            ^                                                       |
-            |                                                       |
-            |                                                       |
-            +-------------------------------------------------------+
-                                  Binary Semaphore
+* @file    fms_header.h
+*
+* @brief   This is a header file for FMS project.
+*
+* @author  Trion
 */
-
 #ifndef _FMS_HEADER_H_
 #define _FMS_HEADER_H_
 
@@ -47,6 +21,7 @@
 #include "LittleFS.h"
 #include "chip-debug-report.h"
 #include "esp32-hal-uart.h"
+#include "Preferences.h"
 
 // #include <freertos/FreeRTOS.h>
 // #include <freertos/task.h>
