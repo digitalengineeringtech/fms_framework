@@ -31,8 +31,8 @@
                                   Binary Semaphore
 */
 
-#ifndef _HEADER_H_
-#define _HEADER_H_
+#ifndef _FMS_HEADER_H_
+#define _FMS_HEADER_H_
 
 // Include libraries
 #include <SD.h>

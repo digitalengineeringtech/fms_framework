@@ -1,5 +1,5 @@
 {
-  "additionalFiles": "..",
+  "additionalFiles": "",
   "builtInLibrariesFolders": "C:\\Program Files (x86)\\Arduino\\libraries",
   "builtInToolsFolders": "C:\\Program Files (x86)\\Arduino\\tools-builder,C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages",
   "compiler.optimization_flags": "-Os",
@@ -8,5 +8,5 @@
   "hardwareFolders": "C:\\Program Files (x86)\\Arduino\\hardware,C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages",
   "otherLibrariesFolders": "C:\\Users\\trion\\Documents\\Arduino\\libraries",
   "runtime.ide.version": "10819",
-  "sketchLocation": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_cli.ino"
+  "sketchLocation": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 }

@@ -1,4 +1,5 @@
 #include "fms_header.h"
+#include "chip-debug-report.h"
 
 int seriallog_level = 1;
 void addLog(byte loglevel, const char *line) {
@@ -16,15 +17,6 @@ void event_receive(void *arg) {
   for (;;) {
     rc = xTaskNotifyWait(0, 0xFFFFFFFF, &rv, portMAX_DELAY);
     if (rc == pdTRUE) {
-      // test code
-      // if (rv & 2)
-      //   printf("wifi() notified this task\n"); // test code
-      // if (rv & 0b0001)
-      //   printf("loop() notified this task.\n"); // test code
-      // if (rv & 3)
-      //   printf("sd() notified this task.\n"); // test code
-      // if (rv & 0b0100)
-      //   printf(" Serial interrupt notified this task with value: 0x%08X\n", rv); // test code
     }
   }
 }
@@ -32,19 +24,28 @@ void event_receive(void *arg) {
 int app_cpu = 0;
 
 
-void setup() {
-  sysCfg.bootcount++;
+ #define chip_report_printf log_printf
 
+void setup() {
+  printChipInfo();
+  sysCfg.bootcount++;
+  Serial.println("helloworld");
   app_cpu = xPortGetCoreID();
   Serial.begin(115200);
   serialMutex = xSemaphoreCreateMutex(); // for serial interrupt control 
   assert(serialMutex != NULL);
   vTaskDelay(1000 / portTICK_PERIOD_MS);
+  //chip_report_printf("=========== Setup Start ===========\n");
+  
+  
   // sd card load
   fms_sd_begin();
+  printAfterSetupInfo();
   // start create task
   fms_task_create();
 }
+
+
 
 void loop() {
   BaseType_t rc;

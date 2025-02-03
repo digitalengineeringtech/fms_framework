@@ -1,32 +1,159 @@
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_cli.ino"
-static void cli_task(void *arg) {
-  BaseType_t rc;
-  for (;;) {
-    printf("cli task started \n");
-    rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_cli.ino" 3 4
-        __null 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_cli.ino"
-        );
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_cli.ino" 3
-              1000 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_cli.ino"
-              ) / ( TickType_t ) 1000U ) ));
-  }
-}
+# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+
+/*
+
+# author 
+
+    Trion 30.1.2025 
+
+# project
+
+    Fuel Management System (FMS)
+
+# date
+
+    30/01/2025
+
+# version
+
+    1.0.0
+
+
+
++-------------------+       +-------------------+       +-------------------+
+
+|                   |       |                   |       |                   |
+
+|     Task 1        |       |     Queue         |       |     Task 2        |
+
+|  (Producer)       |       |  (Data Buffer)    |       |  (Consumer)       |
+
+|                   |       |                   |       |                   |
+
+| 1. Generate       |       |                   |       | 1. Wait for       |
+
+|    Random Number  |       |                   |       |    Semaphore      |
+
+|                   |       |                   |       |                   |
+
+| 2. Send Number    | ----> |  Store Number     | <---- | 2. Receive Number |
+
+|    to Queue       |       |    in Queue       |       |    from Queue     |
+
+|                   |       |                   |       |                   |
+
+| 3. Give Semaphore | ----> |                   |       | 3. Process Number |
+
+|    (Signal Task 2)|       |                   |       |    (Print to Serial)
+
+|                   |       |                   |       |                   |
+
++-------------------+       +-------------------+       +-------------------+
+
+            ^                                                       |
+
+            |                                                       |
+
+            |                                                       |
+
+            +-------------------------------------------------------+
+
+                                  Binary Semaphore
+
+*/
+# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+// Include libraries
+# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 41 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+
+# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+// #include <freertos/FreeRTOS.h>
+// #include <freertos/task.h>
+// #include <freertos/semphr.h>
+
+// Project details
+
+
+
+// Device details
+
+
+
+// WiFi configuration
+
+
+
+// MQTT configuration
+
+
+
+
+
+
+
+// Web server configuration
+
+
+// SD card pins configuration (check your board pin layout spi communication)
+
+
+
+
+
+
+// Time configuration
+
+
+
+
+// SD card file configuration
+
+
+// MQTT topics from the old project
+# 106 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+WiFiClient wf_client;
+PubSubClient mqtt_client(wf_client);
+
+ struct SYSCFG{
+  unsigned long bootcount;
+  unsigned long version;
+ } sysCfg;
+
+ // rtos task handle 
+static TaskHandle_t heventTask;
+static TaskHandle_t hwifiTask;
+static TaskHandle_t hmqttTask;
+static TaskHandle_t hsdCardTask;
+static TaskHandle_t hwebServerTask;
+static TaskHandle_t hspiTask; // use this for something 
+static TaskHandle_t hcliTask;
+
+SemaphoreHandle_t serialMutex; // Mutex to protect the buffer test code 
+
+
+
+volatile uint8_t serialBuffer[4]; // Buffer to store received hex value // test code  
+volatile uint8_t bufferIndex = 0; // Index for the buffer // test code 
+void addLog(byte loglevel, const char *line);
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 # 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
+# 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
 
-int seriallog_level = 1;
-void addLog(byte loglevel, const char *line) {
-  if (true) {
-    char mxtime[9];
-    struct tm rtcTime;
-    if (getLocalTime(&rtcTime)) snprintf(mxtime, sizeof(mxtime), ("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-    if (loglevel <= seriallog_level) Serial0.printf("%s %s\n", mxtime, line); // on and off serial print optional feature;
-  }
-}
+// int seriallog_level = 1;
+// void addLog(byte loglevel, const char *line) {
+//   if (SHOW_SYS_LOG) {
+//     char mxtime[9];
+//     struct tm rtcTime;
+//     if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
+//     if (loglevel <= seriallog_level) Serial.printf("%s %s\n", mxtime, line);  // on and off serial print optional feature;
+//   }
+// }
 
 void event_receive(void *arg) {
   uint32_t rv;
@@ -34,53 +161,91 @@ void event_receive(void *arg) {
   for (;;) {
     rc = xTaskGenericNotifyWait( ( 0 ), ( 0 ), ( 0xFFFFFFFF ), ( &rv ), ( ( TickType_t ) 0xffffffffUL ) );
     if (rc == ( ( BaseType_t ) 1 )) {
-      // test code
-      // if (rv & 2)
-      //   printf("wifi() notified this task\n"); // test code
-      // if (rv & 0b0001)
-      //   printf("loop() notified this task.\n"); // test code
-      // if (rv & 3)
-      //   printf("sd() notified this task.\n"); // test code
-      // if (rv & 0b0100)
-      //   printf(" Serial interrupt notified this task with value: 0x%08X\n", rv); // test code
     }
   }
 }
 
 int app_cpu = 0;
 
-void app_main() {
-Serial0.begin(115200);
-Serial0.println("Start Main");
-app_cpu = xPortGetCoreID();
-// serialMutex = xSemaphoreCreateMutex(); // for serial interrupt control
-// assert(serialMutex != NULL);
-vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
-                 1000 
-# 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-                 ));
+
+
+
+void setup() {
+  printChipInfo();
+  sysCfg.bootcount++;
+
+  app_cpu = xPortGetCoreID();
+  Serial0.begin(115200);
+  serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) ); // for serial interrupt control 
+  
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ (__builtin_expect(!!(
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+ serialMutex != 
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+ __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 36, __PRETTY_FUNCTION__, 
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+ "serialMutex != NULL"
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ))
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+                            ;
+  vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
+# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+                   1000 
+# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+                   ));
+  //chip_report_printf("=========== Setup Start ===========\n");
+
+
+  // sd card load
+  fms_sd_begin();
+  printAfterSetupInfo();
+  // start create task
+  fms_task_create();
 }
-// void setup() {
-//   sysCfg.bootcount++;
 
-//   app_cpu = xPortGetCoreID();
-//   Serial.begin(115200);
-//   serialMutex = xSemaphoreCreateMutex(); // for serial interrupt control 
-//   assert(serialMutex != NULL);
-//   vTaskDelay(1000 / portTICK_PERIOD_MS);
-//   // sd card load
-//   fms_sd_begin();
-//   // start create task
-//   fms_task_create();
-// }
 
-// void loop() {
-//   BaseType_t rc;
-//   //Serial.println("Main Loop");
-//   rc = xTaskNotify(heventTask, 0b0001, eSetBits);
-//   assert(rc == pdPASS);
-// }
+
+void loop() {
+  BaseType_t rc;
+  //Serial.println("Main Loop");
+  rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
+# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+      __null 
+# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+      );
+  
+# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ (__builtin_expect(!!(
+# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+ rc == ( ( ( BaseType_t ) 1 ) )
+# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 54, __PRETTY_FUNCTION__, 
+# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+ "rc == pdPASS"
+# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ))
+# 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+                     ;
+}
+# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
+static void cli_task(void *arg) {
+  BaseType_t rc;
+  for (;;) {
+    log_printf("  CLI TERMINAL     : %lu cli\n",1 );
+    rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
+# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino" 3 4
+        __null 
+# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
+        );
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino" 3
+              1000 
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_md.ino"
+              ) / ( TickType_t ) 1000U ) ));
+  }
+}
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg) {
   BaseType_t rc;
