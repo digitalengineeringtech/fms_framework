@@ -20,7 +20,7 @@ void setup() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_log_printf("uart cli begin\n");
   }
-
+  fms_chip_info_log();
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;

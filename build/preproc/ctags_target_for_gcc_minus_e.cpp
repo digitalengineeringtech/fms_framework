@@ -73,18 +73,20 @@ PubSubClient mqtt_client(wf_client);
 struct SYSCFG {
     unsigned long bootcount;
     unsigned long version;
+
     char* wifi_ssid = "wifitest" /* wifi ssid*/;
     char* wifi_password = "12345678" /* wifi password*/;
 
     char* mqtt_server_host = " " /* mqtt server address*/;
     char* mqtt_user = " " /* mqtt user*/;
     char* mqtt_password = " " /* mqtt password*/;
-    char* mqtt_port = 1883 /* mqtt port*/; // in datastructure uint32_t
+    uint32_t mqtt_port = 1883 /* mqtt port*/; // in datastructure uint32_t
 
     char* mqtt_device_id = "fms_001" /* device id*/ /* mqtt device id*/;
-    char* mqtt_lwt_status[7] = "offline" /* mqtt last will topic offline*/;
+    char* mqtt_lwt_status[20];
     char* device_id = "fms_001" /* device id*/; // in datastructure uint32_t
-    char* station_id = 1 /* station id*/;
+    uint32_t station_id = 1 /* station id*/;
+
 } sysCfg;
 
 
@@ -119,7 +121,7 @@ void fms_log_print(const char *line) {
   if (true) {
     char mxtime[9];
     struct tm rtcTime;
-    if (getLocalTime(&rtcTime)) snprintf(mxtime, sizeof(mxtime), ("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
+    //if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
     if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/("%s\n", line);
   }
 }
@@ -150,7 +152,7 @@ void setup() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     log_printf /* in build in chip-debug-report.cpp*/("uart cli begin\n");
   }
-
+  fms_chip_info_log();
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
@@ -209,18 +211,21 @@ void loop() {
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
+  while(1){
+ // low 
     printf("mqtt task started \n");
+
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 5 ), ( eSetBits ), 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3 4
+# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3 4
         __null 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
               1000 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
+
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
@@ -228,24 +233,42 @@ void fms_config_load_sd() {
 fms_log_print("config load");
 }
 
+bool write_data_sd(String input)
+{
+  //to write code to save data to sd.
+  //step 1. simple write
+  //step 2. encrypt and write
+  //setp 3. sd formarting (clicommand)
+  return true;
+}
+
 static void sd_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
+  while(1) {
     printf("sd task started \n");
+    /*
+
+    * Load config data from sd card
+
+    */
+# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 3 ), ( eSetBits ), 
-# 9 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3 4
+# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3 4
         __null 
-# 9 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
               1000 
-# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
+    //write_data_sd("HELLO\n\r");
+    //
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
-void fms_task_create() {
+bool fms_task_create() {
+
   BaseType_t rc;
     rc = xTaskCreatePinnedToCore(
     event_receive, // Task function
@@ -257,17 +280,17 @@ void fms_task_create() {
     app_cpu // CPU
   );
   
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 12, __PRETTY_FUNCTION__, 
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 13, __PRETTY_FUNCTION__, 
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  "rc == pdPASS"
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  ))
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
                      ;
 
   rc = xTaskCreatePinnedToCore(
@@ -275,22 +298,22 @@ void fms_task_create() {
     "sdcard", // Name
     3000, // Stack size
     nullptr, // Parameters
-    1, // Priority
+    2, // Priority
     &hsdCardTask, // Handle
     app_cpu // CPU
   );
   
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 23, __PRETTY_FUNCTION__, 
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 24, __PRETTY_FUNCTION__, 
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  "rc == pdPASS"
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  ))
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
                      ;
 
   rc = xTaskCreatePinnedToCore(
@@ -298,22 +321,22 @@ void fms_task_create() {
     "wifi", // Name
     3000, // Stack size
     nullptr, // Parameters
-    1, // Priority
+    3, // Priority
     &hwifiTask, // Handle
     app_cpu // CPU
   );
   
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 34, __PRETTY_FUNCTION__, 
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 35, __PRETTY_FUNCTION__, 
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  "rc == pdPASS"
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  ))
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
                      ;
 
   rc = xTaskCreatePinnedToCore(
@@ -321,22 +344,22 @@ void fms_task_create() {
     "mqtt", // Name
     3000, // Stack size
     nullptr, // Parameters
-    1, // Priority
+    3, // Priority
     &hmqttTask, // Handle
     app_cpu // CPU
   );
   
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 45, __PRETTY_FUNCTION__, 
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 46, __PRETTY_FUNCTION__, 
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  "rc == pdPASS"
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  ))
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
                      ;
 
 
@@ -350,17 +373,17 @@ void fms_task_create() {
     app_cpu // CPU
   );
   
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 58 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 58 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 57, __PRETTY_FUNCTION__, 
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 58 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 58, __PRETTY_FUNCTION__, 
+# 58 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  "rc == pdPASS"
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 58 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  ))
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 58 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
                      ;
 
   rc = xTaskCreatePinnedToCore(
@@ -368,23 +391,25 @@ void fms_task_create() {
     "webserver", // Name
     3000, // Stack size
     nullptr, // Parameters
-    1, // Priority
+    4, // Priority
     &hwebServerTask, // Handle
     app_cpu // CPU
   );
   
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 68, __PRETTY_FUNCTION__, 
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 69, __PRETTY_FUNCTION__, 
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
  "rc == pdPASS"
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
  ))
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
                      ;
+
+  return true;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
 
@@ -441,18 +466,19 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {
+  // low 
   BaseType_t rc;
   for (;;) {
     printf("web server stated \n");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 6 ), ( eSetBits ), 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino" 3 4
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino" 3 4
         __null 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino" 3
+# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino" 3
               1000 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
+# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }

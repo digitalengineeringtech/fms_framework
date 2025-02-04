@@ -1,9 +1,10 @@
-void fms_task_create() {
+bool  fms_task_create() {
+  
   BaseType_t rc;
     rc = xTaskCreatePinnedToCore(
     event_receive,       // Task function
     "event_receive",      // Name
-    3000,          // Stack size
+    3000,               // Stack size
     nullptr,       // Parameters
     1,             // Priority
     &heventTask,  // Handle
@@ -16,7 +17,7 @@ void fms_task_create() {
     "sdcard",      // Name
     3000,          // Stack size
     nullptr,       // Parameters
-    1,             // Priority
+    2,             // Priority
     &hsdCardTask,  // Handle
     app_cpu        // CPU
   );
@@ -27,7 +28,7 @@ void fms_task_create() {
     "wifi",      // Name
     3000,        // Stack size
     nullptr,     // Parameters
-    1,           // Priority
+    3,           // Priority
     &hwifiTask,  // Handle
     app_cpu      // CPU
   );
@@ -38,7 +39,7 @@ void fms_task_create() {
     "mqtt",      // Name
     3000,        // Stack size
     nullptr,     // Parameters
-    1,           // Priority
+    3,           // Priority
     &hmqttTask,  // Handle
     app_cpu      // CPU
   );
@@ -61,9 +62,11 @@ void fms_task_create() {
     "webserver",      // Name
     3000,             // Stack size
     nullptr,          // Parameters
-    1,                // Priority
+    4,                // Priority
     &hwebServerTask,  // Handle
     app_cpu           // CPU
   );
   assert(rc == pdPASS);
+
+  return true;
 }

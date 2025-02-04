@@ -75,19 +75,20 @@ PubSubClient mqtt_client(wf_client);
 struct SYSCFG {
     unsigned long       bootcount;
     unsigned long       version;
-    
+
     char*               wifi_ssid               = WIFI_SSID;
     char*               wifi_password           = WIFI_PASSWORD;
 
     char*               mqtt_server_host        = MQTT_SERVER;
     char*               mqtt_user               = MQTT_USER;
     char*               mqtt_password           = MQTT_PASSWORD;
-    char*               mqtt_port               = MQTT_PORT; // in datastructure uint32_t
+    uint32_t            mqtt_port               = MQTT_PORT; // in datastructure uint32_t
 
     char*               mqtt_device_id          = MQTT_DEVICE_ID;
-    char*               mqtt_lwt_status[7]      = MQTT_LWT_OFFLINE;
+    char*               mqtt_lwt_status[20];     
     char*               device_id               = DEVICE_ID; // in datastructure uint32_t
-    char*               station_id              = STATION_ID;
+    uint32_t            station_id              = STATION_ID;
+
 } sysCfg;
 
 

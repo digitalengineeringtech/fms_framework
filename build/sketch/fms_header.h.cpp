@@ -14,9 +14,11 @@ static void mqtt_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 void fms_config_load_sd();
 #line 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+bool write_data_sd(String input);
+#line 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 static void sd_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
-void fms_task_create();
+bool fms_task_create();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
@@ -104,18 +106,20 @@ PubSubClient mqtt_client(wf_client);
 struct SYSCFG {
     unsigned long       bootcount;
     unsigned long       version;
+
     char*               wifi_ssid               = WIFI_SSID;
     char*               wifi_password           = WIFI_PASSWORD;
-    
+
     char*               mqtt_server_host        = MQTT_SERVER;
     char*               mqtt_user               = MQTT_USER;
     char*               mqtt_password           = MQTT_PASSWORD;
-    char*               mqtt_port               = MQTT_PORT; // in datastructure uint32_t
+    uint32_t            mqtt_port               = MQTT_PORT; // in datastructure uint32_t
 
     char*               mqtt_device_id          = MQTT_DEVICE_ID;
-    char*               mqtt_lwt_status[7]      = MQTT_LWT_OFFLINE;
+    char*               mqtt_lwt_status[20];     
     char*               device_id               = DEVICE_ID; // in datastructure uint32_t
-    char*               station_id              = STATION_ID;
+    uint32_t            station_id              = STATION_ID;
+
 } sysCfg;
 
 
@@ -152,7 +156,7 @@ void fms_log_print(const char *line) {
   if (SHOW_SYS_LOG) {
     char mxtime[9];
     struct tm rtcTime;
-    if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
+    //if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
     if (loglevel <= seriallog_level) fms_log_printf("%s\n", line);
   }
 }
@@ -184,7 +188,7 @@ void setup() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_log_printf("uart cli begin\n");
   }
-
+  fms_chip_info_log();
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
@@ -212,10 +216,13 @@ void loop() {
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
+  while(1){
+ // low 
     printf("mqtt task started \n");
+
     rc = xTaskNotify(heventTask, 5, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
+
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
@@ -223,21 +230,39 @@ void fms_config_load_sd() {
 fms_log_print("config load");
 }
 
+bool write_data_sd(String input)
+{
+  //to write code to save data to sd.
+  //step 1. simple write
+  //step 2. encrypt and write
+  //setp 3. sd formarting (clicommand)
+  return true;
+}
+
 static void sd_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
+  while(1) {
     printf("sd task started \n");
+    /*
+    * Load config data from sd card
+    */
+
     rc = xTaskNotify(heventTask, 3, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
+    //write_data_sd("HELLO\n\r");
+    //
   }
 }
+
+
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
-void fms_task_create() {
+bool  fms_task_create() {
+  
   BaseType_t rc;
     rc = xTaskCreatePinnedToCore(
     event_receive,       // Task function
     "event_receive",      // Name
-    3000,          // Stack size
+    3000,               // Stack size
     nullptr,       // Parameters
     1,             // Priority
     &heventTask,  // Handle
@@ -250,7 +275,7 @@ void fms_task_create() {
     "sdcard",      // Name
     3000,          // Stack size
     nullptr,       // Parameters
-    1,             // Priority
+    2,             // Priority
     &hsdCardTask,  // Handle
     app_cpu        // CPU
   );
@@ -261,7 +286,7 @@ void fms_task_create() {
     "wifi",      // Name
     3000,        // Stack size
     nullptr,     // Parameters
-    1,           // Priority
+    3,           // Priority
     &hwifiTask,  // Handle
     app_cpu      // CPU
   );
@@ -272,7 +297,7 @@ void fms_task_create() {
     "mqtt",      // Name
     3000,        // Stack size
     nullptr,     // Parameters
-    1,           // Priority
+    3,           // Priority
     &hmqttTask,  // Handle
     app_cpu      // CPU
   );
@@ -295,11 +320,13 @@ void fms_task_create() {
     "webserver",      // Name
     3000,             // Stack size
     nullptr,          // Parameters
-    1,                // Priority
+    4,                // Priority
     &hwebServerTask,  // Handle
     app_cpu           // CPU
   );
   assert(rc == pdPASS);
+
+  return true;
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
 
@@ -344,6 +371,7 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {
+  // low 
   BaseType_t rc;
   for (;;) {
     printf("web server stated \n");

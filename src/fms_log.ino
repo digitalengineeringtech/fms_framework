@@ -7,7 +7,7 @@ void fms_log_print(const char *line) {
   if (SHOW_SYS_LOG) {
     char mxtime[9];
     struct tm rtcTime;
-    if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
+    //if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
     if (loglevel <= seriallog_level) fms_log_printf("%s\n", line);
   }
 }
