@@ -116,18 +116,44 @@ void addLog(byte loglevel, const char *line);
 
 int seriallog_level = 1;
 
-void fms_log_print(const char *line) {
+bool fms_log_printf(const char *line,...) {
   byte loglevel = 1;
   if (true) {
-    char mxtime[9];
-    struct tm rtcTime;
-    //if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-    if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/("%s\n", line);
+    if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/(line);
   }
+  return true;
 }
 
-void fms_chip_info_log(){
-  printChipInfo(); // build in chip-debug-report.cpp
+bool fms_chip_info_log(){
+  printBeforeSetupInfo();
+  return true;
+}
+
+bool fms_print_after_setup_info(){
+  printAfterSetupInfo();
+  return true;
+}
+
+bool fms_memory_info_log(){
+// Check free heap size
+    size_t freeHeap = esp_get_free_heap_size();
+    fms_log_printf("Free Heap Size: %u bytes\n", freeHeap);
+    // Check stack size of the current task
+    UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(
+# 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino" 3 4
+                                                                __null
+# 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+                                                                    );
+    fms_log_printf("Stack High Water Mark: %u bytes\n", stackHighWaterMark);
+  return true;
+}
+
+bool fms_task_usage_check(){
+  char taskBuffer[256];
+  fms_log_printf("Task Name\tPriority\tState\tStack High Water Mark\n");
+  vTaskList(taskBuffer);
+  fms_log_printf("\n%s\n",taskBuffer);
+  return true;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 # 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
@@ -148,64 +174,70 @@ int app_cpu = 0;
 
 
 void setup() {
-  log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Setup", app_cpu);
-  if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    log_printf /* in build in chip-debug-report.cpp*/("uart cli begin\n");
-  }
   fms_chip_info_log();
+  fms_memory_info_log();
+  fms_log_printf("CPU %d: Setup", app_cpu);
+  if (fms_uart_cli_begin(use_uart_command, 115200)) {
+    fms_log_printf("uart cli begin\n");
+  }
+
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-  log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+  fms_log_printf("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // close nvs storage
 
   serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) );
   
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  serialMutex != 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
- __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 33, __PRETTY_FUNCTION__, 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+ __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 35, __PRETTY_FUNCTION__, 
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "serialMutex != NULL"
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                             ;
   vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
                    1000 
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                    )); // wait delay 1 second
 
   fms_config_load_sd(); // load config data from sd card
 
-  fms_log_print("initializing task");
+  fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
+
+fms_print_after_setup_info();
+fms_task_usage_check();
+
 }
 
 void loop() {
   BaseType_t rc;
   rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+# 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
       __null 
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
       );
   
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 45, __PRETTY_FUNCTION__, 
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 51, __PRETTY_FUNCTION__, 
+# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "rc == pdPASS"
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                      ;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
@@ -230,7 +262,7 @@ static void mqtt_task(void *arg) {
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 void fms_config_load_sd() {
-fms_log_print("config load");
+fms_log_printf("config load");
 }
 
 bool write_data_sd(String input)
@@ -431,7 +463,7 @@ void __attribute__((section(".iram1" "." "0"))) serialEvent() {
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-   fms_log_print("uart cli is running");
+   fms_log_printf("uart cli is running");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
 # 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
         __null 
@@ -454,11 +486,11 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
                __null
 # 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
                    ){
-      fms_log_print("cli uart begin fail");
+      fms_log_printf("cli uart begin fail");
       return false;
      }
      else{
-       fms_log_print("cli uart begin success");
+       fms_log_printf("cli uart begin success");
        return true;
      }
   }

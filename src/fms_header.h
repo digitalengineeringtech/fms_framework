@@ -63,7 +63,7 @@
 // SD card file configuration
 #define SD_CARD_CONFIG_FILE_NAME            "/fms_config.conf"              // sd card file name change it to your file name
 
-#define fms_log_printf                      log_printf              // in build in chip-debug-report.cpp
+#define _log_printf                      log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
 
 // Global objects

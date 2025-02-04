@@ -1,13 +1,19 @@
 #include <Arduino.h>
 #line 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-void fms_log_print(const char *line);
-#line 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-void fms_chip_info_log();
+bool fms_log_printf(const char *line,...);
+#line 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+bool fms_chip_info_log();
+#line 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+bool fms_print_after_setup_info();
+#line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+bool fms_memory_info_log();
+#line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+bool fms_task_usage_check();
 #line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void event_receive(void *arg);
 #line 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
@@ -94,7 +100,7 @@ static void wifi_task(void *arg);
 // SD card file configuration
 #define SD_CARD_CONFIG_FILE_NAME            "/fms_config.conf"              // sd card file name change it to your file name
 
-#define fms_log_printf                      log_printf              // in build in chip-debug-report.cpp
+#define _log_printf                      log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
 
 // Global objects
@@ -151,18 +157,40 @@ void addLog(byte loglevel, const char *line);
 
 int seriallog_level = 1;
 
-void fms_log_print(const char *line) {
+bool fms_log_printf(const char *line,...) {
   byte loglevel = 1;
   if (SHOW_SYS_LOG) {
-    char mxtime[9];
-    struct tm rtcTime;
-    //if (getLocalTime(&rtcTime)) snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-    if (loglevel <= seriallog_level) fms_log_printf("%s\n", line);
+    if (loglevel <= seriallog_level) _log_printf(line);
   }
+  return true;
 }
 
-void  fms_chip_info_log(){
-  printChipInfo(); // build in chip-debug-report.cpp
+bool  fms_chip_info_log(){
+  printBeforeSetupInfo();
+  return true;
+}
+
+bool fms_print_after_setup_info(){
+  printAfterSetupInfo();
+  return true;
+}
+
+bool fms_memory_info_log(){
+// Check free heap size
+    size_t freeHeap = esp_get_free_heap_size();
+    fms_log_printf("Free Heap Size: %u bytes\n", freeHeap);
+    // Check stack size of the current task
+    UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+    fms_log_printf("Stack High Water Mark: %u bytes\n", stackHighWaterMark);
+  return true;
+}
+
+bool fms_task_usage_check(){
+  char taskBuffer[256];
+  fms_log_printf("Task Name\tPriority\tState\tStack High Water Mark\n");
+  vTaskList(taskBuffer);
+  fms_log_printf("\n%s\n",taskBuffer);
+  return true;
 }
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
@@ -181,19 +209,21 @@ void event_receive(void *arg) {
 
 
 int app_cpu = 0;
-
+#define chip_report_printf log_printf
 
 void setup() {
+  fms_chip_info_log();
+  fms_memory_info_log();
   fms_log_printf("CPU %d: Setup", app_cpu);
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_log_printf("uart cli begin\n");
   }
-  fms_chip_info_log();
+
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-  fms_log_printf("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+  fms_log_printf("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // close nvs storage
  
@@ -203,8 +233,12 @@ void setup() {
 
   fms_config_load_sd(); // load config data from sd card
 
-  fms_log_print("initializing task");
+  fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
+
+fms_print_after_setup_info();
+fms_task_usage_check(); 
+
 }
 
 void loop() {
@@ -227,7 +261,7 @@ static void mqtt_task(void *arg) {
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 void fms_config_load_sd() {
-fms_log_print("config load");
+fms_log_printf("config load");
 }
 
 bool write_data_sd(String input)
@@ -348,7 +382,7 @@ void IRAM_ATTR serialEvent() {
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-   fms_log_print("uart cli is running");
+   fms_log_printf("uart cli is running");
     rc = xTaskNotify(heventTask, 4, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
@@ -359,11 +393,11 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   if(flag){
      uart_t *uart = uartBegin(UART_NUM_0, baudrate, SERIAL_8N1, 3, 1, 256, 0, false, 112);
      if(uart == NULL){
-      fms_log_print("cli uart begin fail");
+      fms_log_printf("cli uart begin fail");
       return false;
      }
      else{
-       fms_log_print("cli uart begin success");
+       fms_log_printf("cli uart begin success");
        return true;
      }
   }

@@ -1,5 +1,5 @@
 void fms_config_load_sd() {
-fms_log_print("config load");
+fms_log_printf("config load");
 }
 
 bool write_data_sd(String input)
