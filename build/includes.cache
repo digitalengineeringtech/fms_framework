@@ -51,13 +51,13 @@
   },
   {
     "Sourcefile": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\build\\sketch\\fms_header.h.cpp",
-    "Include": "Preferences.h",
-    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Preferences\\src"
+    "Include": "LittleFS.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\LittleFS\\src"
   },
   {
     "Sourcefile": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\build\\sketch\\fms_header.h.cpp",
-    "Include": "LittleFS.h",
-    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\LittleFS\\src"
+    "Include": "Preferences.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Preferences\\src"
   },
   {
     "Sourcefile": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\build\\sketch\\fms_header.h.cpp",
@@ -185,12 +185,12 @@
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Preferences\\src\\Preferences.cpp",
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\LittleFS\\src\\LittleFS.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\LittleFS\\src\\LittleFS.cpp",
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Preferences\\src\\Preferences.cpp",
     "Include": "",
     "Includepath": null
   }

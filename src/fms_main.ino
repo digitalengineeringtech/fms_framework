@@ -11,6 +11,7 @@ void event_receive(void *arg) {
   }
 }
 
+
 int app_cpu = 0;
 
 
@@ -19,18 +20,23 @@ void setup() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_log_printf("uart cli begin\n");
   }
+
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
   fms_log_printf("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
+  fms_nvs_storage.end(); // close nvs storage
+ 
   serialMutex = xSemaphoreCreateMutex();
   assert(serialMutex != NULL);
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-  fms_sd_begin();
+  vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
+
+  fms_config_load_sd(); // load config data from sd card
+
   fms_log_print("initializing task");
-  fms_task_create();
+  fms_task_create(); // rtos task create 
 }
 
 void loop() {

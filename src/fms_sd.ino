@@ -1,5 +1,5 @@
-void fms_sd_begin() {
-  Serial.println("Config Loaded");
+void fms_config_load_sd() {
+fms_log_print("config load");
 }
 
 static void sd_task(void *arg) {

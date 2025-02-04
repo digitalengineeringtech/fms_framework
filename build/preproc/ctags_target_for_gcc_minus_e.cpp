@@ -1,90 +1,40 @@
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
-
 /*
 
-# author 
+* @file    fms_header.h
 
-    Trion 30.1.2025 
+*
 
-# project
+* @brief   This is a header file for FMS project.
 
-    Fuel Management System (FMS)
+*
 
-# date
-
-    30/01/2025
-
-# version
-
-    1.0.0
-
-
-
-+-------------------+       +-------------------+       +-------------------+
-
-|                   |       |                   |       |                   |
-
-|     Task 1        |       |     Queue         |       |     Task 2        |
-
-|  (Producer)       |       |  (Data Buffer)    |       |  (Consumer)       |
-
-|                   |       |                   |       |                   |
-
-| 1. Generate       |       |                   |       | 1. Wait for       |
-
-|    Random Number  |       |                   |       |    Semaphore      |
-
-|                   |       |                   |       |                   |
-
-| 2. Send Number    | ----> |  Store Number     | <---- | 2. Receive Number |
-
-|    to Queue       |       |    in Queue       |       |    from Queue     |
-
-|                   |       |                   |       |                   |
-
-| 3. Give Semaphore | ----> |                   |       | 3. Process Number |
-
-|    (Signal Task 2)|       |                   |       |    (Print to Serial)
-
-|                   |       |                   |       |                   |
-
-+-------------------+       +-------------------+       +-------------------+
-
-            ^                                                       |
-
-            |                                                       |
-
-            |                                                       |
-
-            +-------------------------------------------------------+
-
-                                  Binary Semaphore
+* @autho   Trion
 
 */
-# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Include libraries
-# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 41 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
-# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-
-// #include <freertos/FreeRTOS.h>
-// #include <freertos/task.h>
-// #include <freertos/semphr.h>
+# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
 // Project details
 
 
 
+
 // Device details
+
+
 
 
 // WiFi configuration
@@ -92,13 +42,7 @@
 
 
 // MQTT configuration
-
-
-
-
-
-
-
+# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -120,32 +64,50 @@
 
 
 
-
+// Global objects
+Preferences fms_nvs_storage;
 WiFiClient wf_client;
 PubSubClient mqtt_client(wf_client);
 
- struct SYSCFG{
-  unsigned long bootcount;
-  unsigned long version;
- } sysCfg;
+// System configuration structure
+struct SYSCFG {
+    unsigned long bootcount;
+    unsigned long version;
+    char* wifi_ssid = "wifitest" /* wifi ssid*/;
+    char* wifi_password = "12345678" /* wifi password*/;
 
- // rtos task handle 
+    char* mqtt_server_host = " " /* mqtt server address*/;
+    char* mqtt_user = " " /* mqtt user*/;
+    char* mqtt_password = " " /* mqtt password*/;
+    char* mqtt_port = 1883 /* mqtt port*/; // in datastructure uint32_t
+
+    char* mqtt_device_id = "fms_001" /* device id*/ /* mqtt device id*/;
+    char* mqtt_lwt_status[7] = "offline" /* mqtt last will topic offline*/;
+    char* device_id = "fms_001" /* device id*/; // in datastructure uint32_t
+    char* station_id = 1 /* station id*/;
+} sysCfg;
+
+
+// RTOS task handles
 static TaskHandle_t heventTask;
 static TaskHandle_t hwifiTask;
 static TaskHandle_t hmqttTask;
 static TaskHandle_t hsdCardTask;
 static TaskHandle_t hwebServerTask;
-static TaskHandle_t hspiTask; // use this for something 
+static TaskHandle_t hspiTask;
 static TaskHandle_t hcliTask;
 
-SemaphoreHandle_t serialMutex; // Mutex to protect the buffer test code 
+// Mutex for serial communication
+SemaphoreHandle_t serialMutex;
 
+// Serial buffer and index
+volatile uint8_t serialBuffer[4]; // for testing
+volatile uint8_t bufferIndex = 0; // for testing
 
+// UART command flag
+bool use_uart_command = true;
 
-volatile uint8_t serialBuffer[4]; // Buffer to store received hex value // test code  
-volatile uint8_t bufferIndex = 0; // Index for the buffer // test code 
-bool use_uart_command = true; // use uart command flag // test code
-
+// Function declarations
 void addLog(byte loglevel, const char *line);
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 // Created: 2019-04-10 15:00:00
@@ -158,7 +120,7 @@ void fms_log_print(const char *line) {
     char mxtime[9];
     struct tm rtcTime;
     if (getLocalTime(&rtcTime)) snprintf(mxtime, sizeof(mxtime), ("%02d:%02d:%02d"), rtcTime.tm_hour, rtcTime.tm_min, rtcTime.tm_sec);
-    if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/("%s %s\n", mxtime, line);
+    if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/("%s\n", line);
   }
 }
 
@@ -174,73 +136,74 @@ void event_receive(void *arg) {
   for (;;) {
     rc = xTaskGenericNotifyWait( ( 0 ), ( 0 ), ( 0xFFFFFFFF ), ( &rv ), ( ( TickType_t ) 0xffffffffUL ) );
     if (rc == ( ( BaseType_t ) 1 )) {
+      // Handle the event here
     }
   }
 }
 
+
 int app_cpu = 0;
 
 
-
-
 void setup() {
-log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Setup", app_cpu);
-if (fms_uart_cli_begin(use_uart_command,115200)) log_printf /* in build in chip-debug-report.cpp*/("UART CLI Begin\n"); // serial begin 
+  log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Setup", app_cpu);
+  if (fms_uart_cli_begin(use_uart_command, 115200)) {
+    log_printf /* in build in chip-debug-report.cpp*/("uart cli begin\n");
+  }
 
-/***********************************************************************/
+  fms_nvs_storage.begin("fms_config", false);
+  sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-
   log_printf /* in build in chip-debug-report.cpp*/("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+  fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
+  fms_nvs_storage.end(); // close nvs storage
 
-  serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) ); // for serial interrupt control 
+  serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) );
   
-# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  serialMutex != 
-# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
- __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 29, __PRETTY_FUNCTION__, 
-# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+ __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 33, __PRETTY_FUNCTION__, 
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "serialMutex != NULL"
-# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 29 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                             ;
-
   vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 31 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
                    1000 
-# 31 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-                   ));
-  fms_sd_begin(); // start sd card
-  fms_log_print("intializing task");
-  // start create task
-  fms_task_create();
+# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+                   )); // wait delay 1 second
+
+  fms_config_load_sd(); // load config data from sd card
+
+  fms_log_print("initializing task");
+  fms_task_create(); // rtos task create 
 }
-
-
 
 void loop() {
   BaseType_t rc;
-  //Serial.println("Main Loop");
   rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
-# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
       __null 
-# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
       );
   
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 44, __PRETTY_FUNCTION__, 
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 45, __PRETTY_FUNCTION__, 
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "rc == pdPASS"
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                      ;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
@@ -261,8 +224,8 @@ static void mqtt_task(void *arg) {
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-void fms_sd_begin() {
-  Serial0.println("Config Loaded");
+void fms_config_load_sd() {
+fms_log_print("config load");
 }
 
 static void sd_task(void *arg) {
