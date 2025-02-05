@@ -11,17 +11,25 @@ bool fms_memory_info_log();
 bool fms_task_usage_check();
 #line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void event_receive(void *arg);
-#line 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+void initialize_uart();
+#line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+void initialize_nvs_storage();
+#line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-void fms_config_load_sd();
-#line 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+bool test_sd_init();
+#line 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+bool test_read();
+#line 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+bool fms_config_load_sd();
+#line 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool write_data_sd(String input);
-#line 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 static void sd_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
 bool fms_task_create();
@@ -35,13 +43,7 @@ static void web_server_task(void *arg);
 static void wifi_task(void *arg);
 #line 0 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
-/*
-* @file    fms_header.h
-*
-* @brief   This is a header file for FMS project.
-*
-* @autho   Trion
-*/
+
 #ifndef _FMS_HEADER_H_
 #define _FMS_HEADER_H_
 
@@ -54,10 +56,11 @@ static void wifi_task(void *arg);
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include "time.h"
-#include "LittleFS.h"
+#include <LittleFS.h>
 #include "chip-debug-report.h"
 #include "esp32-hal-uart.h"
 #include <Preferences.h>
+
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -98,7 +101,7 @@ static void wifi_task(void *arg);
 #define DAYLIGHT_OFFSET_SEC                 0                       // daylight offset in seconds to fix time zone
 
 // SD card file configuration
-#define SD_CARD_CONFIG_FILE_NAME            "/fms_config.conf"              // sd card file name change it to your file name
+#define SD_CARD_CONFIG_FILE_NAME            "fms_config.txt"              // sd card file name change it to your file name
 
 #define _log_printf                      log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
@@ -188,9 +191,9 @@ bool fms_memory_info_log(){
 bool fms_task_usage_check(){
   char taskBuffer[256];
   fms_log_printf("Task Name\tPriority\tState\tStack High Water Mark\n");
-  vTaskList(taskBuffer);
-  fms_log_printf("\n%s\n",taskBuffer);
-  return true;
+  //vTaskList(taskBuffer);
+  //fms_log_printf("\n%s\n",taskBuffer); // fix this error over flow
+  
 }
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
@@ -207,18 +210,16 @@ void event_receive(void *arg) {
   }
 }
 
-
 int app_cpu = 0;
 #define chip_report_printf log_printf
 
-void setup() {
-  fms_chip_info_log();
-  fms_memory_info_log();
-  fms_log_printf("CPU %d: Setup", app_cpu);
+void initialize_uart() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_log_printf("uart cli begin\n");
   }
+}
 
+void initialize_nvs_storage() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
@@ -226,19 +227,30 @@ void setup() {
   fms_log_printf("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // close nvs storage
- 
+}
+
+void setup() {
+  fms_chip_info_log();
+  fms_memory_info_log();
+  fms_log_printf("CPU %d: Setup", app_cpu);
+
+  initialize_uart();
+  initialize_nvs_storage();
+
   serialMutex = xSemaphoreCreateMutex();
   assert(serialMutex != NULL);
   vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
 
+  fms_log_printf("*********************Testing SD card**************");
+  write_data_sd("Hello World");
   fms_config_load_sd(); // load config data from sd card
-
+  vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
+  
   fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
 
-fms_print_after_setup_info();
-fms_task_usage_check(); 
-
+  fms_print_after_setup_info();
+ // fms_task_usage_check(); 
 }
 
 void loop() {
@@ -260,9 +272,47 @@ static void mqtt_task(void *arg) {
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-void fms_config_load_sd() {
-fms_log_printf("config load");
+
+
+bool test_sd_init()
+{
+  fms_log_printf("initializing sd card\n\r");
+  if (!LittleFS.begin(true)) {
+    fms_log_printf("SD Card Mount Failed\n\r");
+    return false;
+  }
+  fms_log_printf("SD Card Mount Success\n\r");
+  return true;
 }
+
+
+bool test_read() {
+  fms_log_printf("testing read\n\r");
+  test_sd_init();
+
+  File file = LittleFS.open(SD_CARD_CONFIG_FILE_NAME,FILE_READ);
+  if (!file) {
+    fms_log_printf("Failed to open file for reading\n\r");
+    return false;
+  }
+  fms_log_printf("File Content:");
+  while (file.available()) {
+    fms_log_printf("%c", file.read());
+  }
+  file.close();
+  return true;
+}
+
+bool fms_config_load_sd() {
+  fms_log_printf("loading config data from sd cardn\n\r");
+  if (!test_read()) {
+    fms_log_printf("failed to read data from sd card\n\r");
+    return false;
+  }
+  return true;
+}
+
+
 
 bool write_data_sd(String input)
 {
@@ -270,8 +320,25 @@ bool write_data_sd(String input)
   //step 1. simple write
   //step 2. encrypt and write
   //setp 3. sd formarting (clicommand)
+
+  fms_log_printf("writing data to sd card\n\r");
+  test_sd_init();
+  File file = LittleFS.open(SD_CARD_CONFIG_FILE_NAME, FILE_WRITE);
+  if (!file) {
+    fms_log_printf("Failed to open file for writing\n\r");
+    return false;
+  }
+  if (file.print(input)) {
+    fms_log_printf("File written\n\r");
+    return true;
+  } else {
+    fms_log_printf("Write failed\n\r");
+    return false;
+  }
+
   return true;
 }
+
 
 static void sd_task(void *arg) {
   BaseType_t rc;

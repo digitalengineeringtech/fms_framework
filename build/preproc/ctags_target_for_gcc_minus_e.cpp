@@ -1,31 +1,22 @@
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
-/*
 
-* @file    fms_header.h
 
-*
 
-* @brief   This is a header file for FMS project.
 
-*
-
-* @autho   Trion
-
-*/
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Include libraries
+# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 9 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+
 # 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
-# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
 // Project details
 
@@ -42,7 +33,7 @@
 
 
 // MQTT configuration
-# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -151,9 +142,9 @@ bool fms_memory_info_log(){
 bool fms_task_usage_check(){
   char taskBuffer[256];
   fms_log_printf("Task Name\tPriority\tState\tStack High Water Mark\n");
-  vTaskList(taskBuffer);
-  fms_log_printf("\n%s\n",taskBuffer);
-  return true;
+  //vTaskList(taskBuffer);
+  //fms_log_printf("\n%s\n",taskBuffer); // fix this error over flow
+
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 # 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
@@ -169,18 +160,16 @@ void event_receive(void *arg) {
   }
 }
 
-
 int app_cpu = 0;
 
 
-void setup() {
-  fms_chip_info_log();
-  fms_memory_info_log();
-  fms_log_printf("CPU %d: Setup", app_cpu);
+void initialize_uart() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_log_printf("uart cli begin\n");
   }
+}
 
+void initialize_nvs_storage() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
@@ -188,56 +177,71 @@ void setup() {
   fms_log_printf("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // close nvs storage
+}
+
+void setup() {
+  fms_chip_info_log();
+  fms_memory_info_log();
+  fms_log_printf("CPU %d: Setup", app_cpu);
+
+  initialize_uart();
+  initialize_nvs_storage();
 
   serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) );
   
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  serialMutex != 
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
- __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 35, __PRETTY_FUNCTION__, 
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+ __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 42, __PRETTY_FUNCTION__, 
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "serialMutex != NULL"
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                             ;
   vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
                    1000 
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                    )); // wait delay 1 second
 
+  fms_log_printf("*********************Testing SD card**************");
+  write_data_sd("Hello World");
   fms_config_load_sd(); // load config data from sd card
+  vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
+# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+                   1000 
+# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+                   )); // wait delay 1 second
 
   fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
 
-fms_print_after_setup_info();
-fms_task_usage_check();
-
+  fms_print_after_setup_info();
+ // fms_task_usage_check(); 
 }
 
 void loop() {
   BaseType_t rc;
   rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
-# 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+# 59 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
       __null 
-# 50 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 59 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
       );
   
-# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 51, __PRETTY_FUNCTION__, 
-# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 60, __PRETTY_FUNCTION__, 
+# 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "rc == pdPASS"
-# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 51 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                      ;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
@@ -261,9 +265,47 @@ static void mqtt_task(void *arg) {
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-void fms_config_load_sd() {
-fms_log_printf("config load");
+
+
+bool test_sd_init()
+{
+  fms_log_printf("initializing sd card\n\r");
+  if (!LittleFS.begin(true)) {
+    fms_log_printf("SD Card Mount Failed\n\r");
+    return false;
+  }
+  fms_log_printf("SD Card Mount Success\n\r");
+  return true;
 }
+
+
+bool test_read() {
+  fms_log_printf("testing read\n\r");
+  test_sd_init();
+
+  File file = LittleFS.open("fms_config.txt" /* sd card file name change it to your file name*/,"r");
+  if (!file) {
+    fms_log_printf("Failed to open file for reading\n\r");
+    return false;
+  }
+  fms_log_printf("File Content:");
+  while (file.available()) {
+    fms_log_printf("%c", file.read());
+  }
+  file.close();
+  return true;
+}
+
+bool fms_config_load_sd() {
+  fms_log_printf("loading config data from sd cardn\n\r");
+  if (!test_read()) {
+    fms_log_printf("failed to read data from sd card\n\r");
+    return false;
+  }
+  return true;
+}
+
+
 
 bool write_data_sd(String input)
 {
@@ -271,8 +313,25 @@ bool write_data_sd(String input)
   //step 1. simple write
   //step 2. encrypt and write
   //setp 3. sd formarting (clicommand)
+
+  fms_log_printf("writing data to sd card\n\r");
+  test_sd_init();
+  File file = LittleFS.open("fms_config.txt" /* sd card file name change it to your file name*/, "w");
+  if (!file) {
+    fms_log_printf("Failed to open file for writing\n\r");
+    return false;
+  }
+  if (file.print(input)) {
+    fms_log_printf("File written\n\r");
+    return true;
+  } else {
+    fms_log_printf("Write failed\n\r");
+    return false;
+  }
+
   return true;
 }
+
 
 static void sd_task(void *arg) {
   BaseType_t rc;
@@ -283,16 +342,16 @@ static void sd_task(void *arg) {
     * Load config data from sd card
 
     */
-# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 3 ), ( eSetBits ), 
-# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3 4
+# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3 4
         __null 
-# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
               1000 
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
     //write_data_sd("HELLO\n\r");
     //

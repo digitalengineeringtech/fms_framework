@@ -1,10 +1,4 @@
-/*
-* @file    fms_header.h
-*
-* @brief   This is a header file for FMS project.
-*
-* @autho   Trion
-*/
+
 #ifndef _FMS_HEADER_H_
 #define _FMS_HEADER_H_
 
@@ -17,10 +11,11 @@
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include "time.h"
-#include "LittleFS.h"
+#include <LittleFS.h>
 #include "chip-debug-report.h"
 #include "esp32-hal-uart.h"
 #include <Preferences.h>
+
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -61,7 +56,7 @@
 #define DAYLIGHT_OFFSET_SEC                 0                       // daylight offset in seconds to fix time zone
 
 // SD card file configuration
-#define SD_CARD_CONFIG_FILE_NAME            "/fms_config.conf"              // sd card file name change it to your file name
+#define SD_CARD_CONFIG_FILE_NAME            "fms_config.txt"              // sd card file name change it to your file name
 
 #define _log_printf                      log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port

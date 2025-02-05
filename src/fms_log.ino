@@ -33,7 +33,7 @@ bool fms_memory_info_log(){
 bool fms_task_usage_check(){
   char taskBuffer[256];
   fms_log_printf("Task Name\tPriority\tState\tStack High Water Mark\n");
-  vTaskList(taskBuffer);
-  fms_log_printf("\n%s\n",taskBuffer);
-  return true;
+  //vTaskList(taskBuffer);
+  //fms_log_printf("\n%s\n",taskBuffer); // fix this error over flow
+  
 }
