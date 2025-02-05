@@ -25,7 +25,8 @@
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        true      
+#define SHOW_SYS_LOG                        true    
+#define SHOW_SD_TEST_LOG                    true  
 
 // WiFi configuration
 #define WIFI_SSID                           "wifitest"              // wifi ssid
@@ -58,7 +59,7 @@
 // SD card file configuration
 #define SD_CARD_CONFIG_FILE_NAME            "fms_config.txt"              // sd card file name change it to your file name
 
-#define _log_printf                      log_printf              // in build in chip-debug-report.cpp
+#define _log_printf                         log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
 
 // Global objects

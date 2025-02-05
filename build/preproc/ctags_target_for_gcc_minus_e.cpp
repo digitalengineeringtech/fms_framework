@@ -28,12 +28,13 @@
 
 
 
+
 // WiFi configuration
 
 
 
 // MQTT configuration
-# 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -207,14 +208,10 @@ void setup() {
 # 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                    )); // wait delay 1 second
 
-  fms_log_printf("*********************Testing SD card**************");
-  write_data_sd("Hello World");
-  fms_config_load_sd(); // load config data from sd card
-  vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
-                   1000 
-# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-                   )); // wait delay 1 second
+
+  if(fms_config_load_sd_test()){fms_log_printf("\n\r==================== sd card test success================\n");}
+  else {fms_log_printf("sd card test failed\n");}
+
 
   fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
@@ -267,6 +264,19 @@ static void mqtt_task(void *arg) {
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 
 
+
+bool fms_config_load_sd_test() {
+if(!write_data_sd("134")) {
+  return false;
+}
+if(!fms_config_load_sd()){
+  return false;
+}
+return true;
+}
+
+
+
 bool test_sd_init()
 {
   fms_log_printf("initializing sd card\n\r");
@@ -283,14 +293,14 @@ bool test_read() {
   fms_log_printf("testing read\n\r");
   test_sd_init();
 
-  File file = LittleFS.open("fms_config.txt" /* sd card file name change it to your file name*/,"r");
+  File file = LittleFS.open("/example.txt","r");
   if (!file) {
     fms_log_printf("Failed to open file for reading\n\r");
     return false;
   }
   fms_log_printf("File Content:");
   while (file.available()) {
-    fms_log_printf("%c", file.read());
+    fms_log_printf("%s", file.read());
   }
   file.close();
   return true;
@@ -307,7 +317,7 @@ bool fms_config_load_sd() {
 
 
 
-bool write_data_sd(String input)
+bool write_data_sd(char* input)
 {
   //to write code to save data to sd.
   //step 1. simple write
@@ -316,12 +326,12 @@ bool write_data_sd(String input)
 
   fms_log_printf("writing data to sd card\n\r");
   test_sd_init();
-  File file = LittleFS.open("fms_config.txt" /* sd card file name change it to your file name*/, "w");
+  File file = LittleFS.open("/example.txt", "w");
   if (!file) {
     fms_log_printf("Failed to open file for writing\n\r");
     return false;
   }
-  if (file.print(input)) {
+  if (file.write((const uint8_t*)input,sizeof(input)-1)) {
     fms_log_printf("File written\n\r");
     return true;
   } else {
@@ -342,16 +352,16 @@ static void sd_task(void *arg) {
     * Load config data from sd card
 
     */
-# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 90 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 3 ), ( eSetBits ), 
-# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3 4
+# 90 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3 4
         __null 
-# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 90 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
+# 91 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
               1000 
-# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 91 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
     //write_data_sd("HELLO\n\r");
     //

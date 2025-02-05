@@ -21,15 +21,17 @@ void setup();
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
-#line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 4 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+bool fms_config_load_sd_test();
+#line 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool test_sd_init();
-#line 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool test_read();
-#line 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool fms_config_load_sd();
-#line 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-bool write_data_sd(String input);
-#line 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+bool write_data_sd(char* input);
+#line 82 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 static void sd_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
 bool fms_task_create();
@@ -70,7 +72,8 @@ static void wifi_task(void *arg);
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        true      
+#define SHOW_SYS_LOG                        true    
+#define SHOW_SD_TEST_LOG                    true  
 
 // WiFi configuration
 #define WIFI_SSID                           "wifitest"              // wifi ssid
@@ -103,7 +106,7 @@ static void wifi_task(void *arg);
 // SD card file configuration
 #define SD_CARD_CONFIG_FILE_NAME            "fms_config.txt"              // sd card file name change it to your file name
 
-#define _log_printf                      log_printf              // in build in chip-debug-report.cpp
+#define _log_printf                         log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
 
 // Global objects
@@ -241,11 +244,11 @@ void setup() {
   assert(serialMutex != NULL);
   vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
 
-  fms_log_printf("*********************Testing SD card**************");
-  write_data_sd("Hello World");
-  fms_config_load_sd(); // load config data from sd card
-  vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
-  
+  #if SHOW_SD_TEST_LOG
+  if(fms_config_load_sd_test()){fms_log_printf("\n\r==================== sd card test success================\n");}
+  else {fms_log_printf("sd card test failed\n");}
+  #endif
+
   fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
 
@@ -274,6 +277,19 @@ static void mqtt_task(void *arg) {
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 
 
+
+bool fms_config_load_sd_test() {
+if(!write_data_sd("134")) {
+  return false;
+}
+if(!fms_config_load_sd()){
+  return false;
+}
+return true;
+}
+
+
+
 bool test_sd_init()
 {
   fms_log_printf("initializing sd card\n\r");
@@ -290,14 +306,14 @@ bool test_read() {
   fms_log_printf("testing read\n\r");
   test_sd_init();
 
-  File file = LittleFS.open(SD_CARD_CONFIG_FILE_NAME,FILE_READ);
+  File file = LittleFS.open("/example.txt",FILE_READ);
   if (!file) {
     fms_log_printf("Failed to open file for reading\n\r");
     return false;
   }
   fms_log_printf("File Content:");
   while (file.available()) {
-    fms_log_printf("%c", file.read());
+    fms_log_printf("%s", file.read());
   }
   file.close();
   return true;
@@ -314,7 +330,7 @@ bool fms_config_load_sd() {
 
 
 
-bool write_data_sd(String input)
+bool write_data_sd(char* input)
 {
   //to write code to save data to sd.
   //step 1. simple write
@@ -323,12 +339,12 @@ bool write_data_sd(String input)
 
   fms_log_printf("writing data to sd card\n\r");
   test_sd_init();
-  File file = LittleFS.open(SD_CARD_CONFIG_FILE_NAME, FILE_WRITE);
+  File file = LittleFS.open("/example.txt", FILE_WRITE);
   if (!file) {
     fms_log_printf("Failed to open file for writing\n\r");
     return false;
   }
-  if (file.print(input)) {
+  if (file.write((const uint8_t*)input,sizeof(input)-1)) {
     fms_log_printf("File written\n\r");
     return true;
   } else {

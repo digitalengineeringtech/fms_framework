@@ -42,11 +42,11 @@ void setup() {
   assert(serialMutex != NULL);
   vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
 
-  fms_log_printf("*********************Testing SD card**************");
-  write_data_sd("Hello World");
-  fms_config_load_sd(); // load config data from sd card
-  vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
-  
+  #if SHOW_SD_TEST_LOG
+  if(fms_config_load_sd_test()){fms_log_printf("\n\r==================== sd card test success================\n");}
+  else {fms_log_printf("sd card test failed\n");}
+  #endif
+
   fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
 
