@@ -12,11 +12,11 @@ void event_receive(void *arg) {
 }
 
 int app_cpu = 0;
-#define chip_report_printf log_printf
+#define chip_report_printf log_printf // for chip info debug
 
 void initialize_uart() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    fms_log_printf("uart cli begin\n");
+    fms_log_printf("setup finish for cli uart\n\r");
   }
 }
 
@@ -39,12 +39,9 @@ void setup() {
 
   fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
   initialize_uart();
-  initialize_nvs_storage();
+  initialize_nvs_storage(); // save boot count to eeprom 
 // similar traffic light theroy
-  serialMutex = xSemaphoreCreateMutex();
-  assert(serialMutex != NULL);
-  vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
-
+  
   #if SHOW_SD_TEST_LOG
   if (fms_config_load_sd_test()) {
     fms_log_printf("\n\r==================== sd card test success================\n");
