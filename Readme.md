@@ -1,16 +1,66 @@
-// // MQTT topics from the old project
-// #define MQTT_TOPIC_PUMP_APPROVAL        "detpos/local_server/1"
-// #define MQTT_TOPIC_PUMP_REQUEST         "detpos/device/permit/1"
-// #define MQTT_TOPIC_PUMP_PRESET          "detpos/local_server/preset"
-// #define MQTT_TOPIC_PUMP_LIVE            "detpos/device/livedata/1"
-// #define MQTT_TOPIC_PUMP_FINAL           "detpos/device/Final/1"
-// #define MQTT_TOPIC_WH_REQUEST           "detpos/device/whreq"
-// #define MQTT_TOPIC_PRICE_CHANGE         "detpos/local_server/price"
-// #define MQTT_TOPIC_PRICE_REQUEST        "detpos/device/pricereq/1"
-// #define MQTT_TOPIC_ACTIVE               "detpos/device/active/1"
-// #define MQTT_TOPIC_DEVICE               "1"
-// #define MQTT_TOPIC_DEVICE_ID            "detpos/local_server/initial1/det/0A0000"
-// #define MQTT_TOPIC_RESET                "detpos/hmi/reset"
-// #define MQTT_TOPIC_RELOAD               "detpos/local_server/reload/1"
-// #define MQTT_TOPIC_PUMP_FINAL_RELOAD    "detpos/device/Reload/1"
+
+# FMS Firmware 
+
+fuel station monitoring system 
+
+
+## Flow
+
+![App Screenshot](https://github.com/digitalengineeringtech/fms_framework/blob/main/Flow.jpg)
+
+
+## VS  code extension
+
+To run this project, you will need to add the following extension variables to your VS Code
+
+`Arduino Community Edition`
+
+`vscode-arduino`
+
+
+## Compiling Tests
+
+To compile tests, run the following command
+
+```bash
+  ctrl+alt+r   (compiling sketch)
+  ctrl+alt+u   (uploading sketch to fms controller board)
+```
+
+
+## Usage/Examples
+
+```c++
+#inlcude <fms_header.h>
+void setup() {
+    fms_log_printf("Program Starting");
+    fms_task_create();
+}
+```
+
+
+## Roadmap
+
+- All Fuel Protocol Support
+
+- Add more integrations
+
+
+## Documentation
+
+[Documentation](https://linktodocumentation)
+
+
+## 🛠 Skills
+Arduino,FreeRtos,C++,Mqtt,Html,CSS
+
+
+## Badges
+
+
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
+
 
