@@ -3,7 +3,7 @@
 :toc:
 
 [.text-center]
-**Company Name**: Transtak Pte Ltd  
+**Company Name**: DET  
 [.text-center]
 **Engineer Name**: Thiha Kyaw  
 [.text-center]
@@ -18,6 +18,7 @@
 | Version | Description of Changes | Author | Date | Approval
 | P1.0 | Initial version | Thiha Kyaw | 22-01-2025 | Approved by Senior Engineer
 | P2.0 | Updated version with multiplexer and RS485 support for pump stations | Thiha Kyaw | 22-01-2025 | Approved by Senior Engineer
+| P2.0 | Add Cli Command | Nyein Chan Ko | 1-02-2025 | Approved by Senior Engineer
 |===
 
 == Background
@@ -318,6 +319,39 @@ This appendix contains supplementary information.
 
 === CLI  commands
 Details for Subsection A.1.
+[cols="11*", options="header"]
+|====================================================================================================================================================================================================================
+| No | Description                  | Command   | Value1   | Value2     | Value3     | Value4     | Return Value                                                                   |            | Author | Approve By
+| 1  | Device ID                    | devid     | <value>  | -          | -          | -          | value must be : fms%d%time% ...etc                                             |            | NCK    | THK       
+| 2  | Version                      | v         | < >      |            | -          | -          | Return Value : FSM V 1.2 ... etc , <Read> mode                                 |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        | THK       
+| 3  | WiFi Scan                    | wifiscan  | -        | -          | -          | -          | Return Value : <ssid1><ssid2><ssid3> ...etc                                    |            |        | THK       
+| 4  | WiFi Value                   | wifi      | <ssid>   | <password> |            |            | Return Value : <ok>                                                            |            |        | THK       
+|    |                              | wifi      | <read>   | -          | -          | -          | ssid: <ssid>; password: <pass>                                                 |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        | THK       
+| 5  | Mqtt                         | mqtt      | <host>   | <port>     | <username> | <password> | Return Value : <ok>                                                            |            |        | THK       
+| 6  |                              | mqtt      | <read>   | -          | -          | -          | <host><port><username><password>                                               |            |        | THK       
+| 7  | MqttTopic                    | mqtttopic | <read>   | -          | -          | -          | Return Value : <all topic return> [detpos/route][2][3]... etc                  |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        | THK       
+| 8  | From Sd Card                 | sd        | <read>   | -          | -          | -          | Read All Setting Value Form SD Card and Save to the Flash Storage              |            |        | THK       
+| 9  |                              | sd        | <write>  | <all>      | -          | -          | Write All Setting Value to SD Card                                             |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        | THK       
+| 10 | Fuel Nozzel Count            | nozc      | <value>  |            |            |            | value : 1,2,3,4,6 ...etc                                                       |            |        | THK       
+| 11 | Fuel Nozzel ID               | nozid     | <value1> | <value2>   | <value3>   | <value4>   | <nozzel id change done> id:1,2,3,4,5 ... etc                                   |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        | THK       
+| 12 | Fuel Station ID              | statid    | <value>  | -          | -          | -          | value: 01,02,03,04,05 ... etc                                                  |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        | THK       
+| 13 | Show All CMD                 | help      | -        | -          | -          | -          | Show All Command List read mode                                                |            |        | THK       
+| 14 | Show All log                 | syslog    | <read>   | -          | -          | -          | Return Value : <bootcount><mqttreconnectcount><errostate>... etc               |            |        | THK       
+| 15 | log download File to Sd Card | syslog    | <write>  | -          | -          | -          | download & generate log file to sd, log%time%.txt                              |            |        | THK       
+| 16 | Select download type         | fstype    | <value>  | -          | -          | -          | Select File System Type 0: Flash Storage, 1: SD card, Default : 1 : SD card    | Optional   |        | THK       
+|    | Debug mode                   |           |          |            |            |            | enable printf to UART1                                                         |            |        | THK       
+|    | Protocol Settings            |           |          |            |            |            | Which pump                                                                     |            |        | THK       
+|    |                              |           |          |            |            |            |                                                                                |            |        |           
+| 17 | Read All Setting Value       | sys       | <read>   | -          | -          | -          | Return Value : Type : Json Format {"ssid";" " ,"password : " ","host": " "...} | For PyQTui |        |           
+|====================================================================================================================================================================================================================
+
+
 
 [appendix]
 == Pump Protocols
