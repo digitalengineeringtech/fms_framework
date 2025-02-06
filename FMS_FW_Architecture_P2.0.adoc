@@ -1,0 +1,325 @@
+= Software Architecture for Pump Station with Multiplexer and RS485 Support
+:sectnums:
+:toc:
+
+[.text-center]
+**Company Name**: Transtak Pte Ltd  
+[.text-center]
+**Engineer Name**: Thiha Kyaw  
+[.text-center]
+**Document Version**: P2.0  
+[.text-center]
+**Release Date**: 22-01-2025  
+
+== Version Control Table
+
+[cols="1,3,2,2,3", options="header"]
+|===
+| Version | Description of Changes | Author | Date | Approval
+| P1.0 | Initial version | Thiha Kyaw | 22-01-2025 | Approved by Senior Engineer
+| P2.0 | Updated version with multiplexer and RS485 support for pump stations | Thiha Kyaw | 22-01-2025 | Approved by Senior Engineer
+|===
+
+== Background
+
+This document provides the detailed software architecture for a system designed to acquire data from multiple pumps in a pump station. The system uses an Arduino-based ESP32 microcontroller to communicate with pumps via either RS485 or a hardware multiplexer connected to UART2. Data collected from pumps, such as price, total liters dispensed, and other critical metrics, is transmitted to a remote MQTT server. If the server is unavailable, the data along with error codes are logged into the SDCard and synchronized with the server when communication is restored.
+
+The architecture supports device configuration through a command-line interface (CLI) over UART1 and a user-friendly local web server. Critical device settings, including pump IDs, WiFi credentials, and server configurations, are stored persistently in the SDCard and loaded during device boot-up.
+
+== Requirements
+
+=== Must-Have
+1. The system must read data from pumps using UART2 through either RS485 or a hardware multiplexer.
+2. The system must provide a CLI for configuration via UART1.
+3. The system must host a local web server for device configuration.
+4. Configuration settings such as device IDs, WiFi credentials, and pump information must be stored in the SDCard and loaded at boot-up.
+5. Data from pumps must be sent to an MQTT server in real time.
+6. When the server is unavailable, data and error codes must be logged into the SDCard.
+7. Logged data must be synchronized with the server when communication is restored.
+
+=== Should-Have
+1. The web server should have password protection for security.
+2. The system should support secure MQTT communication (e.g., TLS/SSL).
+
+=== Could-Have
+1. The system could store additional logs for detailed troubleshooting.
+2. The system could support over-the-air (OTA) firmware updates.
+
+=== Won’t-Have
+1. Advanced protocols like Modbus or CAN will not be included in the initial release.
+2. High-speed analytics or streaming capabilities will not be implemented on the device.
+
+== Method
+
+=== System Overview
+The system is designed with the following key components:
+- **Arduino-based Microcontroller**: Manages communication and processing.
+- **Hardware Multiplexer** or **RS485**: Allows communication with pumps through UART2.
+- **SDCard**: Stores persistent configuration data, logs data when the server is unavailable, and error codes.
+- **MQTT Communication**: Sends pump data to the server.
+- **Web Server and CLI**: Provide configuration interfaces.
+
+=== Device Configuration Parameters
+- **Device ID**: Unique identifier for the device.
+- **Station ID**: Identifier for the pump station.
+- **WiFi SSID/Password**: WiFi network credentials.
+- **MQTT Server IP/Port**: Server details for data transmission.
+- **Pump Count/IDs**: Details of connected pumps.
+- **Multiplexer Control Pins**: GPIO pin configuration for pump communication (if using Multiplexer).
+- **RS485 Configuration**: Communication settings for RS485 (if used).
+- **Debug Flags**: Enable/disable debugging.
+- **Boot Counter**: Tracks device reboots.
+
+=== Communication Modules
+- **UART1 (CLI)**: Used for device configuration via a command-line interface.
+- **UART2 (Multiplexer or RS485)**: Used for polling data from pumps via either the multiplexer or RS485, depending on the configuration.
+
+=== MQTT Communication
+- Sends pump data to the server in predefined data structure format.
+- Ensures reliable delivery through retry mechanisms.
+
+=== SDCard Configuration
+- Persistent storage for all configuration settings.
+- Logs data and error codes when the server is unavailable.
+- Synchronizes logged data back to the server when communication is restored.
+
+=== Web Server
+- Hosts a user-friendly HTTP interface.
+- Allows users to configure the device securely.
+
+=== Component Diagram
+[plantuml, esp32_diagram, png, align="center"]
+----
+@startuml
+node "_ESP32_MCU" {
+  component "MCU" as ESP32 #Gold
+  component "Web Server" as WebServer
+  component "WIFI" as wifi
+}
+
+cloud {
+  component "Server" as server #LightSkyBlue
+}
+
+component "UART1 (CLI)" as UART1 #LightGreen
+component "UART2 (RS232)" as UART2 #LightGreen
+component "Multiplexer Control" as Multiplexer #LightBlue
+component "SDCARD" as SDCARD #LightYellow
+component "RS485/RS422" as RS485
+component "PUMPs" as Pumps
+
+wifi <.up-> server: "MQTT"
+ESP32 <-up-> wifi
+wifi <-left-> WebServer
+ESP32 --> UART1
+ESP32 --> UART2
+ESP32 --> SDCARD : SPI
+UART2 --> RS485
+UART2 -down-> Multiplexer
+Multiplexer -down-> Pumps
+@enduml
+----
+
+=== Firmware Implementation
+
+[plantuml, fw_flowchart, png]
+----
+@startuml
+
+start
+
+:Initialize ESP32 Hardware;
+:Initialize FreeRTOS Scheduler;
+
+:Read Configuration Data from SDCard;
+if (Configuration Data Available?) then (Yes)
+    :Load Configuration into System;
+else (No)
+    :Load Default Configuration;
+endif
+
+:Create Tasks:
+- WiFi Task
+- Web Server Task
+- UART1 Task
+- UART2 Task
+- SPI Device Task
+- SDCard Task;
+:Start FreeRTOS Scheduler;
+
+fork
+:WiFi Task;
+:Connect to WiFi Network;
+:Establish MQTT Connection;
+if (MQTT Connected?) then (Yes)
+    :Synchronize with Server;
+    :Transfer Logged Data from SDCard to Server;
+else (No)
+    :Log Error: \"Server Unavailable\";
+endif
+endfork
+
+fork
+:SDCard Task;
+:Monitor Data to Log;
+if (Server Unavailable?) then (Yes)
+    :Log Data to SDCard;
+    :Store Error Codes to SDCard;
+else (No)
+    :Sync Data Back to Server;
+endif
+endfork
+
+fork
+:Web Server Task;
+:Listen for HTTP Requests;
+if (Request for Configuration Data?) then (Yes)
+    :Fetch Configuration from SDCard;
+    :Send Configuration Data to Client;
+else (No)
+    :Process Other HTTP Requests;
+endif
+endfork
+
+fork
+:UART1 Task (CLI);
+:Monitor Commands from CLI;
+if (Configuration Change Command?) then (Yes)
+    :Update Configuration in System;
+    :Write Updated Configuration to SDCard;
+else (No)
+    :Route Command to Relevant Subsystem;
+endif
+endfork
+
+fork
+:UART2 Task;
+if (Use RS485?) then (Yes)
+    :Communicate with RS485 Devices;
+else (No - Use Multiplexer)
+    :Control PUMPs via Multiplexer;
+endif
+endfork
+
+fork
+:SPI Task;
+:Monitor and Process SPI Devices;
+:Read Data from SDCard, RFID, RS485;
+:Send Data to Server or Log to SDCard;
+endfork
+
+while (Monitor Tasks?) is (True)
+    if (Error Detected?) then (Yes)
+        :Log Error to SDCard;
+    else (No)
+        :Continue Normal Operations;
+    endif
+endwhile
+
+stop
+
+@enduml
+----
+**Key Information**
+
+1. **Configuration Settings:**
+- Configuration data is read from the SDCard during the boot-up phase.
+- If no configuration is available, default settings are loaded.
+2. **Data Logging:**
+- When the server is unavailable, logs (data and error codes) are stored on the SDCard.
+3. **Data Sync:**
+- When communication is restored, logged data is sent back to the server.
+4. **CLI Configuration Update:**
+- Commands from UART1 can update configuration settings, which are written back to the SDCard.
+5. **Error Handling:**
+- Errors are logged to the SDCard for debugging and tracking purposes.
+6. **Task-Oriented Design:**
+- Tasks like WiFi, SDCard, and SPI handle their specific roles independently, ensuring modularity and concurrency.
+
+=== Algorithms
+1. **Polling Algorithm**:
+   - **Multiplexer Mode**:
+     - Iterate over pumps connected via the multiplexer.
+     - Select the appropriate pump by controlling GPIO pins.
+     - Communicate with the selected pump via UART2 using RS232 commands.
+     - Parse the received data and validate the response.
+     - Log any errors to the SDCard.
+   - **RS485 Mode**:
+     - Send RS485 requests to all pumps or targeted devices based on the protocol.
+     - Wait for pump responses and parse received data.
+     - Log errors for timeouts or protocol violations to the SDCard.
+
+2. **Publishing Algorithm**:
+   - Aggregate collected data into a data structure.
+   - Publish the data to the MQTT server.
+   - If the MQTT server is unavailable, log the data into the SDCard for retry.
+
+3. **Configuration Synchronization**:
+   - During boot-up, load configuration from the SDCard.
+   - Validate the configuration data for completeness and consistency.
+   - Apply configuration to the system and write updates back to the SDCard if modified.
+
+4. **Error Handling**:
+   - Log errors, such as communication timeouts or invalid responses, to the SDCard.
+   - Attempt retries for failed operations.
+   - Notify the server of critical errors via MQTT when connectivity is restored.
+
+5. **Data Recovery**:
+   - On server reconnection, retrieve unsent data from the SDCard.
+   - Synchronize the logged data with the server to ensure no loss of information.
+
+=== FreeRTOS Task Management
+- **WiFi Task**: Manages MQTT connection and reconnection logic.
+- **Polling Task**:
+  - Operates in either RS485 or multiplexer mode, depending on configuration.
+  - Acquires pump data and hands it off for logging or publishing.
+- **SDCard Task**: Handles configuration reads/writes and error logging.
+- **Web Server Task**: Responds to HTTP requests for configuration changes.
+- **CLI Task**: Processes UART1 commands for real-time configuration updates.
+
+== Implementation
+
+=== Step 1: Hardware Setup
+1. Connect pumps to the multiplexer inputs.
+2. Configure GPIO pins for multiplexer or connect RS485 hardware.
+3. Connect the SDCard to the ESP32 via SPI.
+
+=== Step 2: Firmware Development
+1. Write code to initialize UART1, UART2, GPIO, and SPI.
+2. Implement FreeRTOS tasks for WiFi, SDCard, CLI, and polling.
+
+=== Step 3: Testing and Debugging
+1. Verify UART and SPI communication.
+2. Test MQTT data publishing and SDCard logging.
+
+=== Step 4: Deployment
+1. Flash the firmware onto the ESP32.
+2. Deploy the system in a live pump station and monitor performance.
+
+== Milestones
+
+1. **Initial Setup**: Complete hardware connections and communication tests.
+2. **Firmware Development**: Implement all modules and FreeRTOS tasks.
+3. **MQTT Communication**: Test publishing and error handling.
+4. **System Integration**: Combine all components and verify interactions.
+5. **Deployment and Testing**: Install the system at a pump station and validate reliability.
+
+== Gathering Results
+
+1. **Functional Testing**: Verify data acquisition and publishing.
+2. **Communication Testing**: Validate stability of RS485 and MQTT communication.
+3. **Performance Metrics**: Measure response times for data polling and publishing.
+4. **Usability Testing**: Evaluate the web interface and CLI for ease of use.
+5. **Deployment Validation**: Assess real-world operation and collect stakeholder feedback.
+
+[appendix]
+== Additional Information
+This appendix contains supplementary information.
+
+=== CLI  commands
+Details for Subsection A.1.
+
+[appendix]
+== Pump Protocols
+=== Haungyang Protocols
+Details for Subsection B.1.
