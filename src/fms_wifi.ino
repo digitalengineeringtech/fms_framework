@@ -1,3 +1,8 @@
+bool fms_wifi_begin() {
+ 
+  return true;
+}
+
 static void wifi_task(void *arg) {
   BaseType_t rc;
   for (;;) {

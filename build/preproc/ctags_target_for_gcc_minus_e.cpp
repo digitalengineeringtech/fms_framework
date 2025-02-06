@@ -56,6 +56,7 @@
 
 
 
+uart_t * fms_cli_uart;
 // Global objects
 Preferences fms_nvs_storage;
 WiFiClient wf_client;
@@ -161,12 +162,13 @@ void event_receive(void *arg) {
   }
 }
 
+
 int app_cpu = 0;
 
 
 void initialize_uart() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    fms_log_printf("uart cli begin\n");
+    fms_log_printf("setup finish for cli uart\n\r");
   }
 }
 
@@ -181,37 +183,20 @@ void initialize_nvs_storage() {
 }
 
 void setup() {
+ initialize_uart();
 
 
 
 
 
 
-  fms_log_printf("CPU %d: Setup", app_cpu);
-  initialize_uart();
-  initialize_nvs_storage();
 
-  serialMutex = xQueueCreateMutex( ( ( uint8_t ) 1U ) );
-  
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- (__builtin_expect(!!(
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
- serialMutex != 
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
- __null), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 45, __PRETTY_FUNCTION__, 
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
- "serialMutex != NULL"
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ))
-# 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-                            ;
-  vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
-                   1000 
-# 46 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-                   )); // wait delay 1 second
-# 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-  fms_log_printf("initializing task");
+  fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+
+
+  initialize_nvs_storage(); // save boot count to eeprom 
+# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+  fms_log_printf("Start initiazling task \n\r");
   fms_task_create(); // rtos task create 
 
 
@@ -223,22 +208,22 @@ void setup() {
 void loop() {
   BaseType_t rc;
   rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
-# 67 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
       __null 
-# 67 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
       );
   
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 68, __PRETTY_FUNCTION__, 
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 69, __PRETTY_FUNCTION__, 
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "rc == pdPASS"
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                      ;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
@@ -463,7 +448,7 @@ bool fms_task_create() {
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
 
-void __attribute__((section(".iram1" "." "0"))) serialEvent() {
+void __attribute__((section(".iram1" "." "0"))) serialEvent2() {
   while (Serial0.available()) { // test code 
     uint8_t data = Serial0.read();
     // if (bufferIndex < sizeof(serialBuffer)) serialBuffer[bufferIndex++] = data;
@@ -478,41 +463,48 @@ void __attribute__((section(".iram1" "." "0"))) serialEvent() {
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-static void cli_task(void *arg) {
-  BaseType_t rc;
-  for (;;) {
-   fms_log_printf("uart cli is running");
-    rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
-        __null 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-        );
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
-              1000 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-              ) / ( TickType_t ) 1000U ) ));
-  }
-}
-
 
 bool fms_uart_cli_begin(bool flag, int baudrate) {
   if(flag){
-     uart_t *uart = uartBegin(UART_NUM_0, baudrate, SERIAL_8N1, 3, 1, 256, 0, false, 112);
-     if(uart == 
-# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
-               __null
-# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-                   ){
-      fms_log_printf("cli uart begin fail");
-      return false;
-     }
-     else{
-       fms_log_printf("cli uart begin success");
-       return true;
-     }
+   Serial0.begin(baudrate);
+  fms_log_printf("cli uart begin success\n\r");
+  return true;
   }
+  return true;
+}
 
+void __attribute__((section(".iram1" "." "1"))) serialEvent() { // weak function 
+  char c ;
+  while(Serial0.available()){
+    c = Serial0.read();
+
+    //Serial.write(c);
+    if(c == 0x0D){
+      fms_log_printf("Enter key pressed\n\r");
+    }else{
+      fms_log_printf("received\n\r");
+      fms_log_printf("%s",c);
+    }
+  }
+ }
+
+// #define uart _uart
+
+static void cli_task(void *arg) {
+  BaseType_t rc;
+  for (;;) {
+   fms_log_printf("uart cli is running\n\r");
+    rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
+# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+        __null 
+# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+        );
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+              1000 
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+              ) / ( TickType_t ) 1000U ) ));
+  }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {
@@ -533,19 +525,24 @@ static void web_server_task(void *arg) {
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+bool fms_wifi_begin() {
+
+  return true;
+}
+
 static void wifi_task(void *arg) {
   BaseType_t rc;
   for (;;) {
     printf("wifi task started \n");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 2 ), ( eSetBits ), 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3 4
+# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3 4
         __null 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
               1000 
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

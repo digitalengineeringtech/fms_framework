@@ -1,5 +1,5 @@
 
-void IRAM_ATTR serialEvent() {
+void IRAM_ATTR serialEvent2() {
   while (Serial.available()) { // test code 
     uint8_t data = Serial.read();
     // if (bufferIndex < sizeof(serialBuffer)) serialBuffer[bufferIndex++] = data;

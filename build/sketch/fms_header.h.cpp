@@ -11,13 +11,13 @@ bool fms_memory_info_log();
 void fms_log_task_list();
 #line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void event_receive(void *arg);
-#line 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void initialize_uart();
-#line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 24 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void initialize_nvs_storage();
-#line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 65 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 66 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
@@ -29,13 +29,15 @@ bool write_data_sd(char* input);
 static void sd_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
 bool fms_task_create();
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-static void cli_task(void *arg);
-#line 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
+#line 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+bool fms_wifi_begin();
+#line 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
 static void wifi_task(void *arg);
 #line 0 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
@@ -103,6 +105,7 @@ static void wifi_task(void *arg);
 #define _log_printf                         log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
 
+uart_t * fms_cli_uart;
 // Global objects
 Preferences fms_nvs_storage;
 WiFiClient wf_client;
@@ -208,12 +211,13 @@ void event_receive(void *arg) {
   }
 }
 
+
 int app_cpu = 0;
-#define chip_report_printf log_printf
+#define chip_report_printf log_printf // for chip info debug
 
 void initialize_uart() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    fms_log_printf("uart cli begin\n");
+    fms_log_printf("setup finish for cli uart\n\r");
   }
 }
 
@@ -228,20 +232,20 @@ void initialize_nvs_storage() {
 }
 
 void setup() {
+ initialize_uart();
+
+
   #if SHOW_FMS_CHIP_INFO_LOG
   fms_chip_info_log();
   fms_memory_info_log();
  #endif
 
+  fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+ 
+  
+  initialize_nvs_storage(); // save boot count to eeprom 
 
-  fms_log_printf("CPU %d: Setup", app_cpu);
-  initialize_uart();
-  initialize_nvs_storage();
-
-  serialMutex = xSemaphoreCreateMutex();
-  assert(serialMutex != NULL);
-  vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
-
+  
   #if SHOW_SD_TEST_LOG
   if (fms_config_load_sd_test()) {
     fms_log_printf("\n\r==================== sd card test success================\n");
@@ -250,7 +254,7 @@ void setup() {
   }
   #endif
 
-  fms_log_printf("initializing task");
+  fms_log_printf("Start initiazling task \n\r");
   fms_task_create(); // rtos task create 
 
 #if SHOW_FMS_CHIP_INFO_LOG
@@ -393,7 +397,7 @@ bool  fms_task_create() {
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
 
-void IRAM_ATTR serialEvent() {
+void IRAM_ATTR serialEvent2() {
   while (Serial.available()) { // test code 
     uint8_t data = Serial.read();
     // if (bufferIndex < sizeof(serialBuffer)) serialBuffer[bufferIndex++] = data;
@@ -408,30 +412,46 @@ void IRAM_ATTR serialEvent() {
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+
+bool fms_uart_cli_begin(bool flag, int baudrate) {
+  if(flag){
+   Serial.begin(baudrate);
+  fms_log_printf("cli uart begin success\n\r");
+  return true;
+  }
+  return true;
+}
+
+void IRAM_ATTR serialEvent() { // weak function 
+  char c ;
+  while(Serial.available()){
+    c = Serial.read();
+  
+    //Serial.write(c);
+    if(c == 0x0D){
+      fms_log_printf("Enter key pressed\n\r");
+    }else{
+      fms_log_printf("received\n\r");
+      fms_log_printf("%s",c);
+    }
+  }
+ }
+
+// #define uart _uart
+
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-   fms_log_printf("uart cli is running");
+   fms_log_printf("uart cli is running\n\r");
     rc = xTaskNotify(heventTask, 4, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
 
-bool fms_uart_cli_begin(bool flag, int baudrate) {
-  if(flag){
-     uart_t *uart = uartBegin(UART_NUM_0, baudrate, SERIAL_8N1, 3, 1, 256, 0, false, 112);
-     if(uart == NULL){
-      fms_log_printf("cli uart begin fail");
-      return false;
-     }
-     else{
-       fms_log_printf("cli uart begin success");
-       return true;
-     }
-  }
 
-}
+
+
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {
   // low 
@@ -443,6 +463,11 @@ static void web_server_task(void *arg) {
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+bool fms_wifi_begin() {
+ 
+  return true;
+}
+
 static void wifi_task(void *arg) {
   BaseType_t rc;
   for (;;) {

@@ -62,6 +62,7 @@
 #define _log_printf                         log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
 
+uart_t * fms_cli_uart;
 // Global objects
 Preferences fms_nvs_storage;
 WiFiClient wf_client;

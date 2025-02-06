@@ -11,6 +11,7 @@ void event_receive(void *arg) {
   }
 }
 
+
 int app_cpu = 0;
 #define chip_report_printf log_printf // for chip info debug
 
@@ -31,6 +32,8 @@ void initialize_nvs_storage() {
 }
 
 void setup() {
+ initialize_uart();
+
 
   #if SHOW_FMS_CHIP_INFO_LOG
   fms_chip_info_log();
@@ -38,9 +41,10 @@ void setup() {
  #endif
 
   fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
-  initialize_uart();
+ 
+  
   initialize_nvs_storage(); // save boot count to eeprom 
-// similar traffic light theroy
+
   
   #if SHOW_SD_TEST_LOG
   if (fms_config_load_sd_test()) {
