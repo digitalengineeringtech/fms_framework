@@ -8,7 +8,7 @@ bool fms_print_after_setup_info();
 #line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 bool fms_memory_info_log();
 #line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-bool fms_task_usage_check();
+void fms_log_task_list();
 #line 3 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void event_receive(void *arg);
 #line 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
@@ -17,21 +17,15 @@ void initialize_uart();
 void initialize_nvs_storage();
 #line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 65 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
-#line 4 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool fms_config_load_sd_test();
-#line 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-bool test_sd_init();
-#line 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-bool test_read();
-#line 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-bool fms_config_load_sd();
-#line 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool write_data_sd(char* input);
-#line 82 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+#line 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 static void sd_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
 bool fms_task_create();
@@ -73,8 +67,8 @@ static void wifi_task(void *arg);
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
 #define SHOW_SYS_LOG                        true    
-#define SHOW_SD_TEST_LOG                    true  
-
+#define SHOW_SD_TEST_LOG                    false  
+#define SHOW_FMS_CHIP_INFO_LOG              false
 // WiFi configuration
 #define WIFI_SSID                           "wifitest"              // wifi ssid
 #define WIFI_PASSWORD                       "12345678"              // wifi password
@@ -191,13 +185,14 @@ bool fms_memory_info_log(){
   return true;
 }
 
-bool fms_task_usage_check(){
-  char taskBuffer[256];
-  fms_log_printf("Task Name\tPriority\tState\tStack High Water Mark\n");
-  //vTaskList(taskBuffer);
-  //fms_log_printf("\n%s\n",taskBuffer); // fix this error over flow
-  
+void fms_log_task_list() {
+  char buffer[512]; // Buffer for task list output
+  fms_log_printf("Task List:\n");
+  fms_log_printf("Name          State       Prio      Stack        Num \n\r");
+  vTaskList(buffer);
+  fms_log_printf(buffer);
 }
+
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 #include "fms_header.h"
@@ -233,10 +228,13 @@ void initialize_nvs_storage() {
 }
 
 void setup() {
+  #if SHOW_FMS_CHIP_INFO_LOG
   fms_chip_info_log();
   fms_memory_info_log();
-  fms_log_printf("CPU %d: Setup", app_cpu);
+ #endif
 
+
+  fms_log_printf("CPU %d: Setup", app_cpu);
   initialize_uart();
   initialize_nvs_storage();
 
@@ -245,15 +243,20 @@ void setup() {
   vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
 
   #if SHOW_SD_TEST_LOG
-  if(fms_config_load_sd_test()){fms_log_printf("\n\r==================== sd card test success================\n");}
-  else {fms_log_printf("sd card test failed\n");}
+  if (fms_config_load_sd_test()) {
+    fms_log_printf("\n\r==================== sd card test success================\n");
+  } else {
+    fms_log_printf("sd card test failed\n");
+  }
   #endif
 
   fms_log_printf("initializing task");
   fms_task_create(); // rtos task create 
 
+#if SHOW_FMS_CHIP_INFO_LOG
   fms_print_after_setup_info();
- // fms_task_usage_check(); 
+  fms_log_task_list();
+#endif
 }
 
 void loop() {
@@ -276,59 +279,16 @@ static void mqtt_task(void *arg) {
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 
-
-
+/*
+  * fms_sd.cpp
+  *
+  *  Created on: 2020. 12. 10.
+  *   author : thet htar khaing
+*/
 bool fms_config_load_sd_test() {
-if(!write_data_sd("134")) {
-  return false;
-}
-if(!fms_config_load_sd()){
-  return false;
-}
+
 return true;
 }
-
-
-
-bool test_sd_init()
-{
-  fms_log_printf("initializing sd card\n\r");
-  if (!LittleFS.begin(true)) {
-    fms_log_printf("SD Card Mount Failed\n\r");
-    return false;
-  }
-  fms_log_printf("SD Card Mount Success\n\r");
-  return true;
-}
-
-
-bool test_read() {
-  fms_log_printf("testing read\n\r");
-  test_sd_init();
-
-  File file = LittleFS.open("/example.txt",FILE_READ);
-  if (!file) {
-    fms_log_printf("Failed to open file for reading\n\r");
-    return false;
-  }
-  fms_log_printf("File Content:");
-  while (file.available()) {
-    fms_log_printf("%s", file.read());
-  }
-  file.close();
-  return true;
-}
-
-bool fms_config_load_sd() {
-  fms_log_printf("loading config data from sd cardn\n\r");
-  if (!test_read()) {
-    fms_log_printf("failed to read data from sd card\n\r");
-    return false;
-  }
-  return true;
-}
-
-
 
 bool write_data_sd(char* input)
 {
@@ -337,20 +297,6 @@ bool write_data_sd(char* input)
   //step 2. encrypt and write
   //setp 3. sd formarting (clicommand)
 
-  fms_log_printf("writing data to sd card\n\r");
-  test_sd_init();
-  File file = LittleFS.open("/example.txt", FILE_WRITE);
-  if (!file) {
-    fms_log_printf("Failed to open file for writing\n\r");
-    return false;
-  }
-  if (file.write((const uint8_t*)input,sizeof(input)-1)) {
-    fms_log_printf("File written\n\r");
-    return true;
-  } else {
-    fms_log_printf("Write failed\n\r");
-    return false;
-  }
 
   return true;
 }
@@ -363,7 +309,7 @@ static void sd_task(void *arg) {
     /*
     * Load config data from sd card
     */
-
+    
     rc = xTaskNotify(heventTask, 3, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
     //write_data_sd("HELLO\n\r");

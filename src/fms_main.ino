@@ -31,27 +31,35 @@ void initialize_nvs_storage() {
 }
 
 void setup() {
+
+  #if SHOW_FMS_CHIP_INFO_LOG
   fms_chip_info_log();
   fms_memory_info_log();
-  fms_log_printf("CPU %d: Setup", app_cpu);
+ #endif
 
+  fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
   initialize_uart();
   initialize_nvs_storage();
-
+// similar traffic light theroy
   serialMutex = xSemaphoreCreateMutex();
   assert(serialMutex != NULL);
   vTaskDelay(1000 / portTICK_PERIOD_MS); // wait delay 1 second
 
   #if SHOW_SD_TEST_LOG
-  if(fms_config_load_sd_test()){fms_log_printf("\n\r==================== sd card test success================\n");}
-  else {fms_log_printf("sd card test failed\n");}
+  if (fms_config_load_sd_test()) {
+    fms_log_printf("\n\r==================== sd card test success================\n");
+  } else {
+    fms_log_printf("sd card test failed\n");
+  }
   #endif
 
-  fms_log_printf("initializing task");
+  fms_log_printf("Start initiazling task \n\r");
   fms_task_create(); // rtos task create 
 
+#if SHOW_FMS_CHIP_INFO_LOG
   fms_print_after_setup_info();
- // fms_task_usage_check(); 
+  fms_log_task_list();
+#endif
 }
 
 void loop() {

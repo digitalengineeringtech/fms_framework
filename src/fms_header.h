@@ -26,8 +26,8 @@
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
 #define SHOW_SYS_LOG                        true    
-#define SHOW_SD_TEST_LOG                    true  
-
+#define SHOW_SD_TEST_LOG                    false  
+#define SHOW_FMS_CHIP_INFO_LOG              false
 // WiFi configuration
 #define WIFI_SSID                           "wifitest"              // wifi ssid
 #define WIFI_PASSWORD                       "12345678"              // wifi password
