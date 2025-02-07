@@ -25,7 +25,7 @@
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        true    
+#define SHOW_SYS_LOG                        false    
 #define SHOW_SD_TEST_LOG                    false  
 #define SHOW_FMS_CHIP_INFO_LOG              false
 // WiFi configuration
@@ -88,6 +88,15 @@ struct SYSCFG {
 
 } sysCfg;
 
+/*
+* fms command list
+*/
+struct FMSCMND {
+    const char* d_cmnd_wifi         = "wifi";
+    const char* d_cmnd_restart      = "restart";
+    const char* d_cmnd_wifiscan     = "wifiscan";
+    const char* d_cmnd_mqtt         = "mqtt";
+} fmsCmnd;
 
 // RTOS task handles
 static TaskHandle_t heventTask;

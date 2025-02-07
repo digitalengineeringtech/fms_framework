@@ -1,39 +1,29 @@
-
 bool fms_uart_cli_begin(bool flag, int baudrate) {
-  if(flag){
-   Serial.begin(baudrate);
-  fms_log_printf("cli uart begin success\n\r");
-  return true;
+  if (flag) {
+    fms_cli_serial.begin(baudrate);
+    fms_log_printf("UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
+    return true;
   }
   return true;
 }
 
-void IRAM_ATTR serialEvent() { // weak function 
-  char c ;
-  while(Serial.available()){
-    c = Serial.read();
-  
-    //Serial.write(c);
-    if(c == 0x0D){
-      fms_log_printf("Enter key pressed\n\r");
-    }else{
-      fms_log_printf("received\n\r");
-      fms_log_printf("%s",c);
-    }
+void IRAM_ATTR serialEvent() { 
+  char c;
+  char buffer[32]; 
+  while (fms_cli_serial.available()) {
+    yield();
+    c = fms_cli_serial.read(); 
+    snprintf(buffer, sizeof(buffer), "[CLI] command : %c\n\r", c);
+    fms_log_printf("Enter key pressed\n\r");
+    fms_cli_serial.println(buffer);
   }
- }
-
-// #define uart _uart
+}
 
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-   fms_log_printf("uart cli is running\n\r");
+    fms_log_printf("uart cli is running\n\r");
     rc = xTaskNotify(heventTask, 4, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
-
-
-
-

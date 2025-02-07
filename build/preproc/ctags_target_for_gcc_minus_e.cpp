@@ -111,7 +111,7 @@ int seriallog_level = 1;
 
 bool fms_log_printf(const char *line,...) {
   byte loglevel = 1;
-  if (true) {
+  if (false) {
     if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/(line);
   }
   return true;
@@ -231,7 +231,7 @@ static void mqtt_task(void *arg) {
   BaseType_t rc;
   while(1){
  // low 
-    printf("mqtt task started \n");
+    fms_log_printf("mqtt task started \n");
 
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 5 ), ( eSetBits ), 
 # 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3 4
@@ -280,7 +280,7 @@ bool write_data_sd(char* input)
 static void sd_task(void *arg) {
   BaseType_t rc;
   while(1) {
-    printf("sd task started \n");
+    fms_log_printf("sd task started \n");
     /*
 
     * Load config data from sd card
@@ -463,46 +463,40 @@ void __attribute__((section(".iram1" "." "0"))) serialEvent2() {
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-
 bool fms_uart_cli_begin(bool flag, int baudrate) {
-  if(flag){
-   Serial0.begin(baudrate);
-  fms_log_printf("cli uart begin success\n\r");
-  return true;
+  if (flag) {
+    Serial0.begin(baudrate);
+    fms_log_printf("UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
+    return true;
   }
   return true;
 }
 
-void __attribute__((section(".iram1" "." "1"))) serialEvent() { // weak function 
-  char c ;
-  while(Serial0.available()){
+void __attribute__((section(".iram1" "." "1"))) serialEvent() {
+  char c;
+  char buffer[32];
+  while (Serial0.available()) {
+    yield();
     c = Serial0.read();
-
-    //Serial.write(c);
-    if(c == 0x0D){
-      fms_log_printf("Enter key pressed\n\r");
-    }else{
-      fms_log_printf("received\n\r");
-      fms_log_printf("%s",c);
-    }
+    snprintf(buffer, sizeof(buffer), "[CLI] command : %c\n\r", c);
+    fms_log_printf("Enter key pressed\n\r");
+    Serial0.println(buffer);
   }
- }
-
-// #define uart _uart
+}
 
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-   fms_log_printf("uart cli is running\n\r");
+    fms_log_printf("uart cli is running\n\r");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
-# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+# 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
         __null 
-# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 27 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
               1000 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 27 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -511,7 +505,7 @@ static void web_server_task(void *arg) {
   // low 
   BaseType_t rc;
   for (;;) {
-    printf("web server stated \n");
+    fms_log_printf("web server stated \n");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 6 ), ( eSetBits ), 
 # 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino" 3 4
         __null 
@@ -533,7 +527,7 @@ bool fms_wifi_begin() {
 static void wifi_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-    printf("wifi task started \n");
+    fms_log_printf("wifi task started \n");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 2 ), ( eSetBits ), 
 # 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3 4
         __null 
