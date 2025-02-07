@@ -37,7 +37,7 @@
 //   }
 // }
 #include <SPI.h>
-#include <SD.h>
+#include <SdFat.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -49,30 +49,44 @@ extern TaskHandle_t heventTask;
 bool fms_config_load_sd_test();
 bool write_data_sd(const char* input);
 static void sd_task(void *arg);
-void formatSDCard();
-void writeEncryptedData(const char *filename, const String &data);
-void readAndDecryptFile(const char *filename);
+bool formatSDCard();
+bool writeEncryptedData(const char *filename, const String &data);
+bool readAndDecryptFile(const char *filename);
 String encryptDecrypt(const String &data, char key = 'K');
 
-void setup_sd() {
+SdFat sd;
+SdFile file;
+
+// Setup SD card initialization
+bool setup_sd() {
     Serial.println("Initializing SD card...");
 
-    if (!SD.begin(SD_CS_PIN)) {
+    if (!sd.begin(SD_CS_PIN, SPI_HALF_SPEED)) {
         Serial.println("SD card initialization failed!");
-        return;
+        return false;
     }
     Serial.println("SD card initialized.");
 
-    formatSDCard();
-
-    if (!SD.exists(filename)) {
-        Serial.println("File does not exist. Creating and writing encrypted data...");
-        writeEncryptedData(filename, "Hello, SD card!");
+    if (!formatSDCard()) {
+        Serial.println("Error: SD card format failed!");
+        return false;
     }
 
-    readAndDecryptFile(filename);
+    if (!sd.exists(filename)) {
+        Serial.println("File does not exist. Creating and writing encrypted data...");
+        if (!writeEncryptedData(filename, "Hello, SD card!")) {
+            Serial.println("Error writing encrypted data!");
+            return false;
+        }
+    }
+
+    if (!readAndDecryptFile(filename)) {
+        Serial.println("Error reading and decrypting file!");
+        return false;
+    }
 
     xTaskCreate(sd_task, "SD_Task", 4096, NULL, 1, NULL);
+    return true;
 }
 
 bool fms_config_load_sd_test() {
@@ -81,8 +95,7 @@ bool fms_config_load_sd_test() {
 
 bool write_data_sd(const char* input) {
     Serial.println("Writing to SD card...");
-    File file = SD.open(filename, FILE_WRITE);
-    if (file) {
+    if (file.open(filename, O_RDWR | O_CREAT | O_AT_END)) {
         file.println(input);
         file.close();
         Serial.println("Data written successfully.");
@@ -93,10 +106,14 @@ bool write_data_sd(const char* input) {
     }
 }
 
-void formatSDCard() {
+bool formatSDCard() {
     Serial.println("Formatting SD card...");
-    SD.remove(filename);
+    if (!sd.remove(filename)) {
+        Serial.println("Error: Could not remove file.");
+        return false;
+    }
     Serial.println("SD card formatted.");
+    return true;
 }
 
 String encryptDecrypt(const String &data, char key) {
@@ -107,25 +124,25 @@ String encryptDecrypt(const String &data, char key) {
     return result;
 }
 
-void writeEncryptedData(const char *filename, const String &data) {
+bool writeEncryptedData(const char *filename, const String &data) {
     Serial.println("Writing encrypted data to file...");
-    File file = SD.open(filename, FILE_WRITE);
-    if (file) {
+    if (file.open(filename, O_RDWR | O_CREAT)) {
         String encryptedData = encryptDecrypt(data, 'K');
         file.println(encryptedData);
         file.close();
         Serial.println("Encrypted data written successfully.");
+        return true;
     } else {
         Serial.println("Error: Could not write to file!");
+        return false;
     }
 }
 
-void readAndDecryptFile(const char *filename) {
+bool readAndDecryptFile(const char *filename) {
     Serial.println("Reading file and decrypting contents...");
-    File file = SD.open(filename);
-    if (!file) {
+    if (!file.open(filename, O_READ)) {
         Serial.println("Error: Could not open file!");
-        return;
+        return false;
     }
 
     String encryptedData;
@@ -140,14 +157,20 @@ void readAndDecryptFile(const char *filename) {
     String decryptedData = encryptDecrypt(encryptedData, 'K');
     Serial.print("Decrypted data: ");
     Serial.println(decryptedData);
+
+    return true;
 }
 
 static void sd_task(void *arg) {
     while (1) {
         Serial.println("SD task started");
         fms_config_load_sd_test();
-        write_data_sd("HELLO\n");
+        if (!write_data_sd("HELLO\n")) {
+            Serial.println("Error writing data to SD.");
+        }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+
 
