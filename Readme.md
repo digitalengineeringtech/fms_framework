@@ -36,6 +36,25 @@ void setup() {
     fms_log_printf("Program Starting");
     fms_task_create();
 }
+
+int strcasecmp(const char *str1, const char *str2);
+
+#include <stdio.h>
+#include <strings.h>  // Required for strcasecmp
+
+int main() {
+    char str1[] = "Hello";
+    char str2[] = "hello";
+    
+    if (strcasecmp(str1, str2) == 0) {
+        printf("Strings are equal (case-insensitive)\n");
+    } else {
+        printf("Strings are NOT equal\n");
+    }
+    
+    return 0;
+}
+
 ```
 
 

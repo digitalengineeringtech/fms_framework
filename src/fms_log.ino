@@ -2,10 +2,18 @@
 
 int seriallog_level = 1;
 
-bool fms_log_printf(const char *line,...) {
+bool fms_log_printf(const char *line,...) { // debug log
   byte loglevel = 1;
   if (SHOW_SYS_LOG) {
     if (loglevel <= seriallog_level) _log_printf(line);
+  }
+  return true;
+}
+
+bool fms_cli_serial_printf(const char *line,...) { // uart log
+  byte loglevel = 1;
+  if (SHOW_UART_SYS_LOG) {
+    if (loglevel <= seriallog_level) fms_cli_serial.print(line);
   }
   return true;
 }

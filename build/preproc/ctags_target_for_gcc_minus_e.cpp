@@ -2,21 +2,19 @@
 
 
 
-
 // Include libraries
+# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 9 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
+# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-
 
 // Project details
 
@@ -24,6 +22,8 @@
 
 
 // Device details
+
+
 
 
 
@@ -56,8 +56,8 @@
 
 
 
-uart_t * fms_cli_uart;
 // Global objects
+uart_t * fms_cli_uart;
 Preferences fms_nvs_storage;
 WiFiClient wf_client;
 PubSubClient mqtt_client(wf_client);
@@ -67,20 +67,63 @@ struct SYSCFG {
     unsigned long bootcount;
     unsigned long version;
 
-    char* wifi_ssid = "wifitest" /* wifi ssid*/;
-    char* wifi_password = "12345678" /* wifi password*/;
+    char wifi_ssid[32] = "";
+    char wifi_password[64] = "";
 
     char* mqtt_server_host = " " /* mqtt server address*/;
     char* mqtt_user = " " /* mqtt user*/;
     char* mqtt_password = " " /* mqtt password*/;
-    uint32_t mqtt_port = 1883 /* mqtt port*/; // in datastructure uint32_t
+    uint32_t mqtt_port = 1883 /* mqtt port*/;
 
     char* mqtt_device_id = "fms_001" /* device id*/ /* mqtt device id*/;
     char* mqtt_lwt_status[20];
-    char* device_id = "fms_001" /* device id*/; // in datastructure uint32_t
+    char* device_id = "fms_001" /* device id*/;
     uint32_t station_id = 1 /* station id*/;
 
 } sysCfg;
+
+/*
+
+* fms command cli setting
+
+*/
+# 95 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+// Command list
+
+
+
+
+
+struct FMSMAILBOX {
+    String command;
+    String data;
+    uint32_t data_len;
+    uint32_t payload;
+    uint32_t index;
+} fmsMailBox;
+
+
+// Command functions
+void fms_CmndWifi();
+void fms_CmndRestart();
+void fms_CmndWifiScan();
+void fms_CmndMqtt();
+void fms_CmndWifiRead();
+
+// command table
+const struct COMMAND {
+    const char* name;
+    void (*function)();
+} Commands[] = {
+    {"wifi", fms_CmndWifi},
+    {"restart", fms_CmndRestart},
+    {"wifiscan", fms_CmndWifiScan},
+    {"mqtt", fms_CmndMqtt},
+    {"wifiread", fms_CmndWifiRead}
+
+};
+
+
 
 
 // RTOS task handles
@@ -109,10 +152,18 @@ void addLog(byte loglevel, const char *line);
 
 int seriallog_level = 1;
 
-bool fms_log_printf(const char *line,...) {
+bool fms_log_printf(const char *line,...) { // debug log
   byte loglevel = 1;
   if (false) {
     if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/(line);
+  }
+  return true;
+}
+
+bool fms_cli_serial_printf(const char *line,...) { // uart log
+  byte loglevel = 1;
+  if (false /* show uart log*/) {
+    if (loglevel <= seriallog_level) Serial0 /* cli serial port*/.print(line);
   }
   return true;
 }
@@ -133,9 +184,9 @@ bool fms_memory_info_log(){
     fms_log_printf("Free Heap Size: %u bytes\n", freeHeap);
     // Check stack size of the current task
     UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(
-# 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino" 3 4
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino" 3 4
                                                                 __null
-# 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
                                                                     );
     fms_log_printf("Stack High Water Mark: %u bytes\n", stackHighWaterMark);
   return true;
@@ -183,8 +234,17 @@ void initialize_nvs_storage() {
 }
 
 void setup() {
- initialize_uart();
 
+ initialize_uart();
+ // for testing purpose
+// fms_cli_serial.onReceive([]() {
+//     while (fms_cli_serial.available()) {
+//       char c = fms_cli_serial.read();
+//       fms_cli_serial.print(c);
+//       fms_log_printf("Received : %c\n\r", c);
+//     }
+//   });
+  // for testing purpose (Test Fail)
 
 
 
@@ -195,7 +255,7 @@ void setup() {
 
 
   initialize_nvs_storage(); // save boot count to eeprom 
-# 57 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 66 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
   fms_log_printf("Start initiazling task \n\r");
   fms_task_create(); // rtos task create 
 
@@ -208,22 +268,22 @@ void setup() {
 void loop() {
   BaseType_t rc;
   rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 0b0001 ), ( eSetBits ), 
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
+# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3 4
       __null 
-# 68 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 77 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
       );
   
-# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  (__builtin_expect(!!(
-# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 69, __PRETTY_FUNCTION__, 
-# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino", '/') + 1), 78, __PRETTY_FUNCTION__, 
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
  "rc == pdPASS"
-# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 3
  ))
-# 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 78 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
                      ;
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
@@ -463,40 +523,153 @@ void __attribute__((section(".iram1" "." "0"))) serialEvent2() {
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+// Last update: 2021-08-29 20:00:00
 bool fms_uart_cli_begin(bool flag, int baudrate) {
   if (flag) {
-    Serial0.begin(baudrate);
+    Serial0 /* cli serial port*/.begin(baudrate);
     fms_log_printf("UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
     return true;
   }
   return true;
 }
 
-void __attribute__((section(".iram1" "." "1"))) serialEvent() {
-  char c;
-  char buffer[32];
-  while (Serial0.available()) {
-    yield();
-    c = Serial0.read();
-    snprintf(buffer, sizeof(buffer), "[CLI] command : %c\n\r", c);
-    fms_log_printf("Enter key pressed\n\r");
-    Serial0.println(buffer);
+
+void fms_CmndWifi() {
+ char ssid[32] = "ssid";
+ char password[64] = "password";
+  if(sscanf(fmsMailBox.data.c_str(),"ssid:\"%31[^\"]\" password:\"%63[^\"]\"", ssid, password) == 2) {
+    strncpy(sysCfg.wifi_ssid, ssid, sizeof(sysCfg.wifi_ssid)-1);
+    strncpy(sysCfg.wifi_password, password, sizeof(sysCfg.wifi_password)-1);
+    if(false /* show uart log*/) {
+      Serial0 /* cli serial port*/.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid).c_str());
+      Serial0 /* cli serial port*/.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password).c_str());
+    }
+    fms_response_cmnd_handler("true");
+  } else {
+    fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }
 }
+
+
+void fms_CmndWifiScan() {
+  WiFi.mode(WIFI_MODE_STA);
+  WiFi.disconnect();
+  //fms_response_cmnd_handler("scanning wifi -- 3 time");
+
+    char buffer[512]; // Buffer for JSON output
+    strcpy(buffer, "{\"wifiscan\":true,\"networks\":[");
+    int bufferLen = strlen(buffer);
+
+    int networkIndex = 0;
+
+    for (int scanNum = 0; scanNum < 1 /* Number of scan iterations*/; scanNum++) {
+        int numNetworks = WiFi.scanNetworks();
+       // fms_cli_serial.printf("%d networks found\n", numNetworks);/
+
+        for (int i = 0; i < numNetworks; i++) {
+            if (networkIndex > 0) strcat(buffer, ","); // Add comma for JSON formatting
+            char entry[128];
+            snprintf(entry, sizeof(entry),
+                "{\"Nr\":%d,\"SSID\":\"%s\",\"RSSI\":%d,\"CH\":%d,\"Encryption\":\"%s\"}",
+                networkIndex + 1, WiFi.SSID(i).c_str(), WiFi.RSSI(i),
+                WiFi.channel(i), (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "OPEN" : "WPA+WPA2"
+            );
+            strcat(buffer, entry);
+            bufferLen += strlen(entry);
+            networkIndex++;
+        }
+        delay(1000); // Short delay for better scan results
+    }
+
+    WiFi.scanDelete(); // Free memory
+    strcat(buffer, "]}"); // Close JSON array
+
+    Serial0 /* cli serial port*/.println(buffer); // Output JSON result
+
+
+
+ //fms_response_cmnd_handler("true");
+}
+
+void fms_CmndRestart() {
+  fms_log_printf("Restart command\n");
+  //fms_response_cmnd_handler("Restart command");
+  //return true;
+}
+
+void fms_CmndWifiRead() {
+  fms_response_cmnd_handler("wifiread");
+}
+
+void fms_CmndMqtt() {
+  fms_response_cmnd_handler("mqttcommand");
+}
+
+void fms_response_cmnd_handler(const char* result){
+  if(true) {
+    Serial0 /* cli serial port*/.print(((reinterpret_cast<const __FlashStringHelper *>(("{\"")))));
+    Serial0 /* cli serial port*/.print(fmsMailBox.command);
+    Serial0 /* cli serial port*/.print(((reinterpret_cast<const __FlashStringHelper *>(("\":\"")))));
+    Serial0 /* cli serial port*/.print(result);
+    Serial0 /* cli serial port*/.print(((reinterpret_cast<const __FlashStringHelper *>(("\"}\n")))));
+  }
+}
+
+void __attribute__((section(".iram1" "." "1"))) serialEvent() {
+  char c;
+  char buffer[32]; // for testing
+  while (Serial0 /* cli serial port*/.available()) {
+    yield();
+    String cmdLine = Serial0 /* cli serial port*/.readStringUntil('\n');
+    if(false /* show uart log*/) Serial0 /* cli serial port*/.printf("Received : %s\n\r", cmdLine.c_str());
+    cmdLine.trim();
+    int spaceIndex = cmdLine.indexOf(' ');
+    if(spaceIndex == -1){
+      fmsMailBox.command = cmdLine;
+      if(false /* show uart log*/) Serial0 /* cli serial port*/.printf("Received : %s\n\r", cmdLine.c_str());
+      fmsMailBox.data = "";
+    }else {
+      fmsMailBox.command = cmdLine.substring(0, spaceIndex);
+      fmsMailBox.data = cmdLine.substring(spaceIndex + 1);
+      if(false /* show uart log*/) Serial0 /* cli serial port*/.printf("[FMSCLI] COMMAND : %s , Data : %s \n", fmsMailBox.command.c_str(),fmsMailBox.data.c_str());
+    }
+    fmsMailBox.data_len = fmsMailBox.data.length();
+
+
+    // for(uint32_t i = 0; i < sizeof(Commands)/sizeof(COMMAND); i++) {
+    //   if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("loop receive : %s\n\r", Commands[i].name);
+    //   if(strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) { // strcasecmp is case insensitive
+    //   Commands[i].function();
+    //   return;
+    //   }
+    // }
+
+     for (uint32_t i = 0; i < sizeof(Commands) / sizeof(COMMAND); i++) {
+    if (strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) {
+      Commands[i].function();
+      return;
+    }
+  }
+
+
+    if(false /* show uart log*/) Serial0 /* cli serial port*/.printf("Command not found\n");
+  }
+}
+
 
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
     fms_log_printf("uart cli is running\n\r");
     rc = xTaskGenericNotify( ( heventTask ), ( ( 0 ) ), ( 4 ), ( eSetBits ), 
-# 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+# 139 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
         __null 
-# 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 139 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
         );
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 27 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 140 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
               1000 
-# 27 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 140 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
