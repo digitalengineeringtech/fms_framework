@@ -23,15 +23,15 @@
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        false    
+#define SHOW_SYS_LOG                        true    
 #define SHOW_SD_TEST_LOG                    false  
 #define SHOW_FMS_CHIP_INFO_LOG              false
-#define SHOW_UART_SYS_LOG                   false                    // show uart log
+#define SHOW_UART_SYS_LOG                   true                    // show uart log
 #define SHOW_RESP_UART_SYS_LOG              true
 // WiFi configuration
 #define WIFI_SSID                           sysCfg.wifi_ssid                     // wifi ssid
 #define WIFI_PASSWORD                       sysCfg.wifi_password                     // wifi password
-
+bool wifi_start_event                   =   false;
 // MQTT configuration
 #define MQTT_SERVER                         " "                     // mqtt server address
 #define MQTT_PORT                           1883                    // mqtt port

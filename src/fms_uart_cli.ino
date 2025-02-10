@@ -8,7 +8,6 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   return true;
 }
 
-
 void fms_CmndWifi() {
  char ssid[32] = "ssid";
  char password[64] = "password";
@@ -20,27 +19,24 @@ void fms_CmndWifi() {
       fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password).c_str());
     }
     fms_response_cmnd_handler("true");
+    vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second  // similar delay(1000)
+    wifi_start_event = true;
   } else {
     fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }
 }
 
-#define SCAN_COUNT 1 // Number of scan iterations
+
+#define SCAN_COUNT 1                 // Number of scan iterations
 void fms_CmndWifiScan() {
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  //fms_response_cmnd_handler("scanning wifi -- 3 time");
-  
-    char buffer[512]; // Buffer for JSON output
+  WiFi.disconnect();                // Disconnect from any network
+    char buffer[512];               // Buffer for JSON output
     strcpy(buffer, "{\"wifiscan\":true,\"networks\":[");
     int bufferLen = strlen(buffer);
-
     int networkIndex = 0;
-    
     for (int scanNum = 0; scanNum < SCAN_COUNT; scanNum++) {
         int numNetworks = WiFi.scanNetworks();
-       // fms_cli_serial.printf("%d networks found\n", numNetworks);/
-
         for (int i = 0; i < numNetworks; i++) {
             if (networkIndex > 0) strcat(buffer, ","); // Add comma for JSON formatting
             char entry[128];
@@ -53,23 +49,18 @@ void fms_CmndWifiScan() {
             bufferLen += strlen(entry);
             networkIndex++;
         }
-        delay(1000); // Short delay for better scan results
+        vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating // similar delay(1000)
     }
-
     WiFi.scanDelete(); // Free memory
     strcat(buffer, "]}"); // Close JSON array
-
     fms_cli_serial.println(buffer); // Output JSON result
-
-
-
- //fms_response_cmnd_handler("true");
 }
 
 void fms_CmndRestart() {
-  fms_log_printf("Restart command\n");
-  //fms_response_cmnd_handler("Restart command");
-  //return true;
+  vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second before repeating
+  fms_log_printf("Restarting...\n");
+  fms_response_cmnd_handler("true");
+  ESP.restart();
 }
 
 void fms_CmndWifiRead() {
@@ -110,27 +101,15 @@ void IRAM_ATTR serialEvent() {
     }
     fmsMailBox.data_len = fmsMailBox.data.length();
     
-
-    // for(uint32_t i = 0; i < sizeof(Commands)/sizeof(COMMAND); i++) {
-    //   if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("loop receive : %s\n\r", Commands[i].name);
-    //   if(strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) { // strcasecmp is case insensitive
-    //   Commands[i].function();
-    //   return;
-    //   }
-    // }
-
      for (uint32_t i = 0; i < sizeof(Commands) / sizeof(COMMAND); i++) {
     if (strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) {
       Commands[i].function();
       return;
     }
   }
-
-
     if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("Command not found\n");
   }
 }
-
 
 static void cli_task(void *arg) {
   BaseType_t rc;

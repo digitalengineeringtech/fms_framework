@@ -34,17 +34,8 @@ void initialize_nvs_storage() {
 void setup() {
 
  initialize_uart();
- // for testing purpose
-// fms_cli_serial.onReceive([]() {
-//     while (fms_cli_serial.available()) {
-//       char c = fms_cli_serial.read();
-//       fms_cli_serial.print(c);
-//       fms_log_printf("Received : %c\n\r", c);
-//     }
-//   });
-  // for testing purpose (Test Fail)
 
-  #if SHOW_FMS_CHIP_INFO_LOG
+#if SHOW_FMS_CHIP_INFO_LOG
   fms_chip_info_log();
   fms_memory_info_log();
  #endif
@@ -64,6 +55,9 @@ void setup() {
   #endif
 
   fms_log_printf("Start initiazling task \n\r");
+  
+
+
   fms_task_create(); // rtos task create 
 
 #if SHOW_FMS_CHIP_INFO_LOG

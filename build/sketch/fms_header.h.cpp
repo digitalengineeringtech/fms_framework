@@ -19,7 +19,7 @@ void initialize_uart();
 void initialize_nvs_storage();
 #line 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 75 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 69 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
@@ -33,15 +33,13 @@ static void sd_task(void *arg);
 bool fms_task_create();
 #line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
-#line 83 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 76 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void fms_response_cmnd_handler(const char* result);
-#line 135 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 116 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
-bool fms_wifi_begin();
-#line 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
 static void wifi_task(void *arg);
 #line 0 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
@@ -70,15 +68,15 @@ static void wifi_task(void *arg);
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        false    
+#define SHOW_SYS_LOG                        true    
 #define SHOW_SD_TEST_LOG                    false  
 #define SHOW_FMS_CHIP_INFO_LOG              false
-#define SHOW_UART_SYS_LOG                   false                    // show uart log
+#define SHOW_UART_SYS_LOG                   true                    // show uart log
 #define SHOW_RESP_UART_SYS_LOG              true
 // WiFi configuration
 #define WIFI_SSID                           sysCfg.wifi_ssid                     // wifi ssid
 #define WIFI_PASSWORD                       sysCfg.wifi_password                     // wifi password
-
+bool wifi_start_event                   =   false;
 // MQTT configuration
 #define MQTT_SERVER                         " "                     // mqtt server address
 #define MQTT_PORT                           1883                    // mqtt port
@@ -288,17 +286,8 @@ void initialize_nvs_storage() {
 void setup() {
 
  initialize_uart();
- // for testing purpose
-// fms_cli_serial.onReceive([]() {
-//     while (fms_cli_serial.available()) {
-//       char c = fms_cli_serial.read();
-//       fms_cli_serial.print(c);
-//       fms_log_printf("Received : %c\n\r", c);
-//     }
-//   });
-  // for testing purpose (Test Fail)
 
-  #if SHOW_FMS_CHIP_INFO_LOG
+#if SHOW_FMS_CHIP_INFO_LOG
   fms_chip_info_log();
   fms_memory_info_log();
  #endif
@@ -318,6 +307,9 @@ void setup() {
   #endif
 
   fms_log_printf("Start initiazling task \n\r");
+  
+
+
   fms_task_create(); // rtos task create 
 
 #if SHOW_FMS_CHIP_INFO_LOG
@@ -485,7 +477,6 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   return true;
 }
 
-
 void fms_CmndWifi() {
  char ssid[32] = "ssid";
  char password[64] = "password";
@@ -496,28 +487,27 @@ void fms_CmndWifi() {
       fms_cli_serial.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid).c_str());
       fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password).c_str());
     }
+   
     fms_response_cmnd_handler("true");
+    vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second  // similar delay(1000)
+    wifi_start_event = true;
+    
+    
   } else {
     fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }
 }
 
-#define SCAN_COUNT 1 // Number of scan iterations
+#define SCAN_COUNT 1                 // Number of scan iterations
 void fms_CmndWifiScan() {
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  //fms_response_cmnd_handler("scanning wifi -- 3 time");
-  
-    char buffer[512]; // Buffer for JSON output
+  WiFi.disconnect();                // Disconnect from any network
+    char buffer[512];               // Buffer for JSON output
     strcpy(buffer, "{\"wifiscan\":true,\"networks\":[");
     int bufferLen = strlen(buffer);
-
     int networkIndex = 0;
-    
     for (int scanNum = 0; scanNum < SCAN_COUNT; scanNum++) {
         int numNetworks = WiFi.scanNetworks();
-       // fms_cli_serial.printf("%d networks found\n", numNetworks);/
-
         for (int i = 0; i < numNetworks; i++) {
             if (networkIndex > 0) strcat(buffer, ","); // Add comma for JSON formatting
             char entry[128];
@@ -530,23 +520,18 @@ void fms_CmndWifiScan() {
             bufferLen += strlen(entry);
             networkIndex++;
         }
-        delay(1000); // Short delay for better scan results
+        vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating // similar delay(1000)
     }
-
     WiFi.scanDelete(); // Free memory
     strcat(buffer, "]}"); // Close JSON array
-
     fms_cli_serial.println(buffer); // Output JSON result
-
-
-
- //fms_response_cmnd_handler("true");
 }
 
 void fms_CmndRestart() {
-  fms_log_printf("Restart command\n");
-  //fms_response_cmnd_handler("Restart command");
-  //return true;
+  vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second before repeating
+  fms_log_printf("Restarting...\n");
+  fms_response_cmnd_handler("true");
+  ESP.restart();
 }
 
 void fms_CmndWifiRead() {
@@ -587,27 +572,15 @@ void IRAM_ATTR serialEvent() {
     }
     fmsMailBox.data_len = fmsMailBox.data.length();
     
-
-    // for(uint32_t i = 0; i < sizeof(Commands)/sizeof(COMMAND); i++) {
-    //   if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("loop receive : %s\n\r", Commands[i].name);
-    //   if(strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) { // strcasecmp is case insensitive
-    //   Commands[i].function();
-    //   return;
-    //   }
-    // }
-
      for (uint32_t i = 0; i < sizeof(Commands) / sizeof(COMMAND); i++) {
     if (strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) {
       Commands[i].function();
       return;
     }
   }
-
-
     if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("Command not found\n");
   }
 }
-
 
 static void cli_task(void *arg) {
   BaseType_t rc;
@@ -629,15 +602,26 @@ static void web_server_task(void *arg) {
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
-bool fms_wifi_begin() {
- 
-  return true;
-}
-
 static void wifi_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-    fms_log_printf("wifi task started \n");
+    if (wifi_start_event == true) {
+      fms_log_printf("Connecting to WiFi...");
+      WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
+      Serial.print("Connecting to WiFi");
+      
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.print(".");
+      }
+
+      Serial.println("\nConnected to WiFi!");
+      Serial.print("IP Address: ");
+      Serial.println(WiFi.localIP());
+      wifi_start_event = false;
+    }
+
+    fms_log_printf("WiFi task started\n");
     rc = xTaskNotify(heventTask, 2, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
   }
