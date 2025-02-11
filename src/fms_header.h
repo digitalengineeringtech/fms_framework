@@ -23,7 +23,7 @@
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        true    
+#define SHOW_SYS_LOG                        false    
 #define SHOW_SD_TEST_LOG                    false  
 #define SHOW_FMS_CHIP_INFO_LOG              false
 #define SHOW_UART_SYS_LOG                   true                    // show uart log
@@ -98,6 +98,7 @@ struct SYSCFG {
 #define D_CMND_WIFISCAN     "wifiscan"
 #define D_CMND_MQTT         "mqtt"
 #define D_CMND_WIFIREAD     "wifiread"
+#define D_CMND_BOOTCOUNT    "bootcount"
 struct FMSMAILBOX {
     String command;
     String data;
@@ -113,6 +114,7 @@ void fms_CmndRestart();
 void fms_CmndWifiScan();
 void fms_CmndMqtt();
 void fms_CmndWifiRead();
+void fms_CmndBootCount();
 
 // command table
 const struct COMMAND {
@@ -123,11 +125,13 @@ const struct COMMAND {
     {D_CMND_RESTART, fms_CmndRestart},
     {D_CMND_WIFISCAN, fms_CmndWifiScan},
     {D_CMND_MQTT, fms_CmndMqtt},
-    {D_CMND_WIFIREAD, fms_CmndWifiRead}
-  
+    {D_CMND_WIFIREAD, fms_CmndWifiRead},
+    {D_CMND_BOOTCOUNT, fms_CmndBootCount}
 };
 
 
+static void wifi_task(void *arg);
+bool fms_wifi_init();
 
 
 // RTOS task handles

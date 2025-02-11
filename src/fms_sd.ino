@@ -25,7 +25,7 @@ bool write_data_sd(char* input)
 static void sd_task(void *arg) {
   BaseType_t rc;
   while(1) {
-    fms_log_printf("sd task started \n");
+  
     /*
     * Load config data from sd card
     */

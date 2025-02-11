@@ -8,6 +8,12 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   return true;
 }
 
+void fms_CmndBootCount() {
+  fms_nvs_storage.begin("fms_config", false);
+  sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
+  fms_response_cmnd_handler(String(sysCfg.bootcount).c_str());
+  fms_nvs_storage.end(); // close nvs storage
+}
 void fms_CmndWifi() {
  char ssid[32] = "ssid";
  char password[64] = "password";
@@ -25,7 +31,6 @@ void fms_CmndWifi() {
     fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }
 }
-
 
 #define SCAN_COUNT 1                 // Number of scan iterations
 void fms_CmndWifiScan() {
@@ -64,7 +69,12 @@ void fms_CmndRestart() {
 }
 
 void fms_CmndWifiRead() {
-  fms_response_cmnd_handler("wifiread");
+  if(WiFi.status() == WL_CONNECTED) {
+  if(SHOW_UART_SYS_LOG) fms_cli_serial.println(WiFi.localIP());
+   fms_response_cmnd_handler("true");
+  } else {
+    fms_response_cmnd_handler("false");
+  }
 }
 
 void fms_CmndMqtt() {
@@ -88,7 +98,7 @@ void IRAM_ATTR serialEvent() {
     yield();
     String cmdLine = fms_cli_serial.readStringUntil('\n'); 
     if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("Received : %s\n\r", cmdLine.c_str());
-    cmdLine.trim();
+    cmdLine.trim(); // Remove leading and trailing whitespace from this command line
     int spaceIndex = cmdLine.indexOf(' ');
     if(spaceIndex == -1){
       fmsMailBox.command = cmdLine;
@@ -100,7 +110,6 @@ void IRAM_ATTR serialEvent() {
       if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] COMMAND : %s , Data : %s \n", fmsMailBox.command.c_str(),fmsMailBox.data.c_str());
     }
     fmsMailBox.data_len = fmsMailBox.data.length();
-    
      for (uint32_t i = 0; i < sizeof(Commands) / sizeof(COMMAND); i++) {
     if (strcasecmp(fmsMailBox.command.c_str(), Commands[i].name) == 0) {
       Commands[i].function();
