@@ -38,27 +38,64 @@
 // }
 #include <SPI.h>
 #include <SdFat.h>
+#include <WiFi.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define SD_CS_PIN 5  // Chip select pin
-const char *filename = "/test.txt";
-extern TaskHandle_t heventTask;
+#define SD_CS_PIN 5  // Chip select pin for SD card adapter on ESP32
+const char *configFile = "/config.txt";  // File to store WiFi credentials
+
+// WiFi variables
+String ssid = "POS_Server";
+String password = "asdffdsa";
 
 // Function prototypes
-bool fms_config_load_sd_test();
-bool write_data_sd(const char* input);
-static void sd_task(void *arg);
+bool setupSD();
+bool saveWiFiConfig(const String &ssid, const String &password);
+bool loadWiFiConfig();
+void connectToWiFi();
 bool formatSDCard();
+String encryptDecrypt(const String &data, char key = 'K');
 bool writeEncryptedData(const char *filename, const String &data);
 bool readAndDecryptFile(const char *filename);
-String encryptDecrypt(const String &data, char key = 'K');
+static void sd_task(void *arg);
 
 SdFat sd;
 SdFile file;
 
-// Setup SD card initialization
-bool setup_sd() {
+void setup() {
+    Serial.begin(115200);
+    while (!Serial);  // Wait for Serial Monitor
+
+    // Initialize SD card
+    if (!setupSD()) {
+        Serial.println("SD card setup failed! Halting...");
+        return;
+    }
+
+    // Load WiFi credentials from SD card
+    if (!loadWiFiConfig()) {
+        Serial.println("Creating default config file with encrypted WiFi credentials...");
+        if (!saveWiFiConfig("POS_Server", "asdffdsa")) {
+            Serial.println("Error: Failed to create WiFi config file.");
+            return;
+        }
+        Serial.println("Default WiFi config file created.");
+    }
+
+    // Connect to WiFi
+    connectToWiFi();
+
+    // Start FreeRTOS Task
+    xTaskCreate(sd_task, "SD_Task", 4096, NULL, 1, NULL);
+}
+
+void loop() {
+    // Nothing in the loop, as tasks handle everything.
+}
+
+// Function to initialize SD card
+bool setupSD() {
     Serial.println("Initializing SD card...");
 
     if (!sd.begin(SD_CS_PIN, SPI_HALF_SPEED)) {
@@ -67,66 +104,84 @@ bool setup_sd() {
     }
     Serial.println("SD card initialized.");
 
-    if (!formatSDCard()) {
-        Serial.println("Error: SD card format failed!");
-        return false;
-    }
-
-    if (!sd.exists(filename)) {
-        Serial.println("File does not exist. Creating and writing encrypted data...");
-        if (!writeEncryptedData(filename, "Hello, SD card!")) {
-            Serial.println("Error writing encrypted data!");
-            return false;
-        }
-    }
-
-    if (!readAndDecryptFile(filename)) {
-        Serial.println("Error reading and decrypting file!");
-        return false;
-    }
-
-    xTaskCreate(sd_task, "SD_Task", 4096, NULL, 1, NULL);
     return true;
 }
 
-bool fms_config_load_sd_test() {
-    return true;
-}
-
-bool write_data_sd(const char* input) {
-    Serial.println("Writing to SD card...");
-    if (file.open(filename, O_RDWR | O_CREAT | O_AT_END)) {
-        file.println(input);
-        file.close();
-        Serial.println("Data written successfully.");
-        return true;
-    } else {
-        Serial.println("Error: Could not write to file!");
-        return false;
-    }
-}
-
+// Function to format SD card (optional)
 bool formatSDCard() {
     Serial.println("Formatting SD card...");
-    if (!sd.remove(filename)) {
-        Serial.println("Error: Could not remove file.");
+    if (!sd.remove(configFile)) {
+        Serial.println("Error: Could not remove config file.");
         return false;
     }
     Serial.println("SD card formatted.");
     return true;
 }
 
+// Encrypt and Decrypt function
 String encryptDecrypt(const String &data, char key) {
     String result = data;
     for (size_t i = 0; i < data.length(); i++) {
-        result[i] = data[i] ^ key;
+        result[i] = data[i] ^ key;  // XOR encryption
     }
     return result;
 }
 
+// Save WiFi credentials (Encrypted)
+bool saveWiFiConfig(const String &ssid, const String &password) {
+    Serial.println("Saving WiFi credentials to SD card...");
+
+    if (!writeEncryptedData(configFile, "SSID=" + ssid + "\nPASSWORD=" + password)) {
+        Serial.println("Error writing encrypted WiFi credentials!");
+        return false;
+    }
+
+    Serial.println("WiFi credentials saved successfully.");
+    return true;
+}
+
+// Load WiFi credentials (Decrypted)
+bool loadWiFiConfig() {
+    Serial.println("Loading WiFi credentials from SD card...");
+
+    if (!file.open(configFile, O_READ)) {
+        Serial.println("Config file not found.");
+        return false;
+    }
+
+    String encryptedData;
+    while (file.available()) {
+        encryptedData += (char)file.read();
+    }
+    file.close();
+
+    String decryptedData = encryptDecrypt(encryptedData, 'K');
+
+    // Parse SSID and Password
+    int ssidIndex = decryptedData.indexOf("SSID=");
+    int passIndex = decryptedData.indexOf("PASSWORD=");
+
+    if (ssidIndex == -1 || passIndex == -1) {
+        Serial.println("Error: Invalid WiFi config format.");
+        return false;
+    }
+
+    ssid = decryptedData.substring(ssidIndex + 5, passIndex - 1);
+    password = decryptedData.substring(passIndex + 9);
+
+    Serial.print("Loaded SSID: ");
+    Serial.println(ssid);
+    Serial.print("Loaded Password: ");
+    Serial.println(password);
+
+    return true;
+}
+
+// Function to write encrypted data to SD card
 bool writeEncryptedData(const char *filename, const String &data) {
     Serial.println("Writing encrypted data to file...");
-    if (file.open(filename, O_RDWR | O_CREAT)) {
+
+    if (file.open(filename, O_RDWR | O_CREAT | O_TRUNC)) {
         String encryptedData = encryptDecrypt(data, 'K');
         file.println(encryptedData);
         file.close();
@@ -138,37 +193,35 @@ bool writeEncryptedData(const char *filename, const String &data) {
     }
 }
 
-bool readAndDecryptFile(const char *filename) {
-    Serial.println("Reading file and decrypting contents...");
-    if (!file.open(filename, O_READ)) {
-        Serial.println("Error: Could not open file!");
-        return false;
+// Connect ESP32 to WiFi
+void connectToWiFi() {
+    Serial.println("\nConnecting to WiFi...");
+    WiFi.begin(ssid.c_str(), password.c_str());
+
+    int attempt = 0;
+    while (WiFi.status() != WL_CONNECTED && attempt < 20) {
+        Serial.print(".");
+        delay(500);
+        attempt++;
     }
 
-    String encryptedData;
-    while (file.available()) {
-        encryptedData += (char)file.read();
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi connected!");
+        Serial.print("IP Address: ");
+        Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("\nFailed to connect to WiFi. Check credentials.");
     }
-    file.close();
-
-    Serial.print("Encrypted data: ");
-    Serial.println(encryptedData);
-
-    String decryptedData = encryptDecrypt(encryptedData, 'K');
-    Serial.print("Decrypted data: ");
-    Serial.println(decryptedData);
-
-    return true;
 }
 
+// FreeRTOS Task for periodic SD card writes
 static void sd_task(void *arg) {
     while (1) {
-        Serial.println("SD task started");
-        fms_config_load_sd_test();
-        if (!write_data_sd("HELLO\n")) {
-            Serial.println("Error writing data to SD.");
+        Serial.println("SD Task running: Writing test data to SD card...");
+        if (!writeEncryptedData("/log.txt", "Test Log Entry\n")) {
+            Serial.println("Error writing to log file.");
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(5000));  // 5-second delay
     }
 }
 
