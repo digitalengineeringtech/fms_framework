@@ -23,7 +23,7 @@
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        false    
+#define SHOW_SYS_LOG                        true    
 #define SHOW_SD_TEST_LOG                    false  
 #define SHOW_FMS_CHIP_INFO_LOG              false
 #define SHOW_UART_SYS_LOG                   true                    // show uart log
@@ -31,7 +31,7 @@
 // WiFi configuration
 #define WIFI_SSID                           sysCfg.wifi_ssid                     // wifi ssid
 #define WIFI_PASSWORD                       sysCfg.wifi_password                     // wifi password
-bool wifi_start_event                   =   false;
+
 // MQTT configuration
 #define MQTT_SERVER                         " "                     // mqtt server address
 #define MQTT_PORT                           1883                    // mqtt port
@@ -68,6 +68,7 @@ Preferences fms_nvs_storage;
 WiFiClient wf_client;
 PubSubClient mqtt_client(wf_client);
 
+bool wifi_start_event                   =   true;
 // System configuration structure
 struct SYSCFG {
     unsigned long       bootcount;
@@ -99,6 +100,7 @@ struct SYSCFG {
 #define D_CMND_MQTT         "mqtt"
 #define D_CMND_WIFIREAD     "wifiread"
 #define D_CMND_BOOTCOUNT    "bootcount"
+#define D_CMD_DEVICEID      "devid"
 struct FMSMAILBOX {
     String command;
     String data;
@@ -115,6 +117,7 @@ void fms_CmndWifiScan();
 void fms_CmndMqtt();
 void fms_CmndWifiRead();
 void fms_CmndBootCount();
+void fms_CmndAddDeviceId();
 
 // command table
 const struct COMMAND {
@@ -126,7 +129,8 @@ const struct COMMAND {
     {D_CMND_WIFISCAN, fms_CmndWifiScan},
     {D_CMND_MQTT, fms_CmndMqtt},
     {D_CMND_WIFIREAD, fms_CmndWifiRead},
-    {D_CMND_BOOTCOUNT, fms_CmndBootCount}
+    {D_CMND_BOOTCOUNT, fms_CmndBootCount},
+    {D_CMD_DEVICEID,  fms_CmndAddDeviceId}
 };
 
 

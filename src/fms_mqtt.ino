@@ -3,7 +3,7 @@ static void mqtt_task(void *arg) {
   while(1){
  // low 
   
-    rc = xTaskNotify(heventTask, 5, eSetBits);
+    //rc = xTaskNotify(heventTask, 5, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
   }

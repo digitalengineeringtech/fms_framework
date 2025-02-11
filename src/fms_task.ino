@@ -1,16 +1,16 @@
 bool  fms_task_create() {
   
   BaseType_t rc;
-    rc = xTaskCreatePinnedToCore(
-    event_receive,       // Task function
-    "event_receive",      // Name
-    3000,               // Stack size
-    nullptr,       // Parameters
-    1,             // Priority
-    &heventTask,  // Handle
-    app_cpu        // CPU
-  );
-  assert(rc == pdPASS);
+  //   rc = xTaskCreatePinnedToCore(
+  //   event_receive,       // Task function
+  //   "event_receive",      // Name
+  //   3000,               // Stack size
+  //   nullptr,       // Parameters
+  //   1,             // Priority
+  //   &heventTask,  // Handle
+  //   app_cpu        // CPU
+  // );
+  // assert(rc == pdPASS);
 
   rc = xTaskCreatePinnedToCore(
     sd_task,       // Task function

@@ -30,7 +30,7 @@ static void sd_task(void *arg) {
     * Load config data from sd card
     */
     
-    rc = xTaskNotify(heventTask, 3, eSetBits);
+    //rc = xTaskNotify(heventTask, 3, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));
     //write_data_sd("HELLO\n\r");
     //

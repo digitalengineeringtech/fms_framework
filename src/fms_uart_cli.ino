@@ -8,12 +8,17 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   return true;
 }
 
+void fms_CmndAddDeviceId() {
+
+}
+
 void fms_CmndBootCount() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   fms_response_cmnd_handler(String(sysCfg.bootcount).c_str());
   fms_nvs_storage.end(); // close nvs storage
 }
+
 void fms_CmndWifi() {
  char ssid[32] = "ssid";
  char password[64] = "password";
@@ -70,8 +75,14 @@ void fms_CmndRestart() {
 
 void fms_CmndWifiRead() {
   if(WiFi.status() == WL_CONNECTED) {
-  if(SHOW_UART_SYS_LOG) fms_cli_serial.println(WiFi.localIP());
-   fms_response_cmnd_handler("true");
+    char entry[128];
+    snprintf(entry, sizeof(entry),
+        "{\"SSID\":\"%s\",\"RSSI\":%d,\"IP\":\"%s\"}",
+        WiFi.SSID().c_str(), WiFi.RSSI(),
+        WiFi.localIP().toString().c_str()
+    );
+  if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.println(String(entry).c_str());
+  fms_response_cmnd_handler("Read OK");
   } else {
     fms_response_cmnd_handler("false");
   }
@@ -123,8 +134,7 @@ void IRAM_ATTR serialEvent() {
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-    fms_log_printf("uart cli is running\n\r");
-    rc = xTaskNotify(heventTask, 4, eSetBits);
+  
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
