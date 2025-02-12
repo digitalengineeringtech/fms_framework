@@ -17,7 +17,7 @@ void initialize_uart();
 void initialize_nvs_storage();
 #line 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 52 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
@@ -31,9 +31,9 @@ static void sd_task(void *arg);
 bool fms_task_create();
 #line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
-#line 95 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 98 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void fms_response_cmnd_handler(const char* result);
-#line 134 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 137 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
@@ -285,8 +285,11 @@ void setup() {
 
  initialize_uart();
  initialize_nvs_storage(); // save boot count to eeprom 
+
  fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
- initialize_fms_wifi(wifi_start_event); // wifi connection
+
+ if(initialize_fms_wifi(wifi_start_event)) fms_log_printf(" [WiFi] wifi .. connected"); // wifi connection
+ else fms_log_printf("[WiFi] wifi .. not connected\n");
   /*
   user main code here
   */
@@ -308,18 +311,14 @@ void setup() {
 }
 
 void loop() {
-  BaseType_t rc;
-  //rc = xTaskNotify(heventTask, 0b0001, eSetBits);
-  //assert(rc == pdPASS);
+
 }
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg) {
   BaseType_t rc;
   while(1){
- // low 
-  
-    //rc = xTaskNotify(heventTask, 5, eSetBits);
+
     vTaskDelay(pdMS_TO_TICKS(1000));
 
   }
@@ -369,17 +368,6 @@ static void sd_task(void *arg) {
 bool  fms_task_create() {
   
   BaseType_t rc;
-  //   rc = xTaskCreatePinnedToCore(
-  //   event_receive,       // Task function
-  //   "event_receive",      // Name
-  //   3000,               // Stack size
-  //   nullptr,       // Parameters
-  //   1,             // Priority
-  //   &heventTask,  // Handle
-  //   app_cpu        // CPU
-  // );
-  // assert(rc == pdPASS);
-
   rc = xTaskCreatePinnedToCore(
     sd_task,       // Task function
     "sdcard",      // Name
@@ -483,12 +471,15 @@ void fms_CmndWifi() {
     strncpy(sysCfg.wifi_ssid, ssid, sizeof(sysCfg.wifi_ssid)-1);
     strncpy(sysCfg.wifi_password, password, sizeof(sysCfg.wifi_password)-1);
     if(SHOW_UART_SYS_LOG) {
-      fms_cli_serial.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid).c_str());
-      fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password).c_str());
+      fms_cli_serial.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid));
+      fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password));
     }
+    fms_nvs_storage.begin("fms_config", false);
+    fms_nvs_storage.putString("ssid",sysCfg.wifi_ssid);
+    fms_nvs_storage.putString("pass",sysCfg.wifi_password);
+    fms_nvs_storage.end();
     fms_response_cmnd_handler("true");
-    vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second  // similar delay(1000)
-    wifi_start_event = true;
+    fms_CmndRestart();
   } else {
     fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }
@@ -591,8 +582,7 @@ void IRAM_ATTR serialEvent() {
 static void cli_task(void *arg) {
   BaseType_t rc;
   for (;;) {
-    fms_log_printf("uart cli is running\n\r");
-    //rc = xTaskNotify(heventTask, 4, eSetBits);
+  
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
@@ -603,7 +593,7 @@ static void web_server_task(void *arg) {
   BaseType_t rc;
   for (;;) {
    
-    //rc = xTaskNotify(heventTask, 6, eSetBits);
+   
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
@@ -612,15 +602,34 @@ static void web_server_task(void *arg) {
 bool initialize_fms_wifi(bool flag) {
   if(flag)
   {
-    fms_log_printf("Connecting to WiFi...");
+    fms_nvs_storage.begin("fms_config", false);
+    String ssid_str = fms_nvs_storage.getString("ssid");
+    String pass_str = fms_nvs_storage.getString("pass");
+    fms_nvs_storage.end();
+
+    strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
+    strncpy(sysCfg.wifi_password, pass_str.c_str(), sizeof(sysCfg.wifi_password) - 1);
+  
+    if(sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") 
+    {
+      fms_log_printf("wifi credential value is empty");
+      return false;
+    }
+
+    fms_log_printf("Connecting to WiFi...\n");
+
+    #if SHOW_RESP_UART_SYS_LOG
     fms_cli_serial.print("SSID : ");
-    fms_cli_serial.println(sysCfg.wifi_ssid);
+    fms_cli_serial.println(String(sysCfg.wifi_ssid).c_str());
     fms_cli_serial.print("PASS : ");
-    fms_cli_serial.println(sysCfg.wifi_password);
-   // fms_log_printf("SSID: %s , PASS: %s",sysCfg.wifi_ssid,sysCfg.wifi_password);
-    if(sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") fms_log_printf("wifi credential value is empty");
+    fms_cli_serial.println(String(sysCfg.wifi_password).c_str());
+    #endif
+
+
+    WiFi.mode(WIFI_STA);
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
     fms_cli_serial.println("Connecting to WiFi");
+
     while (WiFi.status() != WL_CONNECTED) {
       delay(1000);
       fms_cli_serial.println(".");
@@ -628,13 +637,18 @@ bool initialize_fms_wifi(bool flag) {
     }
     return true;
   }
+
   }
 
 
 static void wifi_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
-   
+  while(1) {
+   if(WiFi.status() != WL_CONNECTED){
+    fms_log_printf("[WiFi] wifi .. connecting\n\r");
+   }else {
+    fms_log_printf("[WiFi] wifi .. connected\n\r");
+   }
     //rc = xTaskNotify(heventTask, 2, eSetBits);
     vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
   }

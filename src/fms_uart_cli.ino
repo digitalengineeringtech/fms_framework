@@ -26,12 +26,15 @@ void fms_CmndWifi() {
     strncpy(sysCfg.wifi_ssid, ssid, sizeof(sysCfg.wifi_ssid)-1);
     strncpy(sysCfg.wifi_password, password, sizeof(sysCfg.wifi_password)-1);
     if(SHOW_UART_SYS_LOG) {
-      fms_cli_serial.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid).c_str());
-      fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password).c_str());
+      fms_cli_serial.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid));
+      fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password));
     }
+    fms_nvs_storage.begin("fms_config", false);
+    fms_nvs_storage.putString("ssid",sysCfg.wifi_ssid);
+    fms_nvs_storage.putString("pass",sysCfg.wifi_password);
+    fms_nvs_storage.end();
     fms_response_cmnd_handler("true");
-    vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second  // similar delay(1000)
-    wifi_start_event = true;
+    fms_CmndRestart();
   } else {
     fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }

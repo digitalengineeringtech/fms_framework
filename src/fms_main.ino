@@ -27,8 +27,11 @@ void setup() {
 
  initialize_uart();
  initialize_nvs_storage(); // save boot count to eeprom 
+
  fms_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
- initialize_fms_wifi(wifi_start_event); // wifi connection
+
+ if(initialize_fms_wifi(wifi_start_event)) fms_log_printf(" [WiFi] wifi .. connected"); // wifi connection
+ else fms_log_printf("[WiFi] wifi .. not connected\n");
   /*
   user main code here
   */
