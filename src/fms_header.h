@@ -16,6 +16,7 @@
 #include <Preferences.h>
 #include <nvs.h>
 #include <nvs_flash.h>
+#include "Ticker.h"
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -122,6 +123,7 @@ void fms_CmndBootCount();
 void fms_CmndAddDeviceId();
 void fms_CmndDebug();
 void fms_CmndStroagecheck();
+void fms_Cmndhelp();
 
 // command table
 const struct COMMAND {
@@ -136,7 +138,8 @@ const struct COMMAND {
     {D_CMND_BOOTCOUNT, fms_CmndBootCount},
     {D_CMD_DEVICEID,  fms_CmndAddDeviceId},
     {D_CMD_DEBUG, fms_CmndDebug},
-    {D_CMD_NVS_STORAGE,fms_CmndStroagecheck}
+    {D_CMD_NVS_STORAGE,fms_CmndStroagecheck},
+    {"help",fms_Cmndhelp}
 };
 
 static void wifi_task(void *arg);

@@ -25,7 +25,7 @@ void run_sd_test();
 void log_debug_info();
 #line 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 72 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 82 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 static void mqtt_task(void *arg);
@@ -39,9 +39,9 @@ static void sd_task(void *arg);
 bool fms_task_create();
 #line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
-#line 116 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 126 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void fms_response_cmnd_handler(const char* result);
-#line 155 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 165 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
@@ -67,6 +67,7 @@ bool initialize_fms_wifi(bool flag);
 #include <Preferences.h>
 #include <nvs.h>
 #include <nvs_flash.h>
+#include "Ticker.h"
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -173,6 +174,7 @@ void fms_CmndBootCount();
 void fms_CmndAddDeviceId();
 void fms_CmndDebug();
 void fms_CmndStroagecheck();
+void fms_Cmndhelp();
 
 // command table
 const struct COMMAND {
@@ -187,7 +189,8 @@ const struct COMMAND {
     {D_CMND_BOOTCOUNT, fms_CmndBootCount},
     {D_CMD_DEVICEID,  fms_CmndAddDeviceId},
     {D_CMD_DEBUG, fms_CmndDebug},
-    {D_CMD_NVS_STORAGE,fms_CmndStroagecheck}
+    {D_CMD_NVS_STORAGE,fms_CmndStroagecheck},
+    {"help",fms_Cmndhelp}
 };
 
 static void wifi_task(void *arg);
@@ -328,13 +331,23 @@ void log_debug_info() {
 
 void setup() {
   log_chip_info();
+
  if(initialize_uart_cli()) fms_debug_log_printf(" [FMSCLI] uart1 cli.. started\n\r");
-  initialize_nvs_storage(); // save boot count to eeprom 
+
+  pinMode(2,OUTPUT);
+
+  initialize_nvs_storage(); // save boot count to nvs storage 
+
   fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+
   if(initialize_wifi()) fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+
   run_sd_test();
+
   fms_debug_log_printf("Start initializing task \n\r");
+
   fms_task_create(); // rtos task create 
+
   log_debug_info();
 }
 
@@ -504,6 +517,16 @@ void fms_CmndStroagecheck() {
   UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
   fms_cli_serial.printf("{\"total\":%d,\"used\":%d,\"free\":%d,\"free_heap\":%u,\"stack_high_water_mark\":%u}\n", 
   nvs_stats.total_entries, nvs_stats.used_entries, nvs_stats.free_entries,freeHeap, stackHighWaterMark);
+}
+
+void fms_Cmndhelp() {
+    fms_cli_serial.println("+------------------+------------------+");
+    fms_cli_serial.println("| Command         | Description       |");
+    fms_cli_serial.println("+------------------+------------------+");
+    for (const auto& cmd : Commands) {
+      fms_cli_serial.printf("| %-16s | %-16s |\n", cmd.name, "Executes Command");
+    }
+    fms_cli_serial.println("+------------------+------------------+");
 }
 
 void fms_CmndBootCount() {
@@ -692,9 +715,16 @@ static void wifi_task(void *arg) {
   while(1) {
    if(WiFi.status() != WL_CONNECTED){
     fms_debug_log_printf("[WiFi] retry .. connecting\n\r");
+    gpio_set_level(GPIO_NUM_2,HIGH);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    gpio_set_level(GPIO_NUM_2,LOW);
+    vTaskDelay(pdMS_TO_TICKS(500));
+
    }
-   else  fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
- 
+   else  {
+    fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
+    gpio_set_level(GPIO_NUM_2,HIGH);
+  }
     vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
   }
 }

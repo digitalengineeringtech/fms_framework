@@ -43,9 +43,16 @@ static void wifi_task(void *arg) {
   while(1) {
    if(WiFi.status() != WL_CONNECTED){
     fms_debug_log_printf("[WiFi] retry .. connecting\n\r");
+    gpio_set_level(GPIO_NUM_2,HIGH);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    gpio_set_level(GPIO_NUM_2,LOW);
+    vTaskDelay(pdMS_TO_TICKS(500));
+
    }
-   else  fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
- 
+   else  {
+    fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
+    gpio_set_level(GPIO_NUM_2,HIGH);
+  }
     vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
   }
 }

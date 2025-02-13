@@ -17,6 +17,7 @@
 # 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 20 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
 // Project details
 
@@ -24,13 +25,13 @@
 
 
 // Device details
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // WiFi configuration
 
 
 
 // MQTT configuration
-# 47 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -81,9 +82,9 @@ struct SYSCFG {
 * fms command cli setting
 
 */
-# 96 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 97 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Command list
-# 107 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 108 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 struct FMSMAILBOX {
     String command;
     String data;
@@ -102,6 +103,7 @@ void fms_CmndBootCount();
 void fms_CmndAddDeviceId();
 void fms_CmndDebug();
 void fms_CmndStroagecheck();
+void fms_Cmndhelp();
 
 // command table
 const struct COMMAND {
@@ -116,7 +118,8 @@ const struct COMMAND {
     {"bootcount", fms_CmndBootCount},
     {"devid", fms_CmndAddDeviceId},
     {"debug on", fms_CmndDebug},
-    {"stgcheck" /* read nvs storage*/,fms_CmndStroagecheck}
+    {"stgcheck" /* read nvs storage*/,fms_CmndStroagecheck},
+    {"help",fms_Cmndhelp}
 };
 
 static void wifi_task(void *arg);
@@ -256,13 +259,23 @@ void log_debug_info() {
 
 void setup() {
   log_chip_info();
+
  if(initialize_uart_cli()) fms_debug_log_printf(" [FMSCLI] uart1 cli.. started\n\r");
-  initialize_nvs_storage(); // save boot count to eeprom 
+
+  pinMode(2,0x03);
+
+  initialize_nvs_storage(); // save boot count to nvs storage 
+
   fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+
   if(initialize_wifi()) fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+
   run_sd_test();
+
   fms_debug_log_printf("Start initializing task \n\r");
+
   fms_task_create(); // rtos task create 
+
   log_debug_info();
 }
 
@@ -519,6 +532,16 @@ void fms_CmndStroagecheck() {
   nvs_stats.total_entries, nvs_stats.used_entries, nvs_stats.free_entries,freeHeap, stackHighWaterMark);
 }
 
+void fms_Cmndhelp() {
+    Serial0 /* cli serial port*/.println("+------------------+------------------+");
+    Serial0 /* cli serial port*/.println("| Command         | Description       |");
+    Serial0 /* cli serial port*/.println("+------------------+------------------+");
+    for (const auto& cmd : Commands) {
+      Serial0 /* cli serial port*/.printf("| %-16s | %-16s |\n", cmd.name, "Executes Command");
+    }
+    Serial0 /* cli serial port*/.println("+------------------+------------------+");
+}
+
 void fms_CmndBootCount() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
@@ -570,9 +593,9 @@ void fms_CmndWifiScan() {
             networkIndex++;
         }
         vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 83 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 93 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
                   1000 
-# 83 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 93 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
                   ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating // similar delay(1000)
     }
     WiFi.scanDelete(); // Free memory
@@ -582,9 +605,9 @@ void fms_CmndWifiScan() {
 
 void fms_CmndRestart() {
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2000 ) * ( TickType_t ) 
-# 91 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 101 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
             1000 
-# 91 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 101 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
             ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   fms_debug_log_printf("[DEBUG RST] Restarting...\n\r");
   fms_response_cmnd_handler("true");
@@ -654,9 +677,9 @@ static void cli_task(void *arg) {
   for (;;) {
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 159 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 169 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
               1000 
-# 159 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 169 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -724,13 +747,28 @@ static void wifi_task(void *arg) {
   while(1) {
    if(WiFi.status() != WL_CONNECTED){
     fms_debug_log_printf("[WiFi] retry .. connecting\n\r");
-   }
-   else fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
-
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+    gpio_set_level(GPIO_NUM_2,0x1);
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 47 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+              1000 
+# 47 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+              ) / ( TickType_t ) 1000U ) ));
+    gpio_set_level(GPIO_NUM_2,0x0);
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
 # 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
               1000 
 # 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+              ) / ( TickType_t ) 1000U ) ));
+
+   }
+   else {
+    fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
+    gpio_set_level(GPIO_NUM_2,0x1);
+  }
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+              1000 
+# 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

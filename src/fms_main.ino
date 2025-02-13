@@ -59,13 +59,23 @@ void log_debug_info() {
 
 void setup() {
   log_chip_info();
+
  if(initialize_uart_cli()) fms_debug_log_printf(" [FMSCLI] uart1 cli.. started\n\r");
-  initialize_nvs_storage(); // save boot count to eeprom 
+
+  pinMode(2,OUTPUT);
+
+  initialize_nvs_storage(); // save boot count to nvs storage 
+
   fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+
   if(initialize_wifi()) fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+
   run_sd_test();
+
   fms_debug_log_printf("Start initializing task \n\r");
+
   fms_task_create(); // rtos task create 
+
   log_debug_info();
 }
 

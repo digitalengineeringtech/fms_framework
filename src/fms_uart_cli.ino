@@ -30,6 +30,16 @@ void fms_CmndStroagecheck() {
   nvs_stats.total_entries, nvs_stats.used_entries, nvs_stats.free_entries,freeHeap, stackHighWaterMark);
 }
 
+void fms_Cmndhelp() {
+    fms_cli_serial.println("+------------------+------------------+");
+    fms_cli_serial.println("| Command         | Description       |");
+    fms_cli_serial.println("+------------------+------------------+");
+    for (const auto& cmd : Commands) {
+      fms_cli_serial.printf("| %-16s | %-16s |\n", cmd.name, "Executes Command");
+    }
+    fms_cli_serial.println("+------------------+------------------+");
+}
+
 void fms_CmndBootCount() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
@@ -61,7 +71,7 @@ void fms_CmndWifi() {
 #define SCAN_COUNT 1                 // Number of scan iterations
 void fms_CmndWifiScan() {
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect();                // Disconnect from any network
+ // WiFi.disconnect();                // Disconnect from any network
     char buffer[512];               // Buffer for JSON output
     strcpy(buffer, "{\"wifiscan\":true,\"networks\":[");
     int bufferLen = strlen(buffer);
