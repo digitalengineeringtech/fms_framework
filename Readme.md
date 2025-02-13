@@ -68,6 +68,7 @@ int main() {
 ## Documentation
 
 [Documentation](https://github.com/digitalengineeringtech/fms_framework/blob/main/FMS_FW_Architecture_P2.0.adoc)
+[Stack|Heap](https://github.com/digitalengineeringtech/fms_framework/blob/main/whatdo.md)
 
 
 ## 🛠 Skills

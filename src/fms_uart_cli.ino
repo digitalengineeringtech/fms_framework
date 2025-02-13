@@ -2,14 +2,32 @@
 bool fms_uart_cli_begin(bool flag, int baudrate) {
   if (flag) {
     fms_cli_serial.begin(baudrate);
-    fms_log_printf("UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
-    return true;
+    if(fms_cli_serial){
+      fms_debug_log_printf("[FMSCLI] UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
+      vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
+      return true;
+    } else {
+      fms_debug_log_printf("[FMSCLI] UART 1 CLI start fail\n\r");
+      return false;
+    }
   }
-  return true;
+}
+
+void fms_CmndDebug(){
+
 }
 
 void fms_CmndAddDeviceId() {
 
+}
+
+void fms_CmndStroagecheck() {
+  nvs_stats_t nvs_stats;
+  nvs_get_stats(NULL,&nvs_stats);
+  size_t freeHeap = esp_get_free_heap_size();
+  UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+  fms_cli_serial.printf("{\"total\":%d,\"used\":%d,\"free\":%d,\"free_heap\":%u,\"stack_high_water_mark\":%u}\n", 
+  nvs_stats.total_entries, nvs_stats.used_entries, nvs_stats.free_entries,freeHeap, stackHighWaterMark);
 }
 
 void fms_CmndBootCount() {
@@ -25,9 +43,9 @@ void fms_CmndWifi() {
   if(sscanf(fmsMailBox.data.c_str(),"ssid:\"%31[^\"]\" password:\"%63[^\"]\"", ssid, password) == 2) {
     strncpy(sysCfg.wifi_ssid, ssid, sizeof(sysCfg.wifi_ssid)-1);
     strncpy(sysCfg.wifi_password, password, sizeof(sysCfg.wifi_password)-1);
-    if(SHOW_UART_SYS_LOG) {
-      fms_cli_serial.printf("WIFI SSID : %s\n", String(sysCfg.wifi_ssid));
-      fms_cli_serial.printf("WIFI PASSWORD : %s\n", String(sysCfg.wifi_password));
+    if(SHOW_RESP_UART_SYS_LOG) {
+      fms_cli_serial.printf("[FMICLI] WIFI SSID : %s\n", String(sysCfg.wifi_ssid));
+      fms_cli_serial.printf("[FMICLI] WIFI PASSWORD : %s\n", String(sysCfg.wifi_password));
     }
     fms_nvs_storage.begin("fms_config", false);
     fms_nvs_storage.putString("ssid",sysCfg.wifi_ssid);
@@ -36,7 +54,7 @@ void fms_CmndWifi() {
     fms_response_cmnd_handler("true");
     fms_CmndRestart();
   } else {
-    fms_response_cmnd_handler("Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
+    fms_response_cmnd_handler("[FMICLI] Invalid format. Use: wifi \"your_ssid\" \"your_password\"");
   }
 }
 
@@ -66,12 +84,12 @@ void fms_CmndWifiScan() {
     }
     WiFi.scanDelete(); // Free memory
     strcat(buffer, "]}"); // Close JSON array
-    fms_cli_serial.println(buffer); // Output JSON result
+    if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.println(buffer); // Output JSON result
 }
 
 void fms_CmndRestart() {
   vTaskDelay(pdMS_TO_TICKS(2000));  // Wait for 1 second before repeating
-  fms_log_printf("Restarting...\n");
+  fms_debug_log_printf("[DEBUG RST] Restarting...\n\r");
   fms_response_cmnd_handler("true");
   ESP.restart();
 }
@@ -111,17 +129,17 @@ void IRAM_ATTR serialEvent() {
   while (fms_cli_serial.available()) {
     yield();
     String cmdLine = fms_cli_serial.readStringUntil('\n'); 
-    if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("Received : %s\n\r", cmdLine.c_str());
+    if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Received : %s\n\r", cmdLine.c_str());
     cmdLine.trim(); // Remove leading and trailing whitespace from this command line
     int spaceIndex = cmdLine.indexOf(' ');
     if(spaceIndex == -1){
       fmsMailBox.command = cmdLine;
-      if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("Received : %s\n\r", cmdLine.c_str());
+      if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Received : %s\n\r", cmdLine.c_str());
       fmsMailBox.data = "";
     }else {
       fmsMailBox.command = cmdLine.substring(0, spaceIndex);
       fmsMailBox.data = cmdLine.substring(spaceIndex + 1);
-      if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] COMMAND : %s , Data : %s \n", fmsMailBox.command.c_str(),fmsMailBox.data.c_str());
+      if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] COMMAND : %s , Data : %s \n", fmsMailBox.command.c_str(),fmsMailBox.data.c_str());
     }
     fmsMailBox.data_len = fmsMailBox.data.length();
      for (uint32_t i = 0; i < sizeof(Commands) / sizeof(COMMAND); i++) {
@@ -130,7 +148,7 @@ void IRAM_ATTR serialEvent() {
       return;
     }
   }
-    if(SHOW_UART_SYS_LOG) fms_cli_serial.printf("Command not found\n");
+    if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Command not found\n\r");
   }
 }
 

@@ -14,6 +14,8 @@
 #include "chip-debug-report.h"
 #include "esp32-hal-uart.h"
 #include <Preferences.h>
+#include <nvs.h>
+#include <nvs_flash.h>
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -23,14 +25,15 @@
 // Device details
 #define DEVICE_ID                           "fms_001"               // device id
 #define STATION_ID                          1                       // station id
-#define SHOW_SYS_LOG                        true    
-#define SHOW_SD_TEST_LOG                    false  
-#define SHOW_FMS_CHIP_INFO_LOG              false
+#define SHOW_DEBUG_SYS_LOG                  true    
+#define SHOW_DEBUG_SD_TEST_LOG              false  
+#define SHOW_DEBUG_FMS_CHIP_INFO_LOG        false
 #define SHOW_UART_SYS_LOG                   true                    // show uart log
 #define SHOW_RESP_UART_SYS_LOG              true
+
 // WiFi configuration
-#define WIFI_SSID                           sysCfg.wifi_ssid                     // wifi ssid
-#define WIFI_PASSWORD                       sysCfg.wifi_password                     // wifi password
+#define WIFI_SSID                           sysCfg.wifi_ssid        // wifi ssid
+#define WIFI_PASSWORD                       sysCfg.wifi_password    // wifi password
 
 // MQTT configuration
 #define MQTT_SERVER                         " "                     // mqtt server address
@@ -68,25 +71,22 @@ Preferences fms_nvs_storage;
 WiFiClient wf_client;
 PubSubClient mqtt_client(wf_client);
 
-bool wifi_start_event                   =   true;
+bool wifi_start_event = true;
+
 // System configuration structure
 struct SYSCFG {
-    unsigned long       bootcount;
-    unsigned long       version;
-
-    char               wifi_ssid[32]               = "";
-    char               wifi_password[64]           = "";
-
-    char*               mqtt_server_host        = MQTT_SERVER;
-    char*               mqtt_user               = MQTT_USER;
-    char*               mqtt_password           = MQTT_PASSWORD;
-    uint32_t            mqtt_port               = MQTT_PORT;
-
-    char*               mqtt_device_id          = MQTT_DEVICE_ID;
-    char*               mqtt_lwt_status[20];     
-    char*               device_id               = DEVICE_ID;
-    uint32_t            station_id              = STATION_ID;
-
+    unsigned long bootcount;
+    unsigned long version;
+    char wifi_ssid[32]                      = "";
+    char wifi_password[64]                  = "";
+    char* mqtt_server_host                  = MQTT_SERVER;
+    char* mqtt_user                         = MQTT_USER;
+    char* mqtt_password                     = MQTT_PASSWORD;
+    uint32_t mqtt_port                      = MQTT_PORT;
+    char* mqtt_device_id                    = MQTT_DEVICE_ID;
+    char* mqtt_lwt_status[20];     
+    char* device_id                         = DEVICE_ID;
+    uint32_t station_id                     = STATION_ID;
 } sysCfg;
 
 /*
@@ -101,6 +101,9 @@ struct SYSCFG {
 #define D_CMND_WIFIREAD     "wifiread"
 #define D_CMND_BOOTCOUNT    "bootcount"
 #define D_CMD_DEVICEID      "devid"
+#define D_CMD_DEBUG         "debug on"
+#define D_CMD_NVS_STORAGE   "stgcheck" // read nvs storage
+
 struct FMSMAILBOX {
     String command;
     String data;
@@ -108,7 +111,6 @@ struct FMSMAILBOX {
     uint32_t payload;
     uint32_t index;
 } fmsMailBox;
-
 
 // Command functions
 void fms_CmndWifi();
@@ -118,6 +120,8 @@ void fms_CmndMqtt();
 void fms_CmndWifiRead();
 void fms_CmndBootCount();
 void fms_CmndAddDeviceId();
+void fms_CmndDebug();
+void fms_CmndStroagecheck();
 
 // command table
 const struct COMMAND {
@@ -130,13 +134,13 @@ const struct COMMAND {
     {D_CMND_MQTT, fms_CmndMqtt},
     {D_CMND_WIFIREAD, fms_CmndWifiRead},
     {D_CMND_BOOTCOUNT, fms_CmndBootCount},
-    {D_CMD_DEVICEID,  fms_CmndAddDeviceId}
+    {D_CMD_DEVICEID,  fms_CmndAddDeviceId},
+    {D_CMD_DEBUG, fms_CmndDebug},
+    {D_CMD_NVS_STORAGE,fms_CmndStroagecheck}
 };
-
 
 static void wifi_task(void *arg);
 bool fms_wifi_init();
-
 
 // RTOS task handles
 static TaskHandle_t heventTask;
