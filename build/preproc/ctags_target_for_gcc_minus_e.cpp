@@ -299,11 +299,7 @@ void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
   Serial0 /* cli serial port*/.println();
 }
 
-
-static void mqtt_task(void *arg) {
-  BaseType_t rc;
-  fms_mqtt_client.setServer(sysCfg.mqtt_server_host /* mqtt server address*/,1883);
-  fms_mqtt_client.setCallback(fms_mqtt_callback);
+void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
     fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
     if (fms_mqtt_client.connect("fms_001" /* device id*/)){
@@ -314,24 +310,33 @@ static void mqtt_task(void *arg) {
         user mqtt topic here
 
         */
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
     } else {
       fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
                 1000 
-# 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
+}
+
+static void mqtt_task(void *arg) {
+  BaseType_t rc;
+  fms_mqtt_client.setServer(sysCfg.mqtt_server_host /* mqtt server address*/,1883);
+  fms_mqtt_client.setCallback(fms_mqtt_callback);
+
   while(true){
     fms_mqtt_client.loop();
-    if(!fms_mqtt_client.connected()) fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
-    else fms_debug_log_printf("[Mqtt] mqtt .. connected");
+    if(!fms_mqtt_client.connected()) {
+      fms_mqtt_reconnect();
+    }
+    else fms_debug_log_printf("[Mqtt] mqtt .. connected\n\r");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
               1000 
-# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }

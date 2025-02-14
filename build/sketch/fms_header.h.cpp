@@ -1,51 +1,4 @@
 #include <Arduino.h>
-#line 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-bool fms_debug_log_printf(const char *line,...);
-#line 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-bool fms_cli_serial_printf(const char *line,...);
-#line 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-bool fms_chip_info_log();
-#line 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-bool fms_print_after_setup_info();
-#line 31 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-bool fms_memory_info_log();
-#line 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
-void fms_log_task_list();
-#line 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void initialize_nvs_storage();
-#line 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void log_chip_info();
-#line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-bool initialize_uart_cli();
-#line 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-bool initialize_wifi();
-#line 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void run_sd_test();
-#line 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void log_debug_info();
-#line 61 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void setup();
-#line 83 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void loop();
-#line 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-bool fms_config_load_sd_test();
-#line 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-bool write_data_sd(char* input);
-#line 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
-static void sd_task(void *arg);
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
-bool fms_task_create();
-#line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-bool fms_uart_cli_begin(bool flag, int baudrate);
-#line 126 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-void fms_response_cmnd_handler(const char* result);
-#line 165 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
-static void cli_task(void *arg);
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
-static void web_server_task(void *arg);
-#line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
-bool initialize_fms_wifi(bool flag);
-#line 0 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 #ifndef _FMS_HEADER_H_
 #define _FMS_HEADER_H_
@@ -370,13 +323,10 @@ void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
   fms_cli_serial.println();
 }
 
-
-static void mqtt_task(void *arg) {
-  BaseType_t rc;
-  fms_mqtt_client.setServer(MQTT_SERVER,1883);
-  fms_mqtt_client.setCallback(fms_mqtt_callback);
+void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
     fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
+    DEVICE_ID += String(random(0xffff), HEX);
     if (fms_mqtt_client.connect(DEVICE_ID)){
         fms_debug_log_printf("[Mqtt] connected ..");
         fms_mqtt_client.subscribe("fms/test/data");
@@ -388,10 +338,19 @@ static void mqtt_task(void *arg) {
       vTaskDelay(pdMS_TO_TICKS(5000));
     }
   }
+}
+
+static void mqtt_task(void *arg) {
+  BaseType_t rc;
+  fms_mqtt_client.setServer(MQTT_SERVER,1883);
+  fms_mqtt_client.setCallback(fms_mqtt_callback);
+
   while(mqttTask){
     fms_mqtt_client.loop();
-    if(!fms_mqtt_client.connected()) fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
-    else fms_debug_log_printf("[Mqtt] mqtt .. connected");
+    if(!fms_mqtt_client.connected()) {
+      fms_mqtt_reconnect();
+    }
+    else fms_debug_log_printf("[Mqtt] mqtt .. connected\n\r");
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

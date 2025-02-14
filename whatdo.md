@@ -154,5 +154,244 @@ heap_caps_print_heap_info(MALLOC_CAP_INTERNAL);
 
 ---
 
-Would you like specific **examples** for your ESP32 project? 🚀
+# PubSubClient API Documentation
+
+## 1. Include the Library
+
+To use the **PubSubClient** library in your Arduino sketch, include the library as shown below:
+
+```cpp
+#include <PubSubClient.h>
+```
+
+## 2. Initializing the Client
+
+The `PubSubClient` object can be initialized using the Ethernet or WiFi client as a transport layer:
+
+### For WiFi:
+
+```cpp
+WiFiClient espClient;
+PubSubClient client(espClient);
+```
+
+### For Ethernet:
+
+```cpp
+EthernetClient ethClient;
+PubSubClient client(ethClient);
+```
+
+## 3. MQTT Connection Functions
+
+- **setServer**: Set the broker's IP address (or hostname) and port.
+
+```cpp
+client.setServer("mqtt.example.com", 1883);
+```
+
+- **setCallback**: Set the callback function to handle incoming messages from the broker.
+
+```cpp
+client.setCallback(callback);
+```
+
+The callback function is defined like this:
+
+```cpp
+void callback(char* topic, byte* payload, unsigned int length) {
+  // Handle message here
+}
+```
+
+- **connect**: Connect to the MQTT broker with optional username and password.
+
+```cpp
+if (client.connect("client_id", "username", "password")) {
+  // Successfully connected
+}
+```
+
+- **connect with Last Will and Testament (LWT)**: Set a Last Will message when connecting to the broker.
+
+```cpp
+client.connect("client_id", "username", "password", "lwt_topic", 1, true, "LWT Message");
+```
+
+## 4. Publishing Messages
+
+- **publish**: Publish a message to a topic.
+
+```cpp
+client.publish("topic", "message");
+```
+
+You can also publish messages with QoS (Quality of Service) level and retain flags:
+
+- **QoS 1** (Message is guaranteed to be delivered at least once):
+
+```cpp
+client.publish("topic", "message", true, 1);
+```
+
+- **Retain flag**: If `true`, the broker will retain the message:
+
+```cpp
+client.publish("topic", "message", true, 0);
+```
+
+## 5. Subscribing to Topics
+
+- **subscribe**: Subscribe to one or more topics.
+
+```cpp
+client.subscribe("topic");
+```
+
+- **subscribe with QoS**: Subscribe to a topic with a specified QoS level:
+
+```cpp
+client.subscribe("topic", 1);
+```
+
+- **unsubscribe**: Unsubscribe from a topic.
+
+```cpp
+client.unsubscribe("topic");
+```
+
+## 6. Loop and Connection Management
+
+- **loop**: This function must be called repeatedly to maintain the connection to the MQTT broker and process incoming messages.
+
+```cpp
+client.loop();
+```
+
+- **connected**: Check if the client is connected to the broker.
+
+```cpp
+if (client.connected()) {
+  // The client is connected
+}
+```
+
+- **disconnect**: Disconnect the client from the broker.
+
+```cpp
+client.disconnect();
+```
+
+## 7. Additional Configuration Methods
+
+- **setKeepAlive**: Set the keep-alive period (in seconds). The client will send a ping request to the broker if no other message is sent within this time.
+
+```cpp
+client.setKeepAlive(60); // 60 seconds
+```
+
+- **setBufferSize**: Set the buffer size for incoming messages.
+
+```cpp
+client.setBufferSize(1024); // 1024 bytes
+```
+
+- **setReconnecting**: Configure the automatic reconnection behavior.
+
+```cpp
+client.setReconnecting(true);
+```
+
+## 8. Last Will and Testament (LWT)
+
+Set a last will message that is sent to a specific topic if the client unexpectedly disconnects:
+
+```cpp
+client.setWill("home/temperature", 0, true, "Offline");
+```
+
+## 9. Example Sketch
+
+Here is an example of using **PubSubClient** with an ESP8266 or ESP32 to connect to an MQTT broker, subscribe to a topic, and handle incoming messages:
+
+```cpp
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+
+// WiFi credentials
+const char* ssid = "yourSSID";
+const char* password = "yourPassword";
+
+// MQTT broker settings
+const char* mqtt_server = "mqtt.example.com";
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setup() {
+  Serial.begin(115200);
+  
+  // Connect to WiFi
+  setup_wifi();
+
+  // Set MQTT server and callback function
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+  
+  // Connect to MQTT broker
+  while (!client.connected()) {
+    if (client.connect("ESP8266Client")) {
+      Serial.println("Connected to MQTT broker!");
+      client.subscribe("home/temperature");
+    } else {
+      delay(5000);
+    }
+  }
+}
+
+void loop() {
+  client.loop(); // Keep the connection alive
+}
+
+void setup_wifi() {
+  delay(10);
+  Serial.println();
+  Serial.print("Connecting to WiFi...");
+  
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(250);
+    Serial.print(".");
+  }
+  
+  Serial.println("Connected!");
+  Serial.println("IP address: " + WiFi.localIP().toString());
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  
+  Serial.println();
+}
+```
+
+## 10. Summary of Key PubSubClient Methods
+
+- **client.setServer**: Set the broker address and port.
+- **client.setCallback**: Set the callback function for incoming messages.
+- **client.connect**: Connect to the MQTT broker.
+- **client.publish**: Publish a message to a topic.
+- **client.subscribe**: Subscribe to a topic.
+- **client.unsubscribe**: Unsubscribe from a topic.
+- **client.loop**: Keep the MQTT connection alive and handle messages.
+- **client.disconnect**: Disconnect from the broker.
+- **client.setWill**: Set the Last Will and Testament (LWT).
+```
+
 
