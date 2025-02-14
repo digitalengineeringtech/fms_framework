@@ -37,6 +37,12 @@ bool initialize_fms_wifi(bool flag) {
   }
   }
 
+bool wifi_led_ticker() {
+  static bool state = false;
+  gpio_set_level(GPIO_NUM_2,state);
+  state = !state;
+}
+
 uint8_t count = 1;
 static void wifi_task(void *arg) {
   BaseType_t rc;

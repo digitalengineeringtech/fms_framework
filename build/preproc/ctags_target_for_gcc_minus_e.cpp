@@ -18,6 +18,7 @@
 # 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 20 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
 // Project details
 
@@ -25,13 +26,13 @@
 
 
 // Device details
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // WiFi configuration
 
 
 
 // MQTT configuration
-# 48 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -57,7 +58,7 @@
 uart_t * fms_cli_uart;
 Preferences fms_nvs_storage;
 WiFiClient wf_client;
-PubSubClient mqtt_client(wf_client);
+PubSubClient fms_mqtt_client(wf_client);
 
 bool wifi_start_event = true;
 
@@ -67,7 +68,7 @@ struct SYSCFG {
     unsigned long version;
     char wifi_ssid[32] = "";
     char wifi_password[64] = "";
-    char* mqtt_server_host = " " /* mqtt server address*/;
+    char mqtt_server_host[32] = "192.168.1.142";
     char* mqtt_user = " " /* mqtt user*/;
     char* mqtt_password = " " /* mqtt password*/;
     uint32_t mqtt_port = 1883 /* mqtt port*/;
@@ -82,9 +83,9 @@ struct SYSCFG {
 * fms command cli setting
 
 */
-# 97 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 98 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Command list
-# 108 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 109 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 struct FMSMAILBOX {
     String command;
     String data;
@@ -122,8 +123,13 @@ const struct COMMAND {
     {"help",fms_Cmndhelp}
 };
 
+Ticker wifi_ticker;
 static void wifi_task(void *arg);
 bool fms_wifi_init();
+bool wifi_led_ticker();
+// mqtt
+static void mqtt_task(void *arg);
+void fms_mqtt_callback(char* topic,byte* payload,unsigned int length);
 
 // RTOS task handles
 static TaskHandle_t heventTask;
@@ -236,6 +242,7 @@ bool initialize_wifi() {
 
   } else {
     fms_debug_log_printf("[WiFi] wifi .. not connected\n");
+
     return false;
   }
 }
@@ -283,16 +290,49 @@ void loop() {
   // user main code here
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+
+void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
+  fms_debug_log_printf("Message arrived [%c]",topic);
+  for (int i = 0; i < length; i++) {
+    Serial0 /* cli serial port*/.print((char)payload[i]);
+  }
+  Serial0 /* cli serial port*/.println();
+}
+
+
 static void mqtt_task(void *arg) {
   BaseType_t rc;
-  while(1){
+  fms_mqtt_client.setServer(sysCfg.mqtt_server_host /* mqtt server address*/,1883);
+  fms_mqtt_client.setCallback(fms_mqtt_callback);
+  while (!fms_mqtt_client.connected()){
+    fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
+    if (fms_mqtt_client.connect("fms_001" /* device id*/)){
+        fms_debug_log_printf("[Mqtt] connected ..");
+        fms_mqtt_client.subscribe("fms/test/data");
+        /*
 
+        user mqtt topic here
+
+        */
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+    } else {
+      fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
+# 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+                1000 
+# 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+                ) / ( TickType_t ) 1000U ) ));
+    }
+  }
+  while(true){
+    fms_mqtt_client.loop();
+    if(!fms_mqtt_client.connected()) fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
+    else fms_debug_log_printf("[Mqtt] mqtt .. connected");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
               1000 
-# 5 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
-
   }
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
@@ -573,7 +613,7 @@ void fms_CmndWifi() {
 
 void fms_CmndWifiScan() {
   WiFi.mode(WIFI_MODE_STA);
-  WiFi.disconnect(); // Disconnect from any network
+ // WiFi.disconnect();                // Disconnect from any network
     char buffer[512]; // Buffer for JSON output
     strcpy(buffer, "{\"wifiscan\":true,\"networks\":[");
     int bufferLen = strlen(buffer);
@@ -741,6 +781,12 @@ bool initialize_fms_wifi(bool flag) {
   }
   }
 
+bool wifi_led_ticker() {
+  static bool state = false;
+  gpio_set_level(GPIO_NUM_2,state);
+  state = !state;
+}
+
 uint8_t count = 1;
 static void wifi_task(void *arg) {
   BaseType_t rc;
@@ -749,15 +795,15 @@ static void wifi_task(void *arg) {
     fms_debug_log_printf("[WiFi] retry .. connecting\n\r");
     gpio_set_level(GPIO_NUM_2,0x1);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 47 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
               1000 
-# 47 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) ));
     gpio_set_level(GPIO_NUM_2,0x0);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
               1000 
-# 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) ));
 
    }
@@ -766,9 +812,9 @@ static void wifi_task(void *arg) {
     gpio_set_level(GPIO_NUM_2,0x1);
   }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 62 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
               1000 
-# 56 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 62 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

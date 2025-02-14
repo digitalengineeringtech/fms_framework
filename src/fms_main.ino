@@ -36,6 +36,7 @@ bool initialize_wifi() {
     
   } else {
     fms_debug_log_printf("[WiFi] wifi .. not connected\n");
+    
     return false;
   }
 }

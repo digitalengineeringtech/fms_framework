@@ -19,16 +19,14 @@ void log_chip_info();
 bool initialize_uart_cli();
 #line 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 bool initialize_wifi();
-#line 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void run_sd_test();
-#line 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void log_debug_info();
-#line 60 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 61 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 82 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 83 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
-#line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
-static void mqtt_task(void *arg);
 #line 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
 bool fms_config_load_sd_test();
 #line 13 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
@@ -68,6 +66,7 @@ bool initialize_fms_wifi(bool flag);
 #include <nvs.h>
 #include <nvs_flash.h>
 #include "Ticker.h"
+#include "PubSubClient.h"
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -88,14 +87,14 @@ bool initialize_fms_wifi(bool flag);
 #define WIFI_PASSWORD                       sysCfg.wifi_password    // wifi password
 
 // MQTT configuration
-#define MQTT_SERVER                         " "                     // mqtt server address
+#define MQTT_SERVER                         sysCfg.mqtt_server_host                     // mqtt server address
 #define MQTT_PORT                           1883                    // mqtt port
 #define MQTT_USER                           " "                     // mqtt user
 #define MQTT_PASSWORD                       " "                     // mqtt password
 #define MQTT_DEVICE_ID                      DEVICE_ID               // mqtt device id
 #define MQTT_LWT_OFFLINE                    "offline"               // mqtt last will topic offline
 #define MQTT_LWT_ONLINE                     "online"                // mqtt last will topic online
-
+#define mqttTask                             true
 // Web server configuration
 #define WEB_SERVER_PORT                     80                      // web server port
 
@@ -121,7 +120,7 @@ bool initialize_fms_wifi(bool flag);
 uart_t * fms_cli_uart;
 Preferences fms_nvs_storage;
 WiFiClient wf_client;
-PubSubClient mqtt_client(wf_client);
+PubSubClient fms_mqtt_client(wf_client);
 
 bool wifi_start_event = true;
 
@@ -131,7 +130,7 @@ struct SYSCFG {
     unsigned long version;
     char wifi_ssid[32]                      = "";
     char wifi_password[64]                  = "";
-    char* mqtt_server_host                  = MQTT_SERVER;
+    char mqtt_server_host[32]               = "192.168.1.142";
     char* mqtt_user                         = MQTT_USER;
     char* mqtt_password                     = MQTT_PASSWORD;
     uint32_t mqtt_port                      = MQTT_PORT;
@@ -193,8 +192,13 @@ const struct COMMAND {
     {"help",fms_Cmndhelp}
 };
 
+Ticker wifi_ticker;
 static void wifi_task(void *arg);
 bool fms_wifi_init();
+bool wifi_led_ticker();
+// mqtt
+static void mqtt_task(void *arg);
+void fms_mqtt_callback(char* topic,byte* payload,unsigned int length);
 
 // RTOS task handles
 static TaskHandle_t heventTask;
@@ -308,6 +312,7 @@ bool initialize_wifi() {
     
   } else {
     fms_debug_log_printf("[WiFi] wifi .. not connected\n");
+    
     return false;
   }
 }
@@ -356,12 +361,38 @@ void loop() {
 }
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+
+void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
+  fms_debug_log_printf("Message arrived [%c]",topic);
+  for (int i = 0; i < length; i++) {
+    fms_cli_serial.print((char)payload[i]);
+  }
+  fms_cli_serial.println();
+}
+
+
 static void mqtt_task(void *arg) {
   BaseType_t rc;
-  while(1){
-
+  fms_mqtt_client.setServer(MQTT_SERVER,1883);
+  fms_mqtt_client.setCallback(fms_mqtt_callback);
+  while (!fms_mqtt_client.connected()){
+    fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
+    if (fms_mqtt_client.connect(DEVICE_ID)){
+        fms_debug_log_printf("[Mqtt] connected ..");
+        fms_mqtt_client.subscribe("fms/test/data");
+        /*
+        user mqtt topic here
+        */
+    } else {
+      fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
+      vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+  }
+  while(mqttTask){
+    fms_mqtt_client.loop();
+    if(!fms_mqtt_client.connected()) fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
+    else fms_debug_log_printf("[Mqtt] mqtt .. connected");
     vTaskDelay(pdMS_TO_TICKS(1000));
-
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
@@ -560,7 +591,7 @@ void fms_CmndWifi() {
 #define SCAN_COUNT 1                 // Number of scan iterations
 void fms_CmndWifiScan() {
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect();                // Disconnect from any network
+ // WiFi.disconnect();                // Disconnect from any network
     char buffer[512];               // Buffer for JSON output
     strcpy(buffer, "{\"wifiscan\":true,\"networks\":[");
     int bufferLen = strlen(buffer);
@@ -708,6 +739,12 @@ bool initialize_fms_wifi(bool flag) {
     return true;
   }
   }
+
+bool wifi_led_ticker() {
+  static bool state = false;
+  gpio_set_level(GPIO_NUM_2,state);
+  state = !state;
+}
 
 uint8_t count = 1;
 static void wifi_task(void *arg) {
