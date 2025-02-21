@@ -302,7 +302,9 @@ void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
     fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
-    if (fms_mqtt_client.connect("fms_001" /* device id*/)){
+    String clientId = String("fms_001" /* device id*/).c_str();
+    clientId += String(random(0xffff), 16);
+    if (fms_mqtt_client.connect(clientId.c_str())){
         fms_debug_log_printf("[Mqtt] connected ..");
         fms_mqtt_client.subscribe("fms/test/data");
         /*
@@ -310,13 +312,13 @@ void fms_mqtt_reconnect() {
         user mqtt topic here
 
         */
-# 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
     } else {
       fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
                 1000 
-# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -334,9 +336,9 @@ static void mqtt_task(void *arg) {
     }
     else fms_debug_log_printf("[Mqtt] mqtt .. connected\n\r");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
               1000 
-# 37 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }

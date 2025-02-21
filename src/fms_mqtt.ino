@@ -10,8 +10,9 @@ void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
     fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
-    DEVICE_ID += String(random(0xffff), HEX);
-    if (fms_mqtt_client.connect(DEVICE_ID)){
+    String clientId = String(DEVICE_ID).c_str();
+    clientId += String(random(0xffff), HEX);
+    if (fms_mqtt_client.connect(clientId.c_str())){
         fms_debug_log_printf("[Mqtt] connected ..");
         fms_mqtt_client.subscribe("fms/test/data");
         /*
