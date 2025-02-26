@@ -17,15 +17,15 @@ void initialize_nvs_storage();
 void log_chip_info();
 #line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 bool initialize_uart_cli();
-#line 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 bool initialize_wifi();
-#line 44 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void run_sd_test();
-#line 54 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void log_debug_info();
-#line 61 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 62 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 83 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 84 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
@@ -41,9 +41,15 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
+#line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+void fms_Cmndhelp();
 #line 126 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void fms_response_cmnd_handler(const char* result);
-#line 165 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 136 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+void fms_cli_command_decode(String cmdLine);
+#line 164 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+void UART_RX_IRQ();
+#line 176 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
@@ -177,7 +183,7 @@ void fms_CmndBootCount();
 void fms_CmndAddDeviceId();
 void fms_CmndDebug();
 void fms_CmndStroagecheck();
-void fms_Cmndhelp();
+//void fms_Cmndhelp();
 
 // command table
 const struct COMMAND {
@@ -303,6 +309,7 @@ void log_chip_info() {
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
+    fms_cli_serial.onReceive(UART_RX_IRQ);
     return true;
   } else {
     return false;
@@ -480,6 +487,8 @@ bool fms_task_create() {
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
 
+
+
 void IRAM_ATTR serialEvent2() {
   while (Serial.available()) { // test code 
     uint8_t data = Serial.read();
@@ -630,12 +639,10 @@ void fms_response_cmnd_handler(const char* result){
   }
 }
 
-void IRAM_ATTR serialEvent() {  
+void  fms_cli_command_decode(String cmdLine) {  
   char c;
   char buffer[32]; // for testing
-  while (fms_cli_serial.available()) {
-    yield();
-    String cmdLine = fms_cli_serial.readStringUntil('\n'); 
+    //String cmdLine = fms_cli_serial.readStringUntil('\n'); 
     if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Received : %s\n\r", cmdLine.c_str());
     cmdLine.trim(); // Remove leading and trailing whitespace from this command line
     int spaceIndex = cmdLine.indexOf(' ');
@@ -656,12 +663,25 @@ void IRAM_ATTR serialEvent() {
     }
   }
     if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Command not found\n\r");
+  
+}
+
+
+void UART_RX_IRQ() {
+  String cmd_ ;
+  uint16_t size = fms_cli_serial.available(); // serial.available  // #define fms_cli_serial Serial
+  fms_cli_serial.printf("Got byes on serial : %d\n",size);
+  while(fms_cli_serial.available()) {
+    yield();
+     cmd_ = fms_cli_serial.readStringUntil('\n'); 
   }
+  fms_cli_serial.printf("\n cli terminal data process \n\r");
+  fms_cli_command_decode(cmd_);
 }
 
 static void cli_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
+  while (1) {
   
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

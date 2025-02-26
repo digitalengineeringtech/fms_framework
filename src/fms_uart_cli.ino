@@ -133,12 +133,9 @@ void fms_response_cmnd_handler(const char* result){
   }
 }
 
-void IRAM_ATTR serialEvent() {  
+void  fms_cli_command_decode(String cmdLine) {  
   char c;
   char buffer[32]; // for testing
-  while (fms_cli_serial.available()) {
-    yield();
-    String cmdLine = fms_cli_serial.readStringUntil('\n'); 
     if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Received : %s\n\r", cmdLine.c_str());
     cmdLine.trim(); // Remove leading and trailing whitespace from this command line
     int spaceIndex = cmdLine.indexOf(' ');
@@ -159,12 +156,23 @@ void IRAM_ATTR serialEvent() {
     }
   }
     if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Command not found\n\r");
-  }
+  
 }
 
+void UART_RX_IRQ() { // interrupt function
+  String cmd_ ;
+  uint16_t size = fms_cli_serial.available(); // serial.available  // #define fms_cli_serial Serial
+  fms_cli_serial.printf("Got byes on serial : %d\n",size);
+  while(fms_cli_serial.available()) {
+    yield();
+     cmd_ = fms_cli_serial.readStringUntil('\n'); 
+  }
+  fms_cli_serial.printf("\n cli terminal data process \n\r");
+  fms_cli_command_decode(cmd_);
+}
 static void cli_task(void *arg) {
   BaseType_t rc;
-  for (;;) {
+  while (1) {
   
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

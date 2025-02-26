@@ -124,7 +124,7 @@ void fms_CmndBootCount();
 void fms_CmndAddDeviceId();
 void fms_CmndDebug();
 void fms_CmndStroagecheck();
-void fms_Cmndhelp();
+//void fms_Cmndhelp();
 
 // command table
 const struct COMMAND {

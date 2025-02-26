@@ -23,6 +23,7 @@ void log_chip_info() {
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
+    fms_cli_serial.onReceive(UART_RX_IRQ);
     return true;
   } else {
     return false;
