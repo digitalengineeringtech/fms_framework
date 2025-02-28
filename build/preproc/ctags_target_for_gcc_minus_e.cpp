@@ -229,7 +229,7 @@ void log_chip_info() {
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
-    Serial0 /* cli serial port*/.onReceive(UART_RX_IRQ);
+    Serial0 /* cli serial port*/.onReceive(UART_RX_IRQ); // uart interrupt function 
     return true;
   } else {
     return false;
@@ -613,7 +613,6 @@ void fms_response_cmnd_handler(const char* result){
 void fms_cli_command_decode(String cmdLine) {
   char c;
   char buffer[32]; // for testing
-    //String cmdLine = fms_cli_serial.readStringUntil('\n'); 
     if(true) Serial0 /* cli serial port*/.printf("[FMSCLI] Received : %s\n\r", cmdLine.c_str());
     cmdLine.trim(); // Remove leading and trailing whitespace from this command line
     int spaceIndex = cmdLine.indexOf(' ');
@@ -637,8 +636,7 @@ void fms_cli_command_decode(String cmdLine) {
 
 }
 
-
-void UART_RX_IRQ() {
+void UART_RX_IRQ() { // interrupt function
   String cmd_ ;
   uint16_t size = Serial0 /* cli serial port*/.available(); // serial.available  // #define fms_cli_serial Serial
   Serial0 /* cli serial port*/.printf("Got byes on serial : %d\n",size);
@@ -649,15 +647,14 @@ void UART_RX_IRQ() {
   Serial0 /* cli serial port*/.printf("\n cli terminal data process \n\r");
   fms_cli_command_decode(cmd_);
 }
-
 static void cli_task(void *arg) {
   BaseType_t rc;
   while (1) {
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 180 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 177 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
               1000 
-# 180 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 177 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }

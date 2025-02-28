@@ -47,9 +47,9 @@ void fms_Cmndhelp();
 void fms_response_cmnd_handler(const char* result);
 #line 136 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void fms_cli_command_decode(String cmdLine);
-#line 164 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 162 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void UART_RX_IRQ();
-#line 176 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 173 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
@@ -309,7 +309,7 @@ void log_chip_info() {
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
-    fms_cli_serial.onReceive(UART_RX_IRQ);
+    fms_cli_serial.onReceive(UART_RX_IRQ); // uart interrupt function 
     return true;
   } else {
     return false;
@@ -642,7 +642,6 @@ void fms_response_cmnd_handler(const char* result){
 void  fms_cli_command_decode(String cmdLine) {  
   char c;
   char buffer[32]; // for testing
-    //String cmdLine = fms_cli_serial.readStringUntil('\n'); 
     if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.printf("[FMSCLI] Received : %s\n\r", cmdLine.c_str());
     cmdLine.trim(); // Remove leading and trailing whitespace from this command line
     int spaceIndex = cmdLine.indexOf(' ');
@@ -666,8 +665,7 @@ void  fms_cli_command_decode(String cmdLine) {
   
 }
 
-
-void UART_RX_IRQ() {
+void UART_RX_IRQ() { // interrupt function
   String cmd_ ;
   uint16_t size = fms_cli_serial.available(); // serial.available  // #define fms_cli_serial Serial
   fms_cli_serial.printf("Got byes on serial : %d\n",size);
@@ -678,7 +676,6 @@ void UART_RX_IRQ() {
   fms_cli_serial.printf("\n cli terminal data process \n\r");
   fms_cli_command_decode(cmd_);
 }
-
 static void cli_task(void *arg) {
   BaseType_t rc;
   while (1) {
