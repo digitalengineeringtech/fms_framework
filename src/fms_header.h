@@ -66,6 +66,7 @@
 
 #define _log_printf                         log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
+#define fms_uart2_serial                    Serial1                 // uart2 serial port
 
 // Global objects
 uart_t * fms_cli_uart;
@@ -159,6 +160,7 @@ static TaskHandle_t hsdCardTask;
 static TaskHandle_t hwebServerTask;
 static TaskHandle_t hspiTask; 
 static TaskHandle_t hcliTask;
+static TaskHandle_t huart2Task;
 
 // Mutex for serial communication
 SemaphoreHandle_t serialMutex;
@@ -169,6 +171,7 @@ volatile uint8_t bufferIndex = 0; // for testing
 
 // UART command flag
 bool use_uart_command = true;
+bool use_serial1 = true;
 
 // Function declarations
 void addLog(byte loglevel, const char *line);

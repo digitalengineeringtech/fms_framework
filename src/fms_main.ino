@@ -30,6 +30,16 @@ bool initialize_uart_cli() {
   }
 }
 
+bool initialize_uart2() {
+  if (fms_uart2_begin(use_serial1, 115200)) {
+    fms_debug_log_printf("[FMSUART2] setup finish for uart2\n\r");
+    fms_uart2_serial.onReceive(UART2_RX_IRQ); // uart interrupt function 
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
     fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
@@ -63,6 +73,7 @@ void setup() {
   log_chip_info();
 
  if(initialize_uart_cli()) fms_debug_log_printf(" [FMSCLI] uart1 cli.. started\n\r");
+ if(initialize_uart2())    fms_debug_log_printf(" [FMSUART2] uart2.. started\n\r"); // uart2 serial port (RS485 connection)
 
   pinMode(2,OUTPUT);
 

@@ -170,6 +170,7 @@ void UART_RX_IRQ() { // interrupt function
   fms_cli_serial.printf("\n cli terminal data process \n\r");
   fms_cli_command_decode(cmd_);
 }
+
 static void cli_task(void *arg) {
   BaseType_t rc;
   while (1) {

@@ -18,14 +18,16 @@ void log_chip_info();
 #line 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 bool initialize_uart_cli();
 #line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+bool initialize_uart2();
+#line 43 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 bool initialize_wifi();
-#line 45 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-void run_sd_test();
 #line 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+void run_sd_test();
+#line 65 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void log_debug_info();
-#line 62 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 72 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void setup();
-#line 84 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+#line 95 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
 void loop();
 #line 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
@@ -39,6 +41,14 @@ static void sd_task(void *arg);
 bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size, UBaseType_t priority, TaskHandle_t* handle, BaseType_t& rc);
 #line 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
 bool fms_task_create();
+#line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+bool fms_uart2_begin(bool flag, int baudrate);
+#line 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+void UART2_RX_IRQ();
+#line 31 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+void fms_uart2_decode(uint8_t* data, uint32_t len);
+#line 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+void fms_uart2_task(void *arg);
 #line 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
 #line 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
@@ -49,7 +59,7 @@ void fms_response_cmnd_handler(const char* result);
 void fms_cli_command_decode(String cmdLine);
 #line 162 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 void UART_RX_IRQ();
-#line 173 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+#line 174 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
@@ -125,6 +135,7 @@ bool initialize_fms_wifi(bool flag);
 
 #define _log_printf                         log_printf              // in build in chip-debug-report.cpp
 #define fms_cli_serial                      Serial                  // cli serial port
+#define fms_uart2_serial                    Serial1                 // uart2 serial port
 
 // Global objects
 uart_t * fms_cli_uart;
@@ -218,6 +229,7 @@ static TaskHandle_t hsdCardTask;
 static TaskHandle_t hwebServerTask;
 static TaskHandle_t hspiTask; 
 static TaskHandle_t hcliTask;
+static TaskHandle_t huart2Task;
 
 // Mutex for serial communication
 SemaphoreHandle_t serialMutex;
@@ -228,6 +240,7 @@ volatile uint8_t bufferIndex = 0; // for testing
 
 // UART command flag
 bool use_uart_command = true;
+bool use_serial1 = true;
 
 // Function declarations
 void addLog(byte loglevel, const char *line);
@@ -316,6 +329,16 @@ bool initialize_uart_cli() {
   }
 }
 
+bool initialize_uart2() {
+  if (fms_uart2_begin(use_serial1, 115200)) {
+    fms_debug_log_printf("[FMSUART2] setup finish for uart2\n\r");
+    fms_uart2_serial.onReceive(UART2_RX_IRQ); // uart interrupt function 
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
     fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
@@ -349,6 +372,7 @@ void setup() {
   log_chip_info();
 
  if(initialize_uart_cli()) fms_debug_log_printf(" [FMSCLI] uart1 cli.. started\n\r");
+ if(initialize_uart2())    fms_debug_log_printf(" [FMSUART2] uart2.. started\n\r"); // uart2 serial port (RS485 connection)
 
   pinMode(2,OUTPUT);
 
@@ -474,12 +498,13 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 }
 
 bool fms_task_create() {
-  BaseType_t sd_rc, wifi_rc, mqtt_rc, cli_rc, webserver_rc;
+  BaseType_t sd_rc, wifi_rc, mqtt_rc, cli_rc, uart2_rc, webserver_rc;
 
   if (!create_task(sd_task, "sdcard", 3000, 2, &hsdCardTask, sd_rc)) return false;
   if (!create_task(wifi_task, "wifi", 3000, 3, &hwifiTask, wifi_rc)) return false;
   if (!create_task(mqtt_task, "mqtt", 3000, 3, &hmqttTask, mqtt_rc)) return false;
   if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
+  if (!create_task(fms_uart2_task, "uart2", 3000, 1, &huart2Task, uart2_rc)) return false;
   if (!create_task(web_server_task, "webserver", 3000, 4, &hwebServerTask, webserver_rc)) return false;
 
   return true;
@@ -487,20 +512,45 @@ bool fms_task_create() {
 
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
 
+bool fms_uart2_begin(bool flag, int baudrate) {
+  if (flag) {
+    fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
+    if(fms_uart2_serial){
+      fms_debug_log_printf("[FMSUART2] UART 2  (Baudrate : %d) started successfully\n\r",baudrate);
+      vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
+      return true;
+    } else {
+      fms_debug_log_printf("[FMSUART2] UART 2  start fail\n\r");
+      return false;
+    }
+  }
+}
 
 
-void IRAM_ATTR serialEvent2() {
-  while (Serial.available()) { // test code 
-    uint8_t data = Serial.read();
-    // if (bufferIndex < sizeof(serialBuffer)) serialBuffer[bufferIndex++] = data;
-    // if (bufferIndex == sizeof(serialBuffer)) {
-    //   if (xSemaphoreTakeFromISR(serialMutex, NULL) == pdTRUE) {
-    //     uint32_t hexValue = (serialBuffer[0] << 24) | (serialBuffer[1] << 16) | (serialBuffer[2] << 8) | serialBuffer[3];
-    //     xTaskNotifyFromISR(heventTask, hexValue | 0b0100, eSetBits, NULL);
-    //     bufferIndex = 0;
-    //     xSemaphoreGiveFromISR(serialMutex, NULL);
-    //  }
-    //}
+void UART2_RX_IRQ() { // interrupt RS485/RS232 function
+  uint8_t Buffer[50];
+  int bytes_received = 0;
+  uint16_t size = fms_uart2_serial.available(); // serial.available  // #define fms_cli_serial Serial
+  fms_uart2_serial.printf("Got byes on serial : %d\n",size);
+  while(fms_uart2_serial.available()) {
+    yield();
+    Buffer[bytes_received] = fms_uart2_serial.read();
+    bytes_received++; 
+  }
+  fms_uart2_serial.printf("\n uart2  data process \n\r");
+  fms_uart2_decode(Buffer, size); // decode uart2 data main function
+}
+
+void fms_uart2_decode(uint8_t* data, uint32_t len) {
+  fms_debug_log_printf("[FMSUART2] Received : %s\n\r", data);
+}
+
+// free rtos task
+void fms_uart2_task(void *arg) {
+  BaseType_t rc;
+  while (1) {
+  
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 #line 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
@@ -676,6 +726,7 @@ void UART_RX_IRQ() { // interrupt function
   fms_cli_serial.printf("\n cli terminal data process \n\r");
   fms_cli_command_decode(cmd_);
 }
+
 static void cli_task(void *arg) {
   BaseType_t rc;
   while (1) {
