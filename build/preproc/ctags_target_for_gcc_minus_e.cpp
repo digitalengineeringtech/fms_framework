@@ -241,6 +241,7 @@ void fms_log_task_list() {
 */
 # 9 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino"
 # 10 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino" 2
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino" 2
 
 
 /* Main function */
@@ -278,13 +279,13 @@ void loop() {
     * main function link file
 
 */
-# 9 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
+# 10 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
 void initialize_nvs_storage() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-  fms_debug_log_printf("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
+  fmsLog(FMS_LOG_INFO, "CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // close nvs storage
 }
@@ -299,10 +300,10 @@ void log_chip_info() {
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
     Serial0 /* cli serial port*/.onReceive(UART_RX_IRQ); // uart interrupt function 
-    fms_debug_log_printf("[FMSUART1] UART1 CLI.. DONE\n\r");
+    fmsLog(FMS_LOG_INFO, "[FMSUART1] UART1 CLI.. DONE");
     return true;
   } else {
-    fms_debug_log_printf("[FMSUART1] UART1 CLI.. FAIL\n\r");
+    fmsLog(FMS_LOG_ERROR, "[FMSUART1] UART1 CLI.. FAIL");
     return false;
   }
 }
@@ -310,22 +311,20 @@ bool initialize_uart_cli() {
 bool initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 115200)) {
     Serial1 /* uart2 serial port*/.onReceive(UART2_RX_IRQ); // uart interrupt function
-    fms_debug_log_printf("[FMSUART2] UART2.. DONE\n\r");
+    fmsLog(FMS_LOG_INFO, "[FMSUART2] UART2.. DONE");
     return true;
   } else {
-    fms_debug_log_printf("[FMSUART2] UART2.. FAIL\n\r");
+    fmsLog(FMS_LOG_ERROR, "[FMSUART2] UART2.. FAIL");
     return false;
   }
 }
 
-
 bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
-    fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+    fmsLog(FMS_LOG_INFO, "Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
     return true;
   } else {
-    fms_debug_log_printf("[WiFi] wifi .. not connected\n");
-
+    fmsLog(FMS_LOG_WARNING, "Failed to connect to WiFi");
     return false;
   }
 }
@@ -352,34 +351,28 @@ void fms_pin_mode(int pin, int mode) {
 }
 # 1 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
 
-void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
-  fms_debug_log_printf("Message arrived [%c]",topic);
-  for (int i = 0; i < length; i++) {
-    Serial0 /* cli serial port*/.print((char)payload[i]);
-  }
-  Serial0 /* cli serial port*/.println();
+void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  char payload_str[length + 1];
+  memcpy(payload_str, payload, length);
+  payload_str[length] = '\0';
+  fmsLog(FMS_LOG_INFO, "Message arrived on topic [%s]: %s", topic, payload_str);
 }
+
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
-    fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
-    String clientId = String("fms_001" /* device id*/).c_str();
-    clientId += String(random(0xffff), 16);
+    fmsLog(FMS_LOG_INFO, "MQTT initialized, connecting to %s:%d...", sysCfg.mqtt_server_host /* mqtt server address*/, 1883);
+    String clientId = String("fms_001" /* device id*/) + String(random(0xffff), 16);
     if (fms_mqtt_client.connect(clientId.c_str())){
-        fms_debug_log_printf("[Mqtt] connected ..");
-        fms_mqtt_client.subscribe("fms/test/data");
-        /*
-
-        user mqtt topic here
-
-        */
-# 21 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
+      fmsLog(FMS_LOG_INFO, "Connected to MQTT server");
+      fms_mqtt_client.subscribe("fms/test/data");
+       // Add additional topic subscriptions if necessary
     } else {
-      fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
+      fmsLog(FMS_LOG_WARNING, "Failed to connect to MQTT server , rc = %d try again in 5 second",fms_mqtt_client.state());
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 23 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino" 3
+# 20 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino" 3
                 1000 
-# 23 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
+# 20 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -395,11 +388,11 @@ static void mqtt_task(void *arg) {
     if(!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
     }
-    else fms_debug_log_printf("[Mqtt] mqtt .. connected\n\r");
+    else fmsLog(FMS_LOG_INFO, "Connected to MQTT server");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 39 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino" 3
+# 36 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino" 3
               1000 
-# 39 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
+# 36 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -765,10 +758,8 @@ static void web_server_task(void *arg) {
   }
 }
 # 1 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
-
 bool initialize_fms_wifi(bool flag) {
-  if(flag)
-  {
+  if(flag) {
     // get ssid and password from nvs storage 
     fms_nvs_storage.begin("fms_config", false);
     String ssid_str = fms_nvs_storage.getString("ssid");
@@ -778,35 +769,24 @@ bool initialize_fms_wifi(bool flag) {
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
     strncpy(sysCfg.wifi_password, pass_str.c_str(), sizeof(sysCfg.wifi_password) - 1);
 
-    if(sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ")
-    {
-      fms_debug_log_printf("[DEBUG WiFi] wifi .. credential .. value is empty");
+    if(sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") {
+      fmsLog(FMS_LOG_ERROR, "[DEBUG WiFi] wifi .. credential .. value is empty");
       return false;
     }
-
-    fms_debug_log_printf("[DEBUG WiFi] wifi .. connecting \n\r");
-
-    Serial0 /* cli serial port*/.print("[DEBUG WiFi] SSID : ");
-    Serial0 /* cli serial port*/.println(String(sysCfg.wifi_ssid).c_str());
-    Serial0 /* cli serial port*/.print("[DEBUG WiFi] PASS : ");
-    Serial0 /* cli serial port*/.println(String(sysCfg.wifi_password).c_str());
-
-
     WiFi.mode(WIFI_MODE_STA);
     WiFi.setAutoReconnect(true); // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
-      if(true) Serial0 /* cli serial port*/.print(".");
+      fmsLog(FMS_LOG_INFO, "WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid,sysCfg.wifi_password);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 33 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
+# 21 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
                 1000 
-# 33 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
+# 21 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
-
     }
     return true;
   }
-  }
+}
 
 bool wifi_led_ticker() {
   static bool state = false;
@@ -818,30 +798,28 @@ uint8_t count = 1;
 static void wifi_task(void *arg) {
   BaseType_t rc;
   while(1) {
-   if(WiFi.status() != WL_CONNECTED){
-    fms_debug_log_printf("[WiFi] retry .. connecting\n\r");
-    gpio_set_level(GPIO_NUM_2,0x1);
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 53 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
-              1000 
-# 53 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
-              ) / ( TickType_t ) 1000U ) ));
-    gpio_set_level(GPIO_NUM_2,0x0);
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 55 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
-              1000 
-# 55 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
-              ) / ( TickType_t ) 1000U ) ));
-
-   }
-   else {
-    fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
-    gpio_set_level(GPIO_NUM_2,0x1);
-  }
+    if(WiFi.status() != WL_CONNECTED) {
+      fmsLog(FMS_LOG_WARNING, "Failed to connect to WiFi");
+      gpio_set_level(GPIO_NUM_2,0x1);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 40 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
+                1000 
+# 40 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
+                ) / ( TickType_t ) 1000U ) ));
+      gpio_set_level(GPIO_NUM_2,0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 42 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
+                1000 
+# 42 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
+                ) / ( TickType_t ) 1000U ) ));
+    } else {
+      fmsLog(FMS_LOG_INFO, "Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
+      gpio_set_level(GPIO_NUM_2,0x1);
+    }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 62 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
+# 47 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
               1000 
-# 62 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
+# 47 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

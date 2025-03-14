@@ -27,7 +27,7 @@ void UART2_RX_IRQ() { // interrupt RS485/RS232 function
 }
 
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
-  fms_debug_log_printf("[FMSUART2] Received : %s\n\r", data);
+  FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data);
 }
 
 

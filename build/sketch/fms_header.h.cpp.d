@@ -305,4 +305,5 @@ d:\FMS\ Framework\fms_framework\build\sketch\fms_header.h.cpp.o: \
  C:\Users\trion\Documents\Arduino\libraries\ModbusMaster\src/ModbusMaster.h \
  C:\Users\trion\Documents\Arduino\libraries\ModbusMaster\src/util/crc16.h \
  C:\Users\trion\Documents\Arduino\libraries\ModbusMaster\src/util/word.h \
- d:\FMS\ Framework\fms_framework\src/fms_header.h
+ d:\FMS\ Framework\fms_framework\src/fms_header.h \
+ C:\Users\trion\Documents\Arduino\libraries\FmsDebug/fms_debug.h

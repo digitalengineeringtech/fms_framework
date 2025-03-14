@@ -1,25 +1,22 @@
 
-void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
-  fms_debug_log_printf("Message arrived [%c]",topic);
-  for (int i = 0; i < length; i++) {
-    fms_cli_serial.print((char)payload[i]);
-  }
-  fms_cli_serial.println();
+void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  char payload_str[length + 1];
+  memcpy(payload_str, payload, length);
+  payload_str[length] = '\0';
+  FMS_LOG_INFO("Message arrived on topic [%s]: %s", topic, payload_str);
 }
+
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
-    fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
-    String clientId = String(DEVICE_ID).c_str();
-    clientId += String(random(0xffff), HEX);
+    FMS_LOG_INFO("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
+    String clientId = String(DEVICE_ID) + String(random(0xffff), HEX);
     if (fms_mqtt_client.connect(clientId.c_str())){
-        fms_debug_log_printf("[Mqtt] connected ..");
-        fms_mqtt_client.subscribe("fms/test/data");
-        /*
-        user mqtt topic here
-        */
+      FMS_LOG_INFO("Connected to MQTT server");
+      fms_mqtt_client.subscribe("fms/test/data");
+       // Add additional topic subscriptions if necessary
     } else {
-      fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
+      FMS_LOG_WARNING("Failed to connect to MQTT server , rc = %d try again in 5 second",fms_mqtt_client.state());
       vTaskDelay(pdMS_TO_TICKS(5000));
     }
   }
@@ -35,7 +32,7 @@ static void mqtt_task(void *arg) {
     if(!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
     }
-    else fms_debug_log_printf("[Mqtt] mqtt .. connected\n\r");
+    else FMS_LOG_INFO("Connected to MQTT server");
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

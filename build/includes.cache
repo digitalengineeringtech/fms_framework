@@ -71,6 +71,11 @@
   },
   {
     "Sourcefile": "d:\\FMS Framework\\fms_framework\\build\\sketch\\fms_header.h.cpp",
+    "Include": "fms_debug.h",
+    "Includepath": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\FmsDebug"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\fms_framework\\build\\sketch\\fms_header.h.cpp",
     "Include": "",
     "Includepath": null
   },
@@ -211,6 +216,11 @@
   },
   {
     "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\ModbusMaster\\src\\ModbusMaster.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\FmsDebug\\fms_debug.cpp",
     "Include": "",
     "Includepath": null
   }
