@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#line 5 "d:\\FMS Framework\\fms_framework\\src\\fms_log.ino"
+bool fms_debug_log_printf(const char *line,...);
 #line 13 "d:\\FMS Framework\\fms_framework\\src\\fms_log.ino"
 bool fms_cli_serial_printf(const char *line,...);
 #line 21 "d:\\FMS Framework\\fms_framework\\src\\fms_log.ino"
@@ -11,11 +13,11 @@ bool fms_memory_info_log();
 void fms_log_task_list();
 #line 13 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino"
 void setup();
-#line 39 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino"
+#line 32 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino"
 void loop();
-#line 67 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
+#line 70 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
 void log_debug_info();
-#line 74 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
+#line 77 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
 void fms_pin_mode(int pin, int mode);
 #line 10 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
@@ -31,23 +33,23 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 2 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
-#line 17 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
+#line 15 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
 void UART2_RX_IRQ();
-#line 31 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
+#line 29 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
 void fms_uart2_decode(uint8_t* data, uint32_t len);
-#line 38 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
+#line 36 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
 void fms_uart2_task(void *arg);
 #line 2 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 bool fms_uart_cli_begin(bool flag, int baudrate);
-#line 33 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
+#line 31 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 void fms_Cmndhelp();
-#line 126 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
+#line 124 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 void fms_response_cmnd_handler(const char* result);
-#line 136 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
+#line 134 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 void fms_cli_command_decode(String cmdLine);
-#line 162 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
+#line 160 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 void UART_RX_IRQ();
-#line 174 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
+#line 172 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 static void cli_task(void *arg);
 #line 1 "d:\\FMS Framework\\fms_framework\\src\\fms_web_server.ino"
 static void web_server_task(void *arg);
@@ -248,7 +250,7 @@ void run_sd_test();
 void initialize_nvs_storage();
 void log_chip_info();
 #define chip_report_printf log_printf // for chip info debug
-#define fms_debug_log_printf log_printf // for fms debug log
+//#define fms_debug_log_printf log_printf // for fms debug log
 
 #endif // _FMS_HEADER_H_
 
@@ -315,35 +317,27 @@ void fms_log_task_list() {
 
 /* Main function */
 void setup() {
-  initialize_uart_cli()
-  initialize_uart2()
-     
-    
+
+   fms_pin_mode(2, OUTPUT);
   
-    // Initialize GPIO pin
-    fms_pin_mode(2, OUTPUT);
-  
-    // Read configuration data from SD card
-    initialize_nvs_storage(); // Save boot count to NVS storage
-    fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
-  
-    // Initialize WiFi
-    if (initialize_wifi()) {
-      fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
-    }
-  
-    // Run SD card test
-    run_sd_test();
-    fms_debug_log_printf("Start initializing task \n\r");
-  
-    // Initialize FreeRTOS scheduler
-    fms_task_create(); // RTOS task create
+   initialize_uart_cli(); 
+   initialize_uart2(); // Initialize UART2 for rf485 log
+   initialize_nvs_storage(); // Save boot count to NVS storage
+   fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+   if (initialize_wifi()) {
+       fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+       //Initialize FreeRTOS scheduler
+       fms_task_create(); // RTOS task create
+   }
+   // Run SD card test
+   run_sd_test();
+ 
+
 }
 
 void loop() {
-  // user main code here
+    // user main code here
 }
-
 
 
 #line 1 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
@@ -374,23 +368,26 @@ void log_chip_info() {
 
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
     fms_cli_serial.onReceive(UART_RX_IRQ); // uart interrupt function 
+    fms_debug_log_printf("[FMSUART1] UART1 CLI.. DONE\n\r");
     return true;
   } else {
+    fms_debug_log_printf("[FMSUART1] UART1 CLI.. FAIL\n\r");
     return false;
   }
 }
 
 bool initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 115200)) {
-    fms_debug_log_printf("[FMSUART2] setup finish for uart2\n\r");
-    fms_uart2_serial.onReceive(UART2_RX_IRQ); // uart interrupt function 
+    fms_uart2_serial.onReceive(UART2_RX_IRQ); // uart interrupt function
+    fms_debug_log_printf("[FMSUART2] UART2.. DONE\n\r"); 
     return true;
   } else {
+    fms_debug_log_printf("[FMSUART2] UART2.. FAIL\n\r"); 
     return false;
   }
 }
+
 
 bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
@@ -544,11 +541,9 @@ bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
     if(fms_uart2_serial){
-      fms_debug_log_printf("[FMSUART2] UART 2  (Baudrate : %d) started successfully\n\r",baudrate);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
     } else {
-      fms_debug_log_printf("[FMSUART2] UART 2  start fail\n\r");
       return false;
     }
   }
@@ -589,11 +584,9 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   if (flag) {
     fms_cli_serial.begin(baudrate);
     if(fms_cli_serial){
-      fms_debug_log_printf("[FMSCLI] UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
     } else {
-      fms_debug_log_printf("[FMSCLI] UART 1 CLI start fail\n\r");
       return false;
     }
   }
@@ -807,9 +800,9 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.setAutoReconnect(true); // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
-      if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.println(".");
+      if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.print(".");
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
-      return false;
+      
     }
     return true;
   }

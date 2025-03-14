@@ -3,11 +3,9 @@ bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
     if(fms_uart2_serial){
-      fms_debug_log_printf("[FMSUART2] UART 2  (Baudrate : %d) started successfully\n\r",baudrate);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
     } else {
-      fms_debug_log_printf("[FMSUART2] UART 2  start fail\n\r");
       return false;
     }
   }

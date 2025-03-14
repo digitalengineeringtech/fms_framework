@@ -3,11 +3,9 @@ bool fms_uart_cli_begin(bool flag, int baudrate) {
   if (flag) {
     fms_cli_serial.begin(baudrate);
     if(fms_cli_serial){
-      fms_debug_log_printf("[FMSCLI] UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
     } else {
-      fms_debug_log_printf("[FMSCLI] UART 1 CLI start fail\n\r");
       return false;
     }
   }

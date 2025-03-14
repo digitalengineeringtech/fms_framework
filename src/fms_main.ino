@@ -7,6 +7,7 @@
 */
 
 #include "fms_header.h"
+#include "fms_debug.h"
 
 
 /* Main function */
@@ -20,8 +21,10 @@ void setup() {
    fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
    if (initialize_wifi()) {
        fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+       //Initialize FreeRTOS scheduler
        fms_task_create(); // RTOS task create
    }
+   // Run SD card test
    run_sd_test();
  
 

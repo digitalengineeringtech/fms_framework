@@ -191,6 +191,6 @@ void run_sd_test();
 void initialize_nvs_storage();
 void log_chip_info();
 #define chip_report_printf log_printf // for chip info debug
-#define fms_debug_log_printf log_printf // for fms debug log
+//#define fms_debug_log_printf log_printf // for fms debug log
 
 #endif // _FMS_HEADER_H_
