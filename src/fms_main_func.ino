@@ -25,23 +25,26 @@ void log_chip_info() {
 
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
     fms_cli_serial.onReceive(UART_RX_IRQ); // uart interrupt function 
+    fms_debug_log_printf("[FMSUART1] UART1 CLI.. DONE\n\r");
     return true;
   } else {
+    fms_debug_log_printf("[FMSUART1] UART1 CLI.. FAIL\n\r");
     return false;
   }
 }
 
 bool initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 115200)) {
-    fms_debug_log_printf("[FMSUART2] setup finish for uart2\n\r");
-    fms_uart2_serial.onReceive(UART2_RX_IRQ); // uart interrupt function 
+    fms_uart2_serial.onReceive(UART2_RX_IRQ); // uart interrupt function
+    fms_debug_log_printf("[FMSUART2] UART2.. DONE\n\r"); 
     return true;
   } else {
+    fms_debug_log_printf("[FMSUART2] UART2.. FAIL\n\r"); 
     return false;
   }
 }
+
 
 bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {

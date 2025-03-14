@@ -1,43 +1,43 @@
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h"
 
 
 
 // Include libraries
-# 6 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 9 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 12 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 6 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 8 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 9 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 10 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 12 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
 
-# 14 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 15 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 16 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 17 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 18 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 20 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 14 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 15 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 16 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 17 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 18 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 19 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 20 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 21 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 22 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
+# 23 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h" 2
 
 
 
-# 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 25 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h"
 // Project details
 
 
 
 
 // Device details
-# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 39 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h"
 // WiFi configuration
 
 
 
 // MQTT configuration
-# 52 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 52 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -89,9 +89,9 @@ struct SYSCFG {
 * fms command cli setting
 
 */
-# 102 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 102 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h"
 // Command list
-# 113 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 113 "d:\\FMS Framework\\fms_framework\\src\\fms_header.h"
 struct FMSMAILBOX {
     String command;
     String data;
@@ -160,12 +160,24 @@ bool use_serial1 = true;
 
 // Function declarations
 void addLog(byte loglevel, const char *line);
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+
+
+int app_cpu = 0;
+
+/* Function Prototypes */
+void initialize_system();
+bool initialize_uart_cli();
+bool initialize_uart2();
+bool initialize_wifi();
+void run_sd_test();
+void initialize_nvs_storage();
+void log_chip_info();
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_log.ino"
 // Created: 2019-04-10 15:00:00
 
 int seriallog_level = 1;
 
-bool fms_debug_log_printf(const char *line,...) { // debug log
+bool log_printf /* for fms debug log*/(const char *line,...) { // debug log
   byte loglevel = 1;
   if (true) {
     if (loglevel <= seriallog_level) log_printf /* in build in chip-debug-report.cpp*/(line);
@@ -194,76 +206,72 @@ bool fms_print_after_setup_info(){
 bool fms_memory_info_log(){
 // Check free heap size
     size_t freeHeap = esp_get_free_heap_size();
-    fms_debug_log_printf("Free Heap Size: %u bytes\n", freeHeap);
+    log_printf /* for fms debug log*/("Free Heap Size: %u bytes\n", freeHeap);
     UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino" 3 4
+# 35 "d:\\FMS Framework\\fms_framework\\src\\fms_log.ino" 3 4
                                                                 __null
-# 35 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_log.ino"
+# 35 "d:\\FMS Framework\\fms_framework\\src\\fms_log.ino"
                                                                     );
-    fms_debug_log_printf("Stack High Water Mark: %u bytes\n", stackHighWaterMark);
+    log_printf /* for fms debug log*/("Stack High Water Mark: %u bytes\n", stackHighWaterMark);
   return true;
 }
 
 void fms_log_task_list() {
   char buffer[512]; // Buffer for task list output
-  fms_debug_log_printf("Task List:\n");
-  fms_debug_log_printf("Name          State       Prio      Stack        Num \n\r");
+  log_printf /* for fms debug log*/("Task List:\n");
+  log_printf /* for fms debug log*/("Name          State       Prio      Stack        Num \n\r");
   vTaskList(buffer);
-  fms_debug_log_printf(buffer);
+  log_printf /* for fms debug log*/(buffer);
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino"
 /*
+
   *  FMS main source file
+
   *  Author: Trion
+
   *  Date: 2025
+
   *  Guided By Senior Engineer : Sir Thiha Kyaw
+
   *  Description: This file is the main source file for FMS project.
+
 */
+# 9 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino"
+# 10 "d:\\FMS Framework\\fms_framework\\src\\fms_main.ino" 2
 
-# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
-
-/* Function Prototypes */
-void initialize_system();
 
 /* Main function */
 void setup() {
-  initialize_system();
+  initialize_uart_cli()
+  initialize_uart2()
+
+
+
+    // Initialize GPIO pin
+    fms_pin_mode(2, 0x03);
+
+    // Read configuration data from SD card
+    initialize_nvs_storage(); // Save boot count to NVS storage
+    log_printf /* for fms debug log*/("CPU %d\t: Starting up...\n\r", app_cpu);
+
+    // Initialize WiFi
+    if (initialize_wifi()) {
+      log_printf /* for fms debug log*/(" [WiFi] wifi .. connected\n\r");
+    }
+
+    // Run SD card test
+    run_sd_test();
+    log_printf /* for fms debug log*/("Start initializing task \n\r");
+
+    // Initialize FreeRTOS scheduler
+    fms_task_create(); // RTOS task create
 }
 
 void loop() {
   // user main code here
 }
-
-/* Function Definitions */
-void initialize_system() {
-  // Initialize CLI UART and UART2 for RS485
-  if (initialize_uart_cli()) {
-    fms_debug_log_printf(" [FMSCLI] UART1.. DONE\n\r");
-  }
-  if (initialize_uart2()) {
-    fms_debug_log_printf(" [FMSUART2] UART2.. DONE\n\r");
-  }
-
-  // Initialize GPIO pin
-  fms_pin_mode(2, 0x03);
-
-  // Read configuration data from SD card
-  initialize_nvs_storage(); // Save boot count to NVS storage
-  fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
-
-  // Initialize WiFi
-  if (initialize_wifi()) {
-    fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
-  }
-
-  // Run SD card test
-  run_sd_test();
-  fms_debug_log_printf("Start initializing task \n\r");
-
-  // Initialize FreeRTOS scheduler
-  fms_task_create(); // RTOS task create
-}
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main_func.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
 /*
 
     * fms_main_func.ino
@@ -275,16 +283,13 @@ void initialize_system() {
     * main function link file
 
 */
-# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main_func.ino"
-int app_cpu = 0;
-
-
+# 9 "d:\\FMS Framework\\fms_framework\\src\\fms_main_func.ino"
 void initialize_nvs_storage() {
   fms_nvs_storage.begin("fms_config", false);
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
   sysCfg.bootcount++;
   app_cpu = xPortGetCoreID();
-  fms_debug_log_printf("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
+  log_printf /* for fms debug log*/("CPU %d: Boot count: %lu\n\r", app_cpu, sysCfg.bootcount);
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // close nvs storage
 }
@@ -298,7 +303,7 @@ void log_chip_info() {
 
 bool initialize_uart_cli() {
   if (fms_uart_cli_begin(use_uart_command, 115200)) {
-    fms_debug_log_printf("[FMSCLI] setup finish for cli uart\n\r");
+    log_printf /* for fms debug log*/("[FMSCLI] setup finish for cli uart\n\r");
     Serial0 /* cli serial port*/.onReceive(UART_RX_IRQ); // uart interrupt function 
     return true;
   } else {
@@ -308,7 +313,7 @@ bool initialize_uart_cli() {
 
 bool initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 115200)) {
-    fms_debug_log_printf("[FMSUART2] setup finish for uart2\n\r");
+    log_printf /* for fms debug log*/("[FMSUART2] setup finish for uart2\n\r");
     Serial1 /* uart2 serial port*/.onReceive(UART2_RX_IRQ); // uart interrupt function 
     return true;
   } else {
@@ -318,10 +323,10 @@ bool initialize_uart2() {
 
 bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
-    fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+    log_printf /* for fms debug log*/(" [WiFi] wifi .. connected\n\r");
     return true;
   } else {
-    fms_debug_log_printf("[WiFi] wifi .. not connected\n");
+    log_printf /* for fms debug log*/("[WiFi] wifi .. not connected\n");
 
     return false;
   }
@@ -347,10 +352,10 @@ void log_debug_info() {
 void fms_pin_mode(int pin, int mode) {
   pinMode(pin, mode);
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
 
 void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
-  fms_debug_log_printf("Message arrived [%c]",topic);
+  log_printf /* for fms debug log*/("Message arrived [%c]",topic);
   for (int i = 0; i < length; i++) {
     Serial0 /* cli serial port*/.print((char)payload[i]);
   }
@@ -359,24 +364,24 @@ void fms_mqtt_callback(char* topic,byte* payload,unsigned int length){
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()){
-    fms_debug_log_printf("[Mqtt] connection .. fail\n\r");
+    log_printf /* for fms debug log*/("[Mqtt] connection .. fail\n\r");
     String clientId = String("fms_001" /* device id*/).c_str();
     clientId += String(random(0xffff), 16);
     if (fms_mqtt_client.connect(clientId.c_str())){
-        fms_debug_log_printf("[Mqtt] connected ..");
+        log_printf /* for fms debug log*/("[Mqtt] connected ..");
         fms_mqtt_client.subscribe("fms/test/data");
         /*
 
         user mqtt topic here
 
         */
-# 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 21 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
     } else {
-      fms_debug_log_printf("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
+      log_printf /* for fms debug log*/("[Mqtt] connection .. failed, rc=%d try again in 5 second\n\r",fms_mqtt_client.state());
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 23 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino" 3
                 1000 
-# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 23 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -392,15 +397,15 @@ static void mqtt_task(void *arg) {
     if(!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
     }
-    else fms_debug_log_printf("[Mqtt] mqtt .. connected\n\r");
+    else log_printf /* for fms debug log*/("[Mqtt] mqtt .. connected\n\r");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino" 3
+# 39 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino" 3
               1000 
-# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
+# 39 "d:\\FMS Framework\\fms_framework\\src\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_sd.ino"
 
 /*
 
@@ -413,7 +418,7 @@ static void mqtt_task(void *arg) {
   *   author : thet htar khaing
 
 */
-# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 8 "d:\\FMS Framework\\fms_framework\\src\\fms_sd.ino"
 bool fms_config_load_sd_test() {
 
 return true;
@@ -439,18 +444,18 @@ static void sd_task(void *arg) {
     * Load config data from sd card
 
     */
-# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 32 "d:\\FMS Framework\\fms_framework\\src\\fms_sd.ino"
     //rc = xTaskNotify(heventTask, 3, eSetBits);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
+# 33 "d:\\FMS Framework\\fms_framework\\src\\fms_sd.ino" 3
               1000 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 33 "d:\\FMS Framework\\fms_framework\\src\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
     //write_data_sd("HELLO\n\r");
     //
   }
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino"
 bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size, UBaseType_t priority, TaskHandle_t* handle, BaseType_t& rc) {
   rc = xTaskCreatePinnedToCore(
     task_func, // Task function
@@ -462,20 +467,20 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
     app_cpu // CPU
   );
   
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino" 3
  (__builtin_expect(!!(
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino"
  rc == ( ( ( BaseType_t ) 1 ) )
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
- ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino", '/') + 1), 11, __PRETTY_FUNCTION__, 
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino" 3
+ ), 1) ? (void)0 : __assert_func ((__builtin_strrchr( "/" "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino", '/') + 1), 11, __PRETTY_FUNCTION__, 
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino"
  "rc == pdPASS"
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino" 3
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino" 3
  ))
-# 11 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_task.ino"
+# 11 "d:\\FMS Framework\\fms_framework\\src\\fms_task.ino"
                      ;
   if (rc != ( ( ( BaseType_t ) 1 ) )) {
-    fms_debug_log_printf("[TASK] %s task created fail", name);
+    log_printf /* for fms debug log*/("[TASK] %s task created fail", name);
     return false;
   }
   return true;
@@ -493,21 +498,21 @@ bool fms_task_create() {
 
   return true;
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
 
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     Serial1 /* uart2 serial port*/.begin(baudrate, SERIAL_8N1, 16, 17);
     if(Serial1 /* uart2 serial port*/){
-      fms_debug_log_printf("[FMSUART2] UART 2  (Baudrate : %d) started successfully\n\r",baudrate);
+      log_printf /* for fms debug log*/("[FMSUART2] UART 2  (Baudrate : %d) started successfully\n\r",baudrate);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino" 3
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino" 3
                 1000 
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       return true;
     } else {
-      fms_debug_log_printf("[FMSUART2] UART 2  start fail\n\r");
+      log_printf /* for fms debug log*/("[FMSUART2] UART 2  start fail\n\r");
       return false;
     }
   }
@@ -529,7 +534,7 @@ void UART2_RX_IRQ() { // interrupt RS485/RS232 function
 }
 
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
-  fms_debug_log_printf("[FMSUART2] Received : %s\n\r", data);
+  log_printf /* for fms debug log*/("[FMSUART2] Received : %s\n\r", data);
 }
 
 
@@ -540,27 +545,27 @@ void fms_uart2_task(void *arg) {
   while (1) {
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino" 3
+# 42 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino" 3
               1000 
-# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+# 42 "d:\\FMS Framework\\fms_framework\\src\\fms_uart2.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
 // Last update: 2021-08-29 20:00:00
 bool fms_uart_cli_begin(bool flag, int baudrate) {
   if (flag) {
     Serial0 /* cli serial port*/.begin(baudrate);
     if(Serial0 /* cli serial port*/){
-      fms_debug_log_printf("[FMSCLI] UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
+      log_printf /* for fms debug log*/("[FMSCLI] UART 1 CLI (Baudrate : %d) started successfully\n\r",baudrate);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino" 3
                 1000 
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       return true;
     } else {
-      fms_debug_log_printf("[FMSCLI] UART 1 CLI start fail\n\r");
+      log_printf /* for fms debug log*/("[FMSCLI] UART 1 CLI start fail\n\r");
       return false;
     }
   }
@@ -577,15 +582,15 @@ void fms_CmndAddDeviceId() {
 void fms_CmndStroagecheck() {
   nvs_stats_t nvs_stats;
   nvs_get_stats(
-# 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+# 26 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino" 3 4
                __null
-# 26 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 26 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
                    ,&nvs_stats);
   size_t freeHeap = esp_get_free_heap_size();
   UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(
-# 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3 4
+# 28 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino" 3 4
                                                               __null
-# 28 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 28 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
                                                                   );
   Serial0 /* cli serial port*/.printf("{\"total\":%d,\"used\":%d,\"free\":%d,\"free_heap\":%u,\"stack_high_water_mark\":%u}\n",
   nvs_stats.total_entries, nvs_stats.used_entries, nvs_stats.free_entries,freeHeap, stackHighWaterMark);
@@ -652,9 +657,9 @@ void fms_CmndWifiScan() {
             networkIndex++;
         }
         vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 93 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 93 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino" 3
                   1000 
-# 93 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 93 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
                   ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating // similar delay(1000)
     }
     WiFi.scanDelete(); // Free memory
@@ -664,11 +669,11 @@ void fms_CmndWifiScan() {
 
 void fms_CmndRestart() {
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2000 ) * ( TickType_t ) 
-# 101 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 101 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino" 3
             1000 
-# 101 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 101 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
             ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
-  fms_debug_log_printf("[DEBUG RST] Restarting...\n\r");
+  log_printf /* for fms debug log*/("[DEBUG RST] Restarting...\n\r");
   fms_response_cmnd_handler("true");
   ESP.restart();
 }
@@ -745,13 +750,13 @@ static void cli_task(void *arg) {
   while (1) {
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 178 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino" 3
+# 178 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino" 3
               1000 
-# 178 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart_cli.ino"
+# 178 "d:\\FMS Framework\\fms_framework\\src\\fms_uart_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_web_server.ino"
 static void web_server_task(void *arg) {
   // low 
   BaseType_t rc;
@@ -759,13 +764,13 @@ static void web_server_task(void *arg) {
 
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino" 3
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_web_server.ino" 3
               1000 
-# 7 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_web_server.ino"
+# 7 "d:\\FMS Framework\\fms_framework\\src\\fms_web_server.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
-# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 1 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
 
 bool initialize_fms_wifi(bool flag) {
   if(flag)
@@ -781,11 +786,11 @@ bool initialize_fms_wifi(bool flag) {
 
     if(sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ")
     {
-      fms_debug_log_printf("[DEBUG WiFi] wifi .. credential .. value is empty");
+      log_printf /* for fms debug log*/("[DEBUG WiFi] wifi .. credential .. value is empty");
       return false;
     }
 
-    fms_debug_log_printf("[DEBUG WiFi] wifi .. connecting \n\r");
+    log_printf /* for fms debug log*/("[DEBUG WiFi] wifi .. connecting \n\r");
 
     Serial0 /* cli serial port*/.print("[DEBUG WiFi] SSID : ");
     Serial0 /* cli serial port*/.println(String(sysCfg.wifi_ssid).c_str());
@@ -799,9 +804,9 @@ bool initialize_fms_wifi(bool flag) {
     while (WiFi.status() != WL_CONNECTED) {
       if(true) Serial0 /* cli serial port*/.println(".");
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 33 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
                 1000 
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 33 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       return false;
     }
@@ -820,29 +825,29 @@ static void wifi_task(void *arg) {
   BaseType_t rc;
   while(1) {
    if(WiFi.status() != WL_CONNECTED){
-    fms_debug_log_printf("[WiFi] retry .. connecting\n\r");
+    log_printf /* for fms debug log*/("[WiFi] retry .. connecting\n\r");
     gpio_set_level(GPIO_NUM_2,0x1);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 53 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
               1000 
-# 53 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 53 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) ));
     gpio_set_level(GPIO_NUM_2,0x0);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 55 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
               1000 
-# 55 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 55 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) ));
 
    }
    else {
-    fms_debug_log_printf("[WiFi] wifi .. connected\n\r");
+    log_printf /* for fms debug log*/("[WiFi] wifi .. connected\n\r");
     gpio_set_level(GPIO_NUM_2,0x1);
   }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 62 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino" 3
+# 62 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino" 3
               1000 
-# 62 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_wifi.ino"
+# 62 "d:\\FMS Framework\\fms_framework\\src\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

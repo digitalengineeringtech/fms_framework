@@ -29,9 +29,9 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.setAutoReconnect(true); // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
-      if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.println(".");
+      if(SHOW_RESP_UART_SYS_LOG) fms_cli_serial.print(".");
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
-      return false;
+      
     }
     return true;
   }
