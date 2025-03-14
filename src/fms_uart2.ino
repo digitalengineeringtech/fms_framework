@@ -32,6 +32,8 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
   fms_debug_log_printf("[FMSUART2] Received : %s\n\r", data);
 }
 
+
+
 // free rtos task
 void fms_uart2_task(void *arg) {
   BaseType_t rc;

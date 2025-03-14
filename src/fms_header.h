@@ -18,6 +18,9 @@
 #include <nvs_flash.h>
 #include "Ticker.h"
 #include "PubSubClient.h"
+#include <ModbusMaster.h>
+#include <math.h>
+
 
 // Project details
 #define PROJECT                             "fms"                   // fuel management system
@@ -175,5 +178,19 @@ bool use_serial1 = true;
 
 // Function declarations
 void addLog(byte loglevel, const char *line);
+
+
+int app_cpu = 0;
+
+/* Function Prototypes */
+void initialize_system();
+bool initialize_uart_cli();
+bool initialize_uart2();
+bool initialize_wifi();
+void run_sd_test();
+void initialize_nvs_storage();
+void log_chip_info();
+#define chip_report_printf log_printf // for chip info debug
+#define fms_debug_log_printf log_printf // for fms debug log
 
 #endif // _FMS_HEADER_H_

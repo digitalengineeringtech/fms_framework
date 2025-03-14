@@ -351,8 +351,6 @@ Details for Subsection A.1.
 | 17 | Read All Setting Value       | sys       | <read>   | -          | -          | -          | Return Value : Type : Json Format {"ssid";" " ,"password : " ","host": " "...} | For PyQTui |        |           
 |====================================================================================================================================================================================================================
 
-
-
 [appendix]
 == Pump Protocols
 === Haungyang Protocols

@@ -66,6 +66,11 @@
   },
   {
     "Sourcefile": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\build\\sketch\\fms_header.h.cpp",
+    "Include": "ModbusMaster.h",
+    "Includepath": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\ModbusMaster\\src"
+  },
+  {
+    "Sourcefile": "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\build\\sketch\\fms_header.h.cpp",
     "Include": "",
     "Includepath": null
   },
@@ -201,6 +206,11 @@
   },
   {
     "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Ticker\\src\\Ticker.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\ModbusMaster\\src\\ModbusMaster.cpp",
     "Include": "",
     "Includepath": null
   }

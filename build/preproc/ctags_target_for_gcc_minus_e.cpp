@@ -19,20 +19,25 @@
 # 19 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 20 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 # 21 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 22 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
+# 23 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h" 2
 
+
+
+# 25 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Project details
 
 
 
 
 // Device details
-# 36 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 39 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // WiFi configuration
 
 
 
 // MQTT configuration
-# 49 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 52 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Web server configuration
 
 
@@ -84,9 +89,9 @@ struct SYSCFG {
 * fms command cli setting
 
 */
-# 99 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 102 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 // Command list
-# 110 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
+# 113 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_header.h"
 struct FMSMAILBOX {
     String command;
     String data;
@@ -207,8 +212,70 @@ void fms_log_task_list() {
   fms_debug_log_printf(buffer);
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino"
-# 2 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
+/*
+  *  FMS main source file
+  *  Author: Trion
+  *  Date: 2025
+  *  Guided By Senior Engineer : Sir Thiha Kyaw
+  *  Description: This file is the main source file for FMS project.
+*/
 
+# 10 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main.ino" 2
+
+/* Function Prototypes */
+void initialize_system();
+
+/* Main function */
+void setup() {
+  initialize_system();
+}
+
+void loop() {
+  // user main code here
+}
+
+/* Function Definitions */
+void initialize_system() {
+  // Initialize CLI UART and UART2 for RS485
+  if (initialize_uart_cli()) {
+    fms_debug_log_printf(" [FMSCLI] UART1.. DONE\n\r");
+  }
+  if (initialize_uart2()) {
+    fms_debug_log_printf(" [FMSUART2] UART2.. DONE\n\r");
+  }
+
+  // Initialize GPIO pin
+  fms_pin_mode(2, 0x03);
+
+  // Read configuration data from SD card
+  initialize_nvs_storage(); // Save boot count to NVS storage
+  fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
+
+  // Initialize WiFi
+  if (initialize_wifi()) {
+    fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
+  }
+
+  // Run SD card test
+  run_sd_test();
+  fms_debug_log_printf("Start initializing task \n\r");
+
+  // Initialize FreeRTOS scheduler
+  fms_task_create(); // RTOS task create
+}
+# 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main_func.ino"
+/*
+
+    * fms_main_func.ino
+
+    * 
+
+    * This file is part of the ESP32 FMS 
+
+    * main function link file
+
+*/
+# 8 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_main_func.ino"
 int app_cpu = 0;
 
 
@@ -253,7 +320,6 @@ bool initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
     fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
     return true;
-
   } else {
     fms_debug_log_printf("[WiFi] wifi .. not connected\n");
 
@@ -278,31 +344,8 @@ void log_debug_info() {
 
 }
 
-void setup() {
-  log_chip_info();
-
- if(initialize_uart_cli()) fms_debug_log_printf(" [FMSCLI] uart1 cli.. started\n\r");
- if(initialize_uart2()) fms_debug_log_printf(" [FMSUART2] uart2.. started\n\r"); // uart2 serial port (RS485 connection)
-
-  pinMode(2,0x03);
-
-  initialize_nvs_storage(); // save boot count to nvs storage 
-
-  fms_debug_log_printf("CPU %d\t: Starting up...\n\r", app_cpu);
-
-  if(initialize_wifi()) fms_debug_log_printf(" [WiFi] wifi .. connected\n\r");
-
-  run_sd_test();
-
-  fms_debug_log_printf("Start initializing task \n\r");
-
-  fms_task_create(); // rtos task create 
-
-  log_debug_info();
-}
-
-void loop() {
-  // user main code here
+void fms_pin_mode(int pin, int mode) {
+  pinMode(pin, mode);
 }
 # 1 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_mqtt.ino"
 
@@ -387,7 +430,6 @@ bool write_data_sd(char* input)
   return true;
 }
 
-
 static void sd_task(void *arg) {
   BaseType_t rc;
   while(1) {
@@ -397,12 +439,12 @@ static void sd_task(void *arg) {
     * Load config data from sd card
 
     */
-# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 32 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
     //rc = xTaskNotify(heventTask, 3, eSetBits);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino" 3
               1000 
-# 34 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
+# 33 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
     //write_data_sd("HELLO\n\r");
     //
@@ -490,15 +532,17 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
   fms_debug_log_printf("[FMSUART2] Received : %s\n\r", data);
 }
 
+
+
 // free rtos task
 void fms_uart2_task(void *arg) {
   BaseType_t rc;
   while (1) {
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino" 3
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino" 3
               1000 
-# 40 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
+# 42 "d:\\2025 iih office\\Project\\FMS Framework\\fms_main\\src\\fms_uart2.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
