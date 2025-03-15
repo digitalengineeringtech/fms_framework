@@ -1,7 +1,8 @@
 # HTML to Gzipped Array Converter for ESP32
-
+![HTML2GZH](HTML2GZH.png)
+```
 This is a PyQt5-based desktop tool that converts HTML files into C code containing a gzipped byte array. The generated C code is intended for use on ESP32 platforms and stores the compressed data in program memory.
-
+```
 ## Features
 
 - **User-Friendly Interface:** Easily select an HTML file via the file browser.
