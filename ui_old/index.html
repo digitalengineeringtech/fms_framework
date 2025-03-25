@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP OTA Remote Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ESP OTA Remote Manager</h1>
+      <p id="connection-status" class="disconnected">Disconnected</p>
+    </header>
+    
+    <div class="card">
+      <h2>Device Information</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Device Name:</span>
+          <span id="device-name">Loading...</span>
+        </div>
+        <div class="info-item">
+          <span class="label">IP Address:</span>
+          <span id="ip-address">Loading...</span>
+        </div>
+        <div class="info-item">
+          <span class="label">MAC Address:</span>
+          <span id="mac-address">Loading...</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Current Firmware:</span>
+          <span id="current-version">Loading...</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Latest Firmware:</span>
+          <span id="latest-version">Unknown</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Uptime:</span>
+          <span id="uptime">Loading...</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Free Memory:</span>
+          <span id="free-memory">Loading...</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Flash Size:</span>
+          <span id="flash-size">Loading...</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Firmware Update</h2>
+      <div id="update-status" class="status-idle">
+        <div class="status-indicator">
+          <div class="status-icon"></div>
+          <div class="status-text">Idle</div>
+        </div>
+        
+        <div id="progress-container" class="hidden">
+          <div class="progress-bar">
+            <div id="progress-bar-inner" style="width: 0%"></div>
+          </div>
+          <div id="progress-text">0%</div>
+        </div>
+        
+        <div id="error-message" class="hidden"></div>
+      </div>
+      
+      <div class="button-group">
+        <button id="check-updates-btn" class="btn">Check for Updates</button>
+        <button id="update-btn" class="btn btn-primary" disabled>Update Firmware</button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Device Management</h2>
+      <div class="button-group">
+        <button id="restart-btn" class="btn btn-warning">Restart Device</button>
+      </div>
+    </div>
+    
+    <footer>
+      <p>ESP OTA Remote Manager | <span id="footer-version">v1.0.0</span></p>
+    </footer>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html>
