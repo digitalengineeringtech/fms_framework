@@ -2,11 +2,9 @@
 #define _FMS_MAIN_H_
 
 // Include libraries
-#include <SD.h>
-#include <FS.h>
-#include <SPI.h>
+
 #include <WebServer.h>
-#include <PubSubClient.h>
+// #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include "time.h"
@@ -17,12 +15,16 @@
 #include <nvs.h>
 #include <nvs_flash.h>
 #include "Ticker.h"
-#include <ModbusMaster.h>
 #include <math.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <WebSocketsServer.h>
-
+// protocol
+#include <ModbusMaster.h>
+// sd config
+#include <SD.h>
+#include <FS.h>
+#include <SPI.h>
 // ota server
 #include <ESPmDNS.h>
 #include <WebServer.h>
@@ -33,13 +35,7 @@
 
 String _firmware_version = "0.1.0";  // Current firmware version
 String deviceName = "ultramarine-v0.1-";
-
-
-
 Ticker ticker;
-
-
-
 #define PROJECT "fms"         // fuel management system
 #define CLI_PASSWORD "admin"  // cli password // change this password
 #define BUILTIN_LED 2         //
@@ -47,7 +43,7 @@ Ticker ticker;
 #define DEVICE_ID "fms_001"  // device id
 #define STATION_ID 1         // station id
 #define SHOW_DEBUG_SYS_LOG true
-#define SHOW_DEBUG_SD_TEST_LOG false
+#define SHOW_DEBUG_SD_TEST_LOG true
 #define SHOW_DEBUG_FMS_CHIP_INFO_LOG false
 #define SHOW_UART_SYS_LOG true  // show uart log
 #define SHOW_RESP_UART_SYS_LOG true
@@ -86,6 +82,27 @@ Ticker ticker;
 #define _log_printf log_printf    // in build in chip-debug-report.cpp
 #define fms_cli_serial Serial     // cli serial port
 #define fms_uart2_serial Serial1  // uart2 serial port
+
+
+// mqtt topic config protocol
+
+//mqtt
+char pumpapprobuf[22] = "detpos/local_server/1";
+char pumpreqbuf[23] = "detpos/device/permit/1";
+char pumppresetbuf[28] = "detpos/local_server/preset";  // return from local server
+char pplive[25] = "detpos/device/livedata/1";
+char ppfinal[22] = "detpos/device/Final/1";
+char whreqbuf[20] = "detpos/device/whreq";
+char pricechange[26] = "detpos/local_server/price";  // return from local server
+char pricereqbuf[25] = "detpos/device/pricereq/1";
+char activebuf[23] = "detpos/device/active/1";
+char devicebuf[2] = "1";
+char device_Id_topic[40] = "detpos/local_server/initial1/det/0A0000";  // return from local server
+char Reset_topic[17] = "detpos/hmi/reset";
+char reload_topic[29] = "detpos/local_server/reload/1";  // return from local server
+
+// mqtt end
+
 
 // Global objects
 uart_t* fms_cli_uart;
@@ -217,14 +234,14 @@ const char* OTA_SERVER = "http://192.168.1.142:3003/firmware.json";
 unsigned long currentMillis = 0;
 unsigned long ota_previousMillis = 0;
 String firmwareVersion = "1.0.0";  // Current firmware version
-String _firmware_v = "";             // Latest firmware version from server
-bool _published = false;             // Is the update published?
-String _ota_url = "";                // URL to download the firmware
-bool _ota_update = false;            // Should we update?
-bool _update_in_progress = false;    // Is update in progress?
-int _update_progress = 0;            // Update progress (0-100)
-String _update_status = "idle";      // Update status (idle, checking, updating, success, error)
-String _update_error = "";           // Error message if update fails
+String _firmware_v = "";           // Latest firmware version from server
+bool _published = false;           // Is the update published?
+String _ota_url = "";              // URL to download the firmware
+bool _ota_update = false;          // Should we update?
+bool _update_in_progress = false;  // Is update in progress?
+int _update_progress = 0;          // Update progress (0-100)
+String _update_status = "idle";    // Update status (idle, checking, updating, success, error)
+String _update_error = "";         // Error message if update fails
 #define LED_BUILTIN 16
 // LED pins
 const int LED_ONE = LED_BUILTIN;  // Built-in LED (inverted logic)

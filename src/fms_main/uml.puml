@@ -1,0 +1,182 @@
+@startuml
+
+'-- External Modules/Classes --
+class FMS_NVS_Storage {
+  +begin(config: String, write: bool)
+  +getString(key: String) : String
+  +end()
+}
+
+class WiFi {
+  +mode(mode: int)
+  +setAutoReconnect(flag: bool)
+  +begin(ssid: String, password: String)
+  +status() : int
+  +localIP() : IPAddress
+}
+
+class IPAddress {
+  +toString() : String
+}
+
+class sysCfg {
+  -wifi_ssid : char[]
+  -wifi_password : char[]
+  ' Getters/setters would be here
+}
+
+'-- Main Module Class --
+class FMS_WIFI {
+  +initialize_fms_wifi(flag: bool) : bool
+  +wifi_led_ticker() : bool
+  +wifi_task(arg: void*) : void
+}
+
+'-- Relationships --
+FMS_WIFI --> sysCfg : uses
+FMS_WIFI --> FMS_NVS_Storage : uses
+FMS_WIFI --> WiFi : calls
+WiFi --> IPAddress : returns
+
+@enduml
+
+
+@startuml
+
+package "Global Configuration" {
+    class SYSCFG {
+      +bootcount: unsigned long
+      +version: unsigned long
+      +wifi_ssid: char[32]
+      +wifi_password: char[64]
+      +mqtt_server_host: char[32] = "192.168.1.142"
+      +mqtt_user: char*
+      +mqtt_password: char*
+      +mqtt_port: uint32_t
+      +mqtt_device_id: char*
+      +mqtt_lwt_status: char*[20]
+      +device_id: char* = "fms_001"
+      +station_id: uint32_t = STATION_ID
+    }
+    
+    class FMSMAILBOX {
+      +command: String
+      +data: String
+      +data_len: uint32_t
+      +payload: uint32_t
+      +index: uint32_t
+    }
+}
+
+package "Global Objects" {
+    class Preferences {
+      <<External>>
+    }
+    
+    class WiFiClient {
+      <<External>>
+    }
+    
+    class HTTPClient {
+      <<External>>
+    }
+    
+    class PubSubClient {
+      <<External>>
+    }
+    
+    class WebServer {
+      <<External>>
+    }
+    
+    class Ticker {
+      <<External>>
+    }
+    
+    note "Global Instances" as GlobalInstances
+    GlobalInstances : fms_nvs_storage : Preferences
+    GlobalInstances : wf_client : WiFiClient
+    GlobalInstances : http : HTTPClient
+    GlobalInstances : http_client : WiFiClient
+    GlobalInstances : fms_mqtt_client : PubSubClient
+    GlobalInstances : server : WebServer
+    GlobalInstances : ticker : Ticker
+}
+
+package "CLI & Build Settings" {
+    note "CLI Macros" as CLIMacros
+    CLIMacros : CLI_PASSWORD = "admin"
+    CLIMacros : BUILTIN_LED = 2
+}
+
+package "RTOS Task Handles & Flags" {
+    class TaskHandles {
+      +heventTask: TaskHandle_t
+      +hwifiTask: TaskHandle_t
+      +hmqttTask: TaskHandle_t
+      +hsdCardTask: TaskHandle_t
+      +hwebServerTask: TaskHandle_t
+      +hspiTask: TaskHandle_t
+      +hcliTask: TaskHandle_t
+      +huart2Task: TaskHandle_t
+    }
+    
+    class Flags {
+      +wifi_start_event: bool
+      +use_uart_command: bool
+      +use_serial1: bool
+      +testModeActive: bool
+    }
+}
+
+package "Time & OTA Settings" {
+    note "Time Configurations" as TimeConfig
+    TimeConfig : NTP_SERVER = "pool.ntp.org"
+    TimeConfig : GMT_OFFSET_SEC = (7 * 3600)
+    TimeConfig : DAYLIGHT_OFFSET_SEC = 0
+    
+    note "OTA Configurations" as OTAConfig
+    OTAConfig : _firmware_version = "0.1.0"
+    OTAConfig : OTA_SERVER = "http://192.168.1.142:3003/firmware.json"
+    OTAConfig : firmwareVersion = "1.0.0"
+    OTAConfig : _firmware_v: String
+    OTAConfig : _ota_update: bool
+    OTAConfig : _update_in_progress: bool
+    OTAConfig : _update_progress: int
+    OTAConfig : _update_status: String
+    OTAConfig : _update_error: String
+}
+
+package "Function Prototypes" {
+    class FMSCommandFunctions {
+      +fms_CmndWifi()
+      +fms_CmndRestart()
+      +fms_CmndWifiScan()
+      +fms_CmndMqtt()
+      +fms_CmndWifiRead()
+      +fms_CmndBootCount()
+      +fms_CmndAddDeviceId()
+      +fms_CmndDebug()
+      +fms_CmndStroagecheck()
+    }
+    
+    class InitializationFunctions {
+      +initialize_system()
+      +initialize_uart_cli() : bool
+      +initialize_uart2() : bool
+      +initialize_wifi() : bool
+      +initialize_nvs_storage()
+      +log_chip_info()
+    }
+    
+    class TestFunctions {
+      +run_sd_test()
+      +addLog(loglevel: byte, line: const char*)
+    }
+}
+
+' Relationships
+SYSCFG .. GlobalInstances : "stored in/used by"
+FMSMAILBOX .. FMSCommandFunctions : "handles commands"
+
+@enduml

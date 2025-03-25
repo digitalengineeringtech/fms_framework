@@ -1,4 +1,3 @@
-
 /*
     * FMS CLI - Command Line Interface for FMS (Firmware Management System)
     * 
@@ -48,7 +47,7 @@ bool fms_cli::begin(unsigned long baudRate) {
     
     // Print welcome message
     _serial.println("\n\r+----------------------------------+");
-    _serial.println("| FMS Command Line Interface v1.0  |");
+    _serial.println("|       FMS Firmware v1.0          |");
     _serial.println("+----------------------------------+");
     
     if (_authRequired && !_authenticated) {

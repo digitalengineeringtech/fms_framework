@@ -43,12 +43,13 @@ bool initialize_wifi() {
 }
 
 void run_sd_test() {
-#if SHOW_SD_TEST_LOG
-  if (fms_config_load_sd_test()) {
-    FMS_LOG_INFO("==================== sd card test success================");
-  } else {
-    FMS_LOG_ERROR("sd card test failed");
-  }
+#if true
+  fms_config_load_sd_test();
+  // if () {
+  //   FMS_LOG_INFO("==================== sd card test success================");
+  // } else {
+  //   FMS_LOG_ERROR("sd card test failed");
+  // }
 #endif
 }
 
