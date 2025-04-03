@@ -2,7 +2,7 @@
 
 #if USE_LANFENG
 
-lanfeng::lanfeng(uint8_t slaveId, HardwareSerial &serial, uint8_t baudrate)
+ lanfeng::lanfeng(uint8_t slaveId, HardwareSerial &serial, uint8_t baudrate)
     : _slaveId(slaveId), _serial(serial), _baudrate(baudrate)
 {
     setupPins();
