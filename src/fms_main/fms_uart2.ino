@@ -11,7 +11,6 @@ bool fms_uart2_begin(bool flag, int baudrate) {
   }
 }
 
-
 void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
   uint8_t Buffer[50];
   int bytes_received = 0;
@@ -29,8 +28,6 @@ void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
   FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data);
 }
-
-
 
 // free rtos task
 void fms_uart2_task(void *arg) {

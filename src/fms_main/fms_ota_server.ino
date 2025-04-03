@@ -12,45 +12,29 @@ ota server
     v 0.1 ota server
 */
 
-bool otaInProgress = false;
-uint8_t otaProgress = 0;
-const char* updateStatus = "Idle";
-size_t contentLength = 0;
-size_t uploadedBytes = 0;
-unsigned long uptime = 0;
-unsigned long lastUptimeUpdate = 0;
-unsigned long lastInfoRequest = 0;
-String cachedInfoResponse = "";
-const unsigned long INFO_CACHE_TIME = 1000;  // 1 second cache
-// Login credentials
-const String correctUsername = "admin";
-const String correctPassword = "1234";
-
-// Session tracking (for simplicity)
-bool isAuthenticated = false;
 // For large uploads - increase buffer size
-#define HTTP_UPLOAD_BUFLEN 4096  // Increased from default 1460
+#define HTTP_UPLOAD_BUFLEN 4096         // Increased from default 1460
 #define WDT_TIMEOUT_S 30
 
-void fms_info_response() {
+void fms_info_response() {            // mini version show in ota page
   JsonBuilder json;
-  json.addString("deviceName", deviceName);
-  json.addString("firmwareVersion", firmwareVersion);
-  json.addString("ipAddress", WiFi.localIP().toString());
-  json.addString("macAddress", WiFi.macAddress());
-  json.addInt("rssi", WiFi.RSSI());
-  json.addLong("uptime", uptime);
-  json.addInt("freeHeap", ESP.getFreeHeap());
-  json.addInt("totalHeap", ESP.getHeapSize());
-  json.addInt("cpuFreqMHz", ESP.getCpuFreqMHz());
+  json.addString("deviceName",        deviceName);
+  json.addString("firmwareVersion",   firmwareVersion);
+  json.addString("ipAddress",         WiFi.localIP().toString());
+  json.addString("macAddress",        WiFi.macAddress());
+  json.addInt("rssi",                 WiFi.RSSI());
+  json.addLong("uptime",              uptime);
+  json.addInt("freeHeap",             ESP.getFreeHeap());
+  json.addInt("totalHeap",            ESP.getHeapSize());
+  json.addInt("cpuFreqMHz",           ESP.getCpuFreqMHz());
+  json.addString("sdkVersion",        ESP.getSdkVersion());
+  json.addString("status",            updateStatus);
+  json.addInt("progress",             otaProgress);
+  json.addBool("otaInProgress",       otaInProgress);
   //json.addLong("flashChipSize", ESP.getFlashChipSize());
-  json.addString("sdkVersion", ESP.getSdkVersion());
-  json.addString("status", updateStatus);
-  json.addInt("progress", otaProgress);
-  json.addBool("otaInProgress", otaInProgress);
   cachedInfoResponse = json.toString();
 }
-void handleDashboard() {
+void handleDashboard() { // login auth
   if (!isAuthenticated) {
     // Redirect to login if not authenticated
     server.sendHeader("Location", "/", true);
@@ -106,7 +90,7 @@ void fms_set_ota_server() {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     server.send(200, "application/json", cachedInfoResponse);
   });
-  server.on("/logout", handleLogout); // logout ota server
+  server.on("/logout", handleLogout);  // logout ota server
   server.on(
     "/api/update", HTTP_POST, []() {
       // This handler is called after the upload is complete
@@ -127,11 +111,9 @@ void fms_set_ota_server() {
     []() {
       // This handler processes the actual upload
       HTTPUpload& upload = server.upload();
-
       if (upload.status == UPLOAD_FILE_START) {
         // Disable task watchdog for update process
         esp_task_wdt_deinit();
-
         FMS_LOG_INFO("Update: %s\n", upload.filename.c_str());
         updateStatus = "Update started";
         otaInProgress = true;
@@ -144,16 +126,13 @@ void fms_set_ota_server() {
           contentLength = server.header("Content-Length").toInt();
           FMS_LOG_INFO("Content-Length: %d bytes\n", contentLength);
         }
-
         // Free up as much memory as possible
         FMS_LOG_INFO("Free heap before update: %d bytes\n", ESP.getFreeHeap());
-
         // Start the update with the correct partition type
         if (!Update.begin(contentLength > 0 ? contentLength : UPDATE_SIZE_UNKNOWN, U_FLASH)) {
           Update.printError(Serial);
           updateStatus = "OTA Error";
           otaInProgress = false;
-
           // Re-enable task watchdog
           esp_task_wdt_config_t wdtConfig;
           wdtConfig.timeout_ms = WDT_TIMEOUT_S * 1000;
@@ -164,20 +143,17 @@ void fms_set_ota_server() {
       } else if (upload.status == UPLOAD_FILE_WRITE) {
         // Process upload chunks in larger batches for better performance
         uploadedBytes += upload.currentSize;
-
         // Calculate progress
         if (contentLength > 0) {
           otaProgress = (uploadedBytes * 100) / contentLength;
         } else if (Update.size()) {
           otaProgress = (uploadedBytes * 100) / Update.size();
         }
-
         // Write the received bytes to flash
         if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
           Update.printError(Serial);
           updateStatus = "OTA Error";
         }
-
         // Log progress less frequently to reduce overhead
         if (otaProgress % 10 == 0) {
           FMS_LOG_INFO("Progress: %u%% (%u / %u bytes)\n",
@@ -185,7 +161,6 @@ void fms_set_ota_server() {
                        uploadedBytes,
                        contentLength > 0 ? contentLength : Update.size());
         }
-
         // Yield to avoid watchdog trigger
         yield();
       } else if (upload.status == UPLOAD_FILE_END) {
@@ -204,7 +179,6 @@ void fms_set_ota_server() {
         otaInProgress = false;
         updateStatus = "Update aborted";
         FMS_LOG_INFO("Update aborted");
-
         // Re-enable task watchdog
         esp_task_wdt_config_t wdtConfig;
         wdtConfig.timeout_ms = WDT_TIMEOUT_S * 1000;
@@ -212,8 +186,6 @@ void fms_set_ota_server() {
         wdtConfig.trigger_panic = true;
         esp_task_wdt_init(&wdtConfig);
       }
-
-      // Yield to avoid watchdog trigger
       yield();
     });
 
@@ -224,7 +196,7 @@ void fms_set_ota_server() {
     ESP.restart();
   });
 
-  // Handle 404 - redirect to index
+  // Set up mDNS responder
   server.onNotFound([]() {
     server.sendHeader("Location", "/", true);
     server.send(302, "text/plain", "");
@@ -232,27 +204,23 @@ void fms_set_ota_server() {
 }
 
 static void web_server_task(void* arg) {
-  // Set up mDNS responder
-  if (!MDNS.begin(deviceName)) {
-    Serial.println("Error setting up MDNS responder!");
+  if (!MDNS.begin(deviceName)) {                // Set up mDNS responder
+    Serial.println("[DNS] Error setting up MDNS responder!");
   } else {
-    Serial.println("mDNS responder started");
-    // Add service to MDNS
-    MDNS.addService("esp-ota", "tcp", 80);
-    MDNS.addService("http", "tcp", 80);  // Add standard HTTP service for better discovery
+    Serial.println("[DNS] mDNS responder started");
+    MDNS.addService("esp-ota", "tcp", 80);      // Add service to MDNS
+    MDNS.addService("http", "tcp", 80);         // Add standard HTTP service for better discovery
   }
   deviceName = deviceName + String(WiFi.macAddress()).c_str();
   fms_set_ota_server();
   server.begin();
   while (1) {
     server.handleClient();
-    FMS_LOG_INFO("ota server");
     // Update uptime counter (every second)
     if (millis() - lastUptimeUpdate >= 1000) {
       uptime++;
       lastUptimeUpdate = millis();
     }
-
-    delay(1);
+    vTaskDelay(pdMS_TO_TICKS(1));
   }
 }

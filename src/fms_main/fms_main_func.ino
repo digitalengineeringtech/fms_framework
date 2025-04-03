@@ -4,14 +4,23 @@
     * main function link file
 */
 
-void initialize_nvs_storage() {
-  fms_nvs_storage.begin("fms_config", false);
-  sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0);
-  sysCfg.bootcount++;
+
+void fms_boot_count(bool bootsave) {
+  if (!bootsave) {
+    return;
+  }
+
+  if (!fms_nvs_storage.begin("fms_config", false)) {
+    FMS_LOG_ERROR("Failed to initialize NVS storage");
+    return;
+  }
+
+  sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0) + 1;
   app_cpu = xPortGetCoreID();
   FMS_LOG_INFO("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
-  fms_nvs_storage.end();  // close nvs storage
+  fms_nvs_storage.end();  // Close NVS storage
 }
 
 void log_chip_info() {
@@ -21,7 +30,7 @@ void log_chip_info() {
 #endif
 }
 
-bool initialize_uart2() {
+bool fms_initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 115200)) {
     fms_uart2_serial.onReceive(fm_rx_irq_interrupt);  // uart interrupt function
     FMS_LOG_INFO("[FMSUART2] UART2.. DONE");
@@ -32,7 +41,7 @@ bool initialize_uart2() {
   }
 }
 
-bool initialize_wifi() {
+bool fms_initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
     FMS_LOG_INFO("Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
     return true;
@@ -42,14 +51,14 @@ bool initialize_wifi() {
   }
 }
 
-void run_sd_test() {
+void fms_run_sd_test() {
 #if true
   fms_config_load_sd_test();
-  // if () {
-  //   FMS_LOG_INFO("==================== sd card test success================");
-  // } else {
-  //   FMS_LOG_ERROR("sd card test failed");
-  // }
+  if (!LittleFS.begin(true)) {  // preference storage (1MB)
+    Serial.println("[STORAGE] Failed to mount file system");
+  } else {
+    Serial.println("[STORAGE] File system mounted");
+  }
 #endif
 }
 

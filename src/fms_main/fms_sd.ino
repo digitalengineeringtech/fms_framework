@@ -1,13 +1,11 @@
-
 /*
   * fms_sd.cpp
-  *
   *  Created on: 2020. 12. 10.
   *   author : thet htar khaing
 */
 
 bool fms_sd_init() {
-  if (!SD.begin(5)) {
+  if (!SD.begin(SD_CARD_CS_PIN)) {
     FMS_LOG_ERROR("Card Mount Failed");
     return false;
   }
