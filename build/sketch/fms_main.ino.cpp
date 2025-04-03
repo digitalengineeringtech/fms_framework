@@ -12,14 +12,16 @@
 #include "src/_fms_debug.h"
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
-#include "src/_fms_lanfeng.h"
+// #include "src/_fms_lanfeng.h"
+
+
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
 
 /* Main function */
-#line 18 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 20 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup();
-#line 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 44 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void loop();
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_wifi_command(const std::vector<String>& args);
@@ -55,6 +57,14 @@ void log_debug_info();
 void fms_pin_mode(int pin, int mode);
 #line 76 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_dns_responder_init();
+#line 89 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,float price,float totalizer,unsigned long long totalizer_amount);
+#line 97 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+String fms_generateLiveData(int pump_id,float pirce_liter,float live_liters);
+#line 107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+int fms_decodePresetAmount(String presetData);
+#line 117 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+int fms_decodePumpId(String presetData);
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
 #line 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
@@ -91,11 +101,11 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
-#line 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fm_rx_irq_interrupt();
-#line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_decode(uint8_t* data, uint32_t len);
-#line 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 35 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_task(void *arg);
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 bool initialize_fms_wifi(bool flag);
@@ -103,11 +113,13 @@ bool initialize_fms_wifi(bool flag);
 bool wifi_led_ticker();
 #line 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 static void wifi_task(void *arg);
-#line 18 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 20 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup() {
   fms_pin_mode(BUILTIN_LED, OUTPUT);
   fms_cli.begin(115200);                    // uart
   fms_initialize_uart2();                   // uart 2
+  // fmslanfeng.begin();
+  // fmslanfeng.beginModbus(1,fms_uart2_serial); // add slave id
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
   fms_boot_count(true);                     // boot count
@@ -125,7 +137,6 @@ void setup() {
     fms_task_create();
   }
 }
-
 
 void loop() {
 }
@@ -428,6 +439,91 @@ static void cli_task(void *arg) {
   }
 }
 
+#line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_lanfeng.ino"
+class fmsLanfeng 
+{
+    private:
+        uint8_t _rePin;
+        uint8_t _dePin;
+        uint8_t _rxPin;
+        uint8_t _txPin;
+        ModbusMaster _node;
+        static void _preTransmission();
+        static void _postTransmission();
+        static uint8_t _staticRePin;
+        static uint8_t _staticDePin;
+        Stream *_serial; // Pointer to the serial stream for communication
+        uint8_t _slaveId; // Slave ID for Modbus communication
+    public:
+        fmsLanfeng(uint8_t rePin, uint8_t dePin,Stream &serial){
+            _rePin = rePin;
+            _dePin = dePin;
+            _serial = &serial; // Initialize the serial stream pointer
+        }
+
+        void init(Stream &serial, uint8_t slave) {
+            setupPins(); // Setup the pins for RS485 communication
+            _node.begin(slave, serial);
+            _node.preTransmission(_preTransmission);
+            _node.postTransmission(_postTransmission);
+        }
+
+        void setupPins() {
+            pinMode(_rePin, OUTPUT);
+            pinMode(_dePin, OUTPUT);
+
+            digitalWrite(_rePin, LOW);
+            digitalWrite(_dePin, LOW);
+        }
+
+        void _preTransmission() {
+            digitalWrite(_rePin, HIGH);
+            digitalWrite(_dePin, HIGH);
+        }
+
+        void _postTransmission() {
+            digitalWrite(_rePin,LOW);
+            digitalWrite(_dePin,LOW);
+        }
+
+        void onReceived(void (*isr)(void)) {
+            _serial->onReceive(isr);
+        }
+
+        void processReceivedData() {
+            while (_serial->available()) {
+                yield();
+                uint8_t byte = _serial->read();
+                _node.receive(byte);
+            }
+        }
+
+        float convert_float(uint32_t highReg,uint32_t lowReg){
+            uint32_t data[2];
+            float floatData;
+            data[0] = (uint32_t)highReg << 16; // Shift high register to the left by 16 bits
+            data[1] = (uint32_t)lowReg; // Low register remains as is 0x12340000 to 0x 0000 1234
+            uint32_t combinedData = data[0] | data[1]; // Combine high and low registers
+            memcpy(&floatData, &combinedData, sizeof(float)); // Copy the combined data into a float variable
+            return floatData; // Return the float value
+        }
+
+        uint8_t*  readHoldingRegister(uint16_t registerAddress, uint8_t MAX_DATA_SIZE) {
+            uint8_t data[MAX_DATA_SIZE];
+            uint8_t result = _node.readHoldingRegisters(registerAddress, MAX_DATA_SIZE);
+            if (result == _node.ku8MBSuccess) {
+                for (int i = 0; i < MAX_DATA_SIZE; i++) {
+                    uint16_t value = _node.getResponseBuffer(i); // Get the value from the response buffer
+                    data[i] = (value != 0xFFFF)?(uint8_t)value:0x00;
+                }
+                return data;
+            } else {
+                FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
+                return 0;
+            }
+            
+        }
+}
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 /*
     * fms_main_func.ino
@@ -462,7 +558,7 @@ void log_chip_info() {
 }
 
 bool fms_initialize_uart2() {
-  if (fms_uart2_begin(use_serial1, 115200)) {
+  if (fms_uart2_begin(use_serial1, 9600)) {
     fms_uart2_serial.onReceive(fm_rx_irq_interrupt);  // uart interrupt function
     FMS_LOG_INFO("[FMSUART2] UART2.. DONE");
     return true;
@@ -515,6 +611,41 @@ void fms_dns_responder_init() {
     MDNS.addService("http", "tcp", 80);  // Add standard HTTP service for better discovery
   }
 }
+
+// generate Final Data format 
+String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,float price,float totalizer,unsigned long long totalizer_amount){
+  char buffer[100];
+  snprintf(buffer, sizeof(buffer), "%02dS%.3fL%.3fP%.2fT%.3fA%llu",
+           pump_id, sell_liters, live_liters, price, totalizer, totalizer_amount);
+  return String(buffer);
+}
+
+// generate live data format
+String fms_generateLiveData(int pump_id,float pirce_liter,float live_liters){
+  float sell_liter = price_liters * live_liters;  // S = P × L
+  char buffer[50];                                // Buffer to store formatted string
+  // Format: "01S1097L18.232P20000"
+  snprintf(buffer, sizeof(buffer), "%02dP%.2fL%.3f",
+           pump_id, price_liters, live_liters);
+  return String(buffer);
+}
+
+// decode preset amount from server
+int fms_decodePresetAmount(String presetData){
+  int p_index = presetData.indexOf('P');
+  if(p_index == -1 || p_index + 1 >= presetData.length()){
+    return -1; // Invalid format
+  }
+  String amountStr = presetData.substring(p_index + 1);
+  return amountStr.toInt(); // Convert to integer
+}
+
+// decode pump id from server
+int fms_decodePumpId(String presetData){
+  return presetData.substring(0,2).toInt();
+}
+
+
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 
@@ -919,6 +1050,7 @@ bool fms_task_create() {
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
+  
     if(fms_uart2_serial){
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
@@ -927,6 +1059,7 @@ bool fms_uart2_begin(bool flag, int baudrate) {
     }
   }
 }
+
 
 void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
   uint8_t Buffer[50];

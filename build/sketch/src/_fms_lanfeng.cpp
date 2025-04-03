@@ -3,39 +3,74 @@
 
 #if USE_LANFENG
 
-lanfeng::lanfeng(uint8_t slaveId, HardwareSerial &serial, uint8_t baudrate)
-    : _slaveId(slaveId), _serial(serial), _baudrate(baudrate)
+fms_lanfeng::fms_lanfeng(void)
 {
-    setupPins();
-    initializeNode();
+    
 }
 
-void lanfeng::setupPins()
+void fms_lanfeng::init(uint8_t slave,Stream &serial)
+{
+    node.begin(slave, serial);
+    setupPins(); // Setup the pins for RS485 communication
+    
+}
+void fms_lanfeng::setupPins()
 {
     pinMode(MAX485_DE, OUTPUT);
     pinMode(MAX485_RE, OUTPUT);
+
     digitalWrite(MAX485_DE, LOW);
     digitalWrite(MAX485_RE, LOW);
 }
 
-void lanfeng::initializeNode()
-{
-    _serial.begin(_baudrate,SERIAL_8N1, 16, 17); // RX, TX pins
-    node.begin(_slaveId, _serial);
-    node.preTransmission(preTransmission);
-    node.postTransmission(postTransmission);
-}
 
-void lanfeng::preTransmission()
+
+void fms_lanfeng::preTransmission()
 {
     digitalWrite(MAX485_DE, HIGH);
     digitalWrite(MAX485_RE, HIGH);
 }
 
-void lanfeng::postTransmission()
+void fms_lanfeng::postTransmission()
 {
     digitalWrite(MAX485_DE, LOW);
     digitalWrite(MAX485_RE, LOW);
+}
+
+void fms_lanfeng::onReceived(void (*isr)(void))
+{
+    _serial.onReceive(isr);
+}
+
+void fms_lanfeng::processReceivedData()
+{
+    while (_serial.available())
+    {
+        yield();
+        uint8_t byte = _serial.read();
+        node.receive(byte);
+    }
+}
+
+
+uint32_t* fms_lanfeng::readData(uint16_t registerAddress, uint8_t MAX_DATA_SIZE)
+{
+    uint8_t data[MAX_DATA_SIZE];
+    uint8_t result = node.readHoldingRegisters(registerAddress, MAX_DATA_SIZE);
+    if (result == node.ku8MBSuccess)
+    {
+        for(int i=0;i<MAX_DATA_SIZE;i++){
+            if(node.getResponseBuffer(i) !=0xFFFF)   // remove the FFF some time serial data return FFF
+            {
+                data[i] = node.getResponseBuffer(i); // Store the received data in the array
+            }
+        }
+        return data; // Return the pointer to the data array
+    }
+    else
+    {
+        return 0; // Error handling
+    }
 }
 
 #endif

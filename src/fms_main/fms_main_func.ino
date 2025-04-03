@@ -31,7 +31,7 @@ void log_chip_info() {
 }
 
 bool fms_initialize_uart2() {
-  if (fms_uart2_begin(use_serial1, 115200)) {
+  if (fms_uart2_begin(use_serial1, 9600)) {
     fms_uart2_serial.onReceive(fm_rx_irq_interrupt);  // uart interrupt function
     FMS_LOG_INFO("[FMSUART2] UART2.. DONE");
     return true;
@@ -84,3 +84,38 @@ void fms_dns_responder_init() {
     MDNS.addService("http", "tcp", 80);  // Add standard HTTP service for better discovery
   }
 }
+
+// generate Final Data format 
+String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,float price,float totalizer,unsigned long long totalizer_amount){
+  char buffer[100];
+  snprintf(buffer, sizeof(buffer), "%02dS%.3fL%.3fP%.2fT%.3fA%llu",
+           pump_id, sell_liters, live_liters, price, totalizer, totalizer_amount);
+  return String(buffer);
+}
+
+// generate live data format
+String fms_generateLiveData(int pump_id,float pirce_liter,float live_liters){
+  float sell_liter = price_liters * live_liters;  // S = P × L
+  char buffer[50];                                // Buffer to store formatted string
+  // Format: "01S1097L18.232P20000"
+  snprintf(buffer, sizeof(buffer), "%02dP%.2fL%.3f",
+           pump_id, price_liters, live_liters);
+  return String(buffer);
+}
+
+// decode preset amount from server
+int fms_decodePresetAmount(String presetData){
+  int p_index = presetData.indexOf('P');
+  if(p_index == -1 || p_index + 1 >= presetData.length()){
+    return -1; // Invalid format
+  }
+  String amountStr = presetData.substring(p_index + 1);
+  return amountStr.toInt(); // Convert to integer
+}
+
+// decode pump id from server
+int fms_decodePumpId(String presetData){
+  return presetData.substring(0,2).toInt();
+}
+
+

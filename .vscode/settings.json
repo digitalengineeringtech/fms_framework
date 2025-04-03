@@ -12,7 +12,9 @@
         "vector": "cpp",
         "initializer_list": "cpp",
         "typeinfo": "cpp",
-        "cstdio": "cpp"
+        "cstdio": "cpp",
+        "cstddef": "cpp",
+        "cstdint": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "C_Cpp.errorSquiggles": "disabled"
