@@ -34,8 +34,9 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 // free rtos task
 void fms_uart2_task(void *arg) {
   BaseType_t rc;
+  uint8_t* data;
   while (1) {
-  
+  lanfeng._readHoldingRegisters(0x02BC,40); // process the received data from the serial stream
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

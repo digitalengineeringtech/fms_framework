@@ -32,7 +32,7 @@ void log_chip_info() {
 
 bool fms_initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 9600)) {
-    fms_uart2_serial.onReceive(fm_rx_irq_interrupt);  // uart interrupt function
+    //fms_uart2_serial.onReceive(fm_rx_irq_interrupt);  // uart interrupt function
     FMS_LOG_INFO("[FMSUART2] UART2.. DONE");
     return true;
   } else {
@@ -94,7 +94,7 @@ String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,flo
 }
 
 // generate live data format
-String fms_generateLiveData(int pump_id,float pirce_liter,float live_liters){
+String fms_generateLiveData(int pump_id,float price_liters,float live_liters){
   float sell_liter = price_liters * live_liters;  // S = P × L
   char buffer[50];                                // Buffer to store formatted string
   // Format: "01S1097L18.232P20000"

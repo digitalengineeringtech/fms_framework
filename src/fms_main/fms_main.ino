@@ -11,8 +11,6 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
-
-
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
 fmsLanfeng lanfeng(15,15,fms_uart2_serial); 
@@ -33,11 +31,9 @@ void setup() {
   fms_cli.register_command("wifiscan_safe",     "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread",          "Read current WiFi status",           handle_wifi_read_command);
   fms_cli.register_command("wifi_test",         "Test WiFi connection",               handle_wifi_test_command);
-  lanfeng.init(fms_uart2_serial,1); // add slave id
- 
-  
-  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
+  lanfeng.init(1,fms_uart2_serial); // add slave id
 
+  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
   if (fms_initialize_wifi()) {  // wifi is connected
     fms_task_create();
   }
