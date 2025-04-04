@@ -2,7 +2,6 @@
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
-
     if (fms_uart2_serial) {
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
@@ -11,7 +10,6 @@ bool fms_uart2_begin(bool flag, int baudrate) {
     }
   }
 }
-
 
 void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
   uint8_t Buffer[50];
@@ -31,9 +29,6 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
   FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data);
 }
 
-unsigned long lastUpdate = 0;
-
-uint32_t value[40];
 uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
@@ -64,6 +59,26 @@ void fms_uart2_task(void* arg) {
     Serial.print("[LANFENG] SELL LITER PERPRICE DATA :");
     Serial.println(SLP_Price,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
+
+    uint32_t respone = lanfeng.setSellLiterPerPrice(0x02D8, 0x0001); // fix send data error when (not included 03 function how to fix this,)
+    if (respone == 0x01) {
+      Serial.print("[LANFENG] SET SELL LITER PERPRICE DATA :");
+      Serial.println(respone,HEX);
+    } else {
+      Serial.print("[LANFENG] Error reading set sell liter per price: ");
+      Serial.println(respone, HEX);
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    uint32_t setPump = lanfeng.setPumpState(0x02DE, 0x0001); // fix send data error when (not included 03 function how to fix this,)
+    if (setPump == 0x01) {
+      Serial.print("[LANFENG] SET PUMP STATE :");
+      Serial.println(setPump,HEX);
+    } else {
+      Serial.print("[LANFENG] Error reading set pump state: ");
+      Serial.println(setPump, HEX);
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    
     #endif
   }
 }

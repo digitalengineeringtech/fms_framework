@@ -64,17 +64,7 @@
        digitalWrite(_dePin, LOW);
      }
      
-     /**
-      * Process received data from the serial stream
-      */
-    //  void processReceivedData() {
-    //    while (_serial->available()) {
-    //      yield();
-    //      uint8_t byte = _serial->read();
-    //      _node.receive(byte);
-    //    }
-    //  }
-     
+
 
      float convert_float(uint16_t highReg, uint16_t lowReg) {
        uint32_t combinedData = ((uint32_t)highReg << 16) | lowReg;
@@ -139,14 +129,22 @@
       else return result;
      }
 
-
      uint32_t readSellLiterPerPrice(uint16_t registerAddress){
       uint8_t result = _node.readHoldingRegisters(registerAddress,1);
       if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
       else return result;
      }
 
-    uint32_t setSellLiterPerPricewriteSingleRegister(uint16_t registerAddress, uint16_t value) {
+    uint32_t setSellLiterPerPrice(uint16_t registerAddress, uint16_t value) {
+       uint8_t result = _node.writeSingleRegister(registerAddress, value);
+       if (result == _node.ku8MBSuccess) {
+         return 0x01; // Success
+       } else {
+         return result; // Error code
+       }
+     }
+
+    uint32_t setPumpState(uint16_t registerAddress, uint16_t value) {
        uint8_t result = _node.writeSingleRegister(registerAddress, value);
        if (result == _node.ku8MBSuccess) {
          return 0x01; // Success
