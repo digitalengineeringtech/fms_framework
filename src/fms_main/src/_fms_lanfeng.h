@@ -146,8 +146,16 @@
       else return result;
      }
 
+    uint32_t setSellLiterPerPricewriteSingleRegister(uint16_t registerAddress, uint16_t value) {
+       uint8_t result = _node.writeSingleRegister(registerAddress, value);
+       if (result == _node.ku8MBSuccess) {
+         return 0x01; // Success
+       } else {
+         return result; // Error code
+       }
+     }
 
-     uint8_t writeSingleRegister(uint16_t registerAddress, uint16_t value) {
+     uint32_t writeSingleRegister(uint16_t registerAddress, uint16_t value) {
        return _node.writeSingleRegister(registerAddress, value);
      }
      
