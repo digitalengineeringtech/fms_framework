@@ -112,10 +112,12 @@ WiFiClient                          wf_client;
 PubSubClient                        fms_mqtt_client(wf_client);
 HTTPClient                          http;
 WiFiClient                          http_client;
-
+bool permitMessageSent             = false; // for sent permit message time
 // mqtt topic
 char pumpapprobuf[22]               = "detpos/local_server/1";
-char pumpreqbuf[23]                 = "detpos/device/permit/1";
+const char permitTopic[23]          = "detpos/device/permit/"
+char pumprequest[23];
+char payload[10]; // for permit message                
 char pumppresetbuf[28]              = "detpos/local_server/preset";  // return from local server
 char pplive[25]                     = "detpos/device/livedata/1";
 char ppfinal[22]                    = "detpos/device/Final/1";

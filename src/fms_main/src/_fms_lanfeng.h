@@ -153,6 +153,13 @@
        }
      }
 
+     uint32_t readPermit(uint16_t registerAddress){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,1);
+      if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
+      else return result;
+     }
+     
+
      uint32_t writeSingleRegister(uint16_t registerAddress, uint16_t value) {
        return _node.writeSingleRegister(registerAddress, value);
      }
