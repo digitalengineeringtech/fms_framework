@@ -38,17 +38,33 @@ uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-  uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
+
+    #ifdef USE_LANFENG
+    uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
+    if (sellLiter == 0x01) {
+      Serial.print("[LANFENG] SELL LITER : ");
+      Serial.print(s_liter[0]);
+      Serial.print(" / ");
+      Serial.println(s_liter[1]);
+    } else {
+      Serial.print("[LANFENG] Error reading sell liter: ");
+      Serial.println(sellLiter, HEX);
+    }
    vTaskDelay(pdMS_TO_TICKS(1000));
     uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
     Serial.print("[LANFENG] PUMP STATE :");
     Serial.println(pumpState,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
-4
+
     uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
     Serial.print("[LANFENG] LIVE DATA :");
     Serial.println(liveData,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
+    uint32_t sellLiterPerPrice = lanfeng.readSellLiterPerPrice(0x02D8); // fix send data error when (not included 03 function how to fix this,)
+    Serial.print("[LANFENG] SELL LITER PERPRICE DATA :");
+    Serial.println(sellLiterPerPrice,HEX);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    #endif
   }
 }

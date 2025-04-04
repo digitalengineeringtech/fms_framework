@@ -163,6 +163,7 @@
       if(result == _node.ku8MBSuccess) 
       {
         for(int i = 0; i < 2; i++) {data[i] = _node.getResponseBuffer(i);}
+        return 0x01;
       }
       else return result;
      }

@@ -165,6 +165,10 @@ static TaskHandle_t huart2Task;
 volatile uint8_t serialBuffer[4];  // for testing
 volatile uint8_t bufferIndex = 0;  // for testing
 
+// free rtos task
+#define  NUM_REG 40
+static uint32_t reg_data[NUM_REG];
+
 
 
 #endif  // _FMS_HEADER_H_

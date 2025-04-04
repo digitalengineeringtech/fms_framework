@@ -18,21 +18,26 @@
 # 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-// #include "src/_fms_lanfeng.h"
-
-
+# 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial0, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
+
+// Uncomment this line to disable the library
+// #define DISABLE_LANFENG
+// #ifdef DISABLE_LANFENG
+//   #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+// #endif
+
+
+fmsLanfeng lanfeng(15,15);
 
 /* Main function */
 void setup() {
   fms_pin_mode(2, 0x03);
   fms_cli.begin(115200); // uart
   fms_initialize_uart2(); // uart 2
-  // fmslanfeng.begin();
-  // fmslanfeng.beginModbus(1,fms_uart2_serial); // add slave id
   fms_run_sd_test(); // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
+  fmsEnableSerialLogging(false); // show serial logging data on Serial Monitor
   fms_boot_count(true); // boot count
   // cli command
   fms_cli.register_command("wifi", "Configure WiFi settings", handle_wifi_command, 2, 2);
@@ -42,8 +47,10 @@ void setup() {
   fms_cli.register_command("wifiread", "Read current WiFi status", handle_wifi_read_command);
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
 
-  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
+  fmsLog(FMS_LOG_INFO, "[LANFENG] Starting Lanfeng");
+  lanfeng.init(1,Serial1 /* uart2 serial port*/); // add slave id
 
+  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
   if (fms_initialize_wifi()) { // wifi is connected
     fms_task_create();
   }
@@ -352,91 +359,6 @@ static void cli_task(void *arg) {
               ) / ( TickType_t ) 1000U ) ));
   }
 }
-# 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_lanfeng.ino"
-class fmsLanfeng
-{
-    private:
-        uint8_t _rePin;
-        uint8_t _dePin;
-        uint8_t _rxPin;
-        uint8_t _txPin;
-        ModbusMaster _node;
-        static void _preTransmission();
-        static void _postTransmission();
-        static uint8_t _staticRePin;
-        static uint8_t _staticDePin;
-        Stream *_serial; // Pointer to the serial stream for communication
-        uint8_t _slaveId; // Slave ID for Modbus communication
-    public:
-        fmsLanfeng(uint8_t rePin, uint8_t dePin,Stream &serial){
-            _rePin = rePin;
-            _dePin = dePin;
-            _serial = &serial; // Initialize the serial stream pointer
-        }
-
-        void init(Stream &serial, uint8_t slave) {
-            setupPins(); // Setup the pins for RS485 communication
-            _node.begin(slave, serial);
-            _node.preTransmission(_preTransmission);
-            _node.postTransmission(_postTransmission);
-        }
-
-        void setupPins() {
-            pinMode(_rePin, 0x03);
-            pinMode(_dePin, 0x03);
-
-            digitalWrite(_rePin, 0x0);
-            digitalWrite(_dePin, 0x0);
-        }
-
-        void _preTransmission() {
-            digitalWrite(_rePin, 0x1);
-            digitalWrite(_dePin, 0x1);
-        }
-
-        void _postTransmission() {
-            digitalWrite(_rePin,0x0);
-            digitalWrite(_dePin,0x0);
-        }
-
-        void onReceived(void (*isr)(void)) {
-            _serial->onReceive(isr);
-        }
-
-        void processReceivedData() {
-            while (_serial->available()) {
-                yield();
-                uint8_t byte = _serial->read();
-                _node.receive(byte);
-            }
-        }
-
-        float convert_float(uint32_t highReg,uint32_t lowReg){
-            uint32_t data[2];
-            float floatData;
-            data[0] = (uint32_t)highReg << 16; // Shift high register to the left by 16 bits
-            data[1] = (uint32_t)lowReg; // Low register remains as is 0x12340000 to 0x 0000 1234
-            uint32_t combinedData = data[0] | data[1]; // Combine high and low registers
-            memcpy(&floatData, &combinedData, sizeof(float)); // Copy the combined data into a float variable
-            return floatData; // Return the float value
-        }
-
-        uint8_t* readHoldingRegister(uint16_t registerAddress, uint8_t MAX_DATA_SIZE) {
-            uint8_t data[MAX_DATA_SIZE];
-            uint8_t result = _node.readHoldingRegisters(registerAddress, MAX_DATA_SIZE);
-            if (result == _node.ku8MBSuccess) {
-                for (int i = 0; i < MAX_DATA_SIZE; i++) {
-                    uint16_t value = _node.getResponseBuffer(i); // Get the value from the response buffer
-                    data[i] = (value != 0xFFFF)?(uint8_t)value:0x00;
-                }
-                return data;
-            } else {
-                fmsLog(FMS_LOG_DEBUG, "Error reading holding registers: %02X", result);
-                return 0;
-            }
-
-        }
-}
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 /*
 
@@ -475,7 +397,7 @@ void log_chip_info() {
 
 bool fms_initialize_uart2() {
   if (fms_uart2_begin(use_serial1, 9600)) {
-    Serial1 /* uart2 serial port*/.onReceive(fm_rx_irq_interrupt); // uart interrupt function
+    //fms_uart2_serial.onReceive(fm_rx_irq_interrupt);  // uart interrupt function
     fmsLog(FMS_LOG_INFO, "[FMSUART2] UART2.. DONE");
     return true;
   } else {
@@ -537,7 +459,7 @@ String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,flo
 }
 
 // generate live data format
-String fms_generateLiveData(int pump_id,float pirce_liter,float live_liters){
+String fms_generateLiveData(int pump_id,float price_liters,float live_liters){
   float sell_liter = price_liters * live_liters; // S = P × L
   char buffer[50]; // Buffer to store formatted string
   // Format: "01S1097L18.232P20000"
@@ -850,11 +772,19 @@ static void web_server_task(void* arg) {
       uptime++;
       lastUptimeUpdate = millis();
     }
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1 ) * ( TickType_t ) 
-# 224 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
-              1000 
+    UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(
+# 224 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3 4
+                                                            __null
 # 224 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
-              ) / ( TickType_t ) 1000U ) ));
+                                                                );
+    Serial0.print("Stack Remaining: ");
+    Serial0.println(stackRemaining); // Prints remaining stack (in words)
+    vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
+# 227 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+                     1000 
+# 227 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+                     ));
+   // vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
@@ -1009,7 +939,7 @@ bool fms_task_create() {
   if (!create_task(mqtt_task, "mqtt", 3000, 3, &hmqttTask, mqtt_rc)) return false;
   if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   if (!create_task(fms_uart2_task, "uart2", 3000, 1, &huart2Task, uart2_rc)) return false;
-  if (!create_task(web_server_task, "webserver", 3000, 4, &hwebServerTask, webserver_rc)) return false;
+  if (!create_task(web_server_task, "webserver", 4096, 4, &hwebServerTask, webserver_rc)) return false;
 
   return true;
 }
@@ -1019,7 +949,7 @@ bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     Serial1 /* uart2 serial port*/.begin(baudrate, SERIAL_8N1, 16, 17);
 
-    if(Serial1 /* uart2 serial port*/){
+    if (Serial1 /* uart2 serial port*/) {
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
                 1000 
@@ -1037,8 +967,8 @@ void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
   uint8_t Buffer[50];
   int bytes_received = 0;
   uint16_t size = Serial1 /* uart2 serial port*/.available(); // serial.available  // #define fms_cli_serial Serial
-  Serial1 /* uart2 serial port*/.printf("Got byes on serial : %d\n",size);
-  while(Serial1 /* uart2 serial port*/.available()) {
+  Serial1 /* uart2 serial port*/.printf("Got byes on serial : %d\n", size);
+  while (Serial1 /* uart2 serial port*/.available()) {
     yield();
     Buffer[bytes_received] = Serial1 /* uart2 serial port*/.read();
     bytes_received++;
@@ -1048,19 +978,40 @@ void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
 }
 
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
-  fmsLog(FMS_LOG_DEBUG, "[FMSUART2] Received : %s\n\r", data);
+  Serial0.printf("[FMSUART2] Received : %s\n\r", data); Serial0.println();
 }
 
-// free rtos task
-void fms_uart2_task(void *arg) {
+unsigned long lastUpdate = 0;
+
+uint32_t value[40];
+uint32_t s_liter[2];
+void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-
+  uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
+   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 42 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+             1000 
+# 42 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+             ) / ( TickType_t ) 1000U ) ));
+    uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
+    Serial0.print("[LANFENG] PUMP STATE :");
+    Serial0.println(pumpState,16);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+# 46 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
               1000 
-# 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+# 46 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
               ) / ( TickType_t ) 1000U ) ));
+4
+    uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
+    Serial0.print("[LANFENG] LIVE DATA :");
+    Serial0.println(liveData,16);
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+              1000 
+# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+              ) / ( TickType_t ) 1000U ) ));
+
   }
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
@@ -1071,7 +1022,7 @@ bool initialize_fms_wifi(bool flag) {
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
     fms_nvs_storage.end();
-    fmsLog(FMS_LOG_DEBUG, "SSID : %s , PASS : %s", ssid_str, pass_str);
+    Serial0.printf("SSID : %s , PASS : %s", ssid_str, pass_str); Serial0.println();
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
     strncpy(sysCfg.wifi_password, pass_str.c_str(), sizeof(sysCfg.wifi_password) - 1);
     if (sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") {

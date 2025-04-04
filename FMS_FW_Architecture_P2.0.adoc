@@ -23,6 +23,7 @@
 | P2.0.3 | Add OTA with Admin | Nyein Chan Ko | 10-03-2025 | Approved by 
 | P2.0.4 | Add SD Test | Nyein Chan Ko | 10-03-2025 | Approved by 
 | P2.0.5 | Add Modubs Lanfeng | Nyein Chan Ko | 17-03-2025 | Approved by 
+| P2.0.6 | Fix Lanfeng Protocol | Nyein Chan Ko | 17-03-2025 | Approved by 
 |===
 
 

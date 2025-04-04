@@ -342,4 +342,5 @@ d:\FMS\ Framework\development_version\fms_framework\build\sketch\fms_main.ino.cp
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_cli.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_debug.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_filemanager.h \
- d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_json_helper.h
+ d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_json_helper.h \
+ d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_lanfeng.h
