@@ -34,17 +34,17 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 unsigned long lastUpdate = 0;
 
 uint32_t value[40];
+uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-   //uint8_t state =  lanfeng._readHoldingRegisters(0x02BC, 40);  // process the received data from the serial stream 
-
+  uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
    vTaskDelay(pdMS_TO_TICKS(1000));
     uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
     Serial.print("[LANFENG] PUMP STATE :");
     Serial.println(pumpState,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
-
+4
     uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
     Serial.print("[LANFENG] LIVE DATA :");
     Serial.println(liveData,HEX);

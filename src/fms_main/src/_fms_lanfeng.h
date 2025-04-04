@@ -84,31 +84,49 @@
      }
      
 
-     uint8_t _readHoldingRegisters(uint16_t registerAddress, uint8_t numRegisters) {
+     void readAllData(uint16_t registerAddress, uint8_t numRegisters) {
        uint8_t result = _node.readHoldingRegisters(0x02BC, 40);
        if (result == _node.ku8MBSuccess) {
          for (int i = 0; i < numRegisters; i++) {
           if (_node.getResponseBuffer(i) != 0xFFFF) reg_data[i] = _node.getResponseBuffer(i);
+          vTaskDelay(pdMS_TO_TICKS(100));
          }
-       } else {
-         FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
-       }
-     }
-     
-     uint8_t readHoldingRegistersRaw(uint16_t registerAddress, uint8_t numRegisters) {
-       uint8_t result = _node.readHoldingRegisters(registerAddress, numRegisters);
-       if (result == _node.ku8MBSuccess) {
+         String jsonResponse = "{\"rawdata\": [";
          for (int i = 0; i < numRegisters; i++) {
-          if(_node.getResponseBuffer(i) != 0xFFFF)  reg_data[i] = _node.getResponseBuffer(i);
-          vTaskDelay(pdMS_TO_TICKS(500));
+           jsonResponse += String(reg_data[i]);
+           if (i < numRegisters - 1) jsonResponse += ",";
          }
-         FMS_LOG_DEBUG("READ DONE");
+         jsonResponse += "],";
+         jsonResponse += "\"data\": [";
+         jsonResponse += String(convert_float(reg_data[0], reg_data[1]), 5);
+         jsonResponse += ",";
+         jsonResponse += String(convert_float(reg_data[4], reg_data[5]), 5);
+         jsonResponse += ",";
+         jsonResponse += reg_data[8];
+         jsonResponse += ",";
+         jsonResponse += reg_data[12];
+         jsonResponse += ",";
+         jsonResponse += String(convert_float(reg_data[24], reg_data[25]), 5);
+         jsonResponse += ",";
+         jsonResponse += reg_data[28];
+         jsonResponse += ",";
+         jsonResponse += String(convert_float(reg_data[32], reg_data[33]), 5);
+         jsonResponse += ",";
+         jsonResponse += reg_data[34];
+         jsonResponse += "]";
+         jsonResponse += "}";
+         // Send the response to PyQt
+     
+         //  17695,49152,0,0,17948,16384,0,0,3578,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16709,49807,0,0,30000,0,0,0,17075,62915,1,0,1,0,0,0
+         Serial.println(jsonResponse);
+
        } else {
          FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
        }
      }
      
-
+   
+     
      uint32_t readPumpState(uint16_t registerAddress){
         uint8_t result = _node.readHoldingRegisters(registerAddress,1);
         if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
@@ -120,6 +138,37 @@
       if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
       else return result;
      }
+
+     uint32_t readLivePrice(uint16_t registerAddress){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,1);
+      if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
+      else return result;
+     }
+
+     uint32_t readTotalizerLiter(uint16_t registerAddress){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,1);
+      if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
+      else return result;
+     }
+
+
+     uint32_t readTotalizerAmount(uint16_t registerAddress){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,1);
+      if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
+      else return result;
+     }
+
+     uint32_t readSellLiter(uint16_t registerAddress,uint32_t* data){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,2);
+      if(result == _node.ku8MBSuccess) 
+      {
+        for(int i = 0; i < 2; i++) {data[i] = _node.getResponseBuffer(i);}
+      }
+      else return result;
+     }
+
+
+     
 
 
      uint8_t writeSingleRegister(uint16_t registerAddress, uint16_t value) {
