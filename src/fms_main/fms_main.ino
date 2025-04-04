@@ -15,10 +15,10 @@ FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
 
 // Uncomment this line to disable the library
-// #define DISABLE_LANFENG
-// #ifdef DISABLE_LANFENG
-//   #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
-// #endif
+#define DISABLE_LANFENG
+#ifdef DISABLE_LANFENG
+  #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+#endif
 
 
 fmsLanfeng lanfeng(15,15);

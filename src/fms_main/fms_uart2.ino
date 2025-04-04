@@ -38,7 +38,6 @@ uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-
     #ifdef USE_LANFENG
     uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
     if (sellLiter == 0x01) {
@@ -61,9 +60,9 @@ void fms_uart2_task(void* arg) {
     Serial.println(liveData,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    uint32_t sellLiterPerPrice = lanfeng.readSellLiterPerPrice(0x02D8); // fix send data error when (not included 03 function how to fix this,)
+    uint32_t SLP_Price = lanfeng.readSellLiterPerPrice(0x02D8); // fix se,nd data error when (not included 03 function how to fix this,)
     Serial.print("[LANFENG] SELL LITER PERPRICE DATA :");
-    Serial.println(sellLiterPerPrice,HEX);
+    Serial.println(SLP_Price,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
     #endif
   }
