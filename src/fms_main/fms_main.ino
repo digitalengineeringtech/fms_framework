@@ -13,7 +13,16 @@
 #include "src/_fms_lanfeng.h"
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
-fmsLanfeng lanfeng(15,15,fms_uart2_serial); 
+
+// Uncomment this line to disable the library
+// #define DISABLE_LANFENG
+#ifdef DISABLE_LANFENG
+  #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+#endif
+
+
+fmsLanfeng lanfeng(15,15,fms_uart2_serial);
+
 /* Main function */
 void setup() {
   fms_pin_mode(BUILTIN_LED, OUTPUT);
@@ -31,8 +40,10 @@ void setup() {
   fms_cli.register_command("wifiscan_safe",     "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread",          "Read current WiFi status",           handle_wifi_read_command);
   fms_cli.register_command("wifi_test",         "Test WiFi connection",               handle_wifi_test_command);
+  #ifdef USE_LANFENG
+  FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
   lanfeng.init(1,fms_uart2_serial); // add slave id
-
+  #endif
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
   if (fms_initialize_wifi()) {  // wifi is connected
     fms_task_create();

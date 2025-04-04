@@ -2,6 +2,8 @@
  #ifndef _FMS_LANFENG_H
  #define _FMS_LANFENG_H
  
+ #define USE_LANFENG
+
  #include <Arduino.h>
  #include <ModbusMaster.h>
  
@@ -13,6 +15,7 @@
    #define FMS_LOG_DEBUG(format, ...)
  #endif
  
+ #ifdef USE_LANFENG
  class fmsLanfeng 
  {
    private:
@@ -106,17 +109,21 @@
       * @return Modbus exception code (0 if success)
       */
      uint8_t _readHoldingRegisters(uint16_t registerAddress, uint8_t numRegisters) {
-      uint8_t data[numRegisters];
        uint8_t result = _node.readHoldingRegisters(registerAddress, numRegisters);
        if (result == _node.ku8MBSuccess) {
          for (int i = 0; i < numRegisters; i++) {
-          if (_node.getResponseBuffer(i) != 0xFFFF) data[i] = _node.getResponseBuffer(i);
-          FMS_LOG_INFO(String(data[i]).c_str());
+          if (_node.getResponseBuffer(i) != 0xFFFF) reg_data[i] = _node.getResponseBuffer(i);
+          Serial.print("Register ");
+          Serial.print(i);
+          Serial.print(": ");
+         // reg_data[NUM_REG]
+          Serial.println(reg_data[i]);
+            vTaskDelay(pdMS_TO_TICKS(1000));
          }
-       
        } else {
          FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
        }
+        return result;
      }
      
      /**
@@ -126,19 +133,20 @@
       * @param data Pointer to array where data will be stored
       * @return Modbus exception code (0 if success)
       */
-     uint8_t readHoldingRegistersRaw(uint16_t registerAddress, uint8_t numRegisters, uint16_t* data) {
-       uint8_t result = _node.readHoldingRegisters(registerAddress, numRegisters);
+    //  uint8_t readHoldingRegistersRaw(uint16_t registerAddress, uint8_t numRegisters) {
+    //    uint8_t result = _node.readHoldingRegisters(registerAddress, numRegisters);
        
-       if (result == _node.ku8MBSuccess) {
-         for (int i = 0; i < numRegisters; i++) {
-           data[i] = _node.getResponseBuffer(i);
-         }
-       } else {
-         FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
-       }
+    //    if (result == _node.ku8MBSuccess) {
+    //      for (int i = 0; i < numRegisters; i++) {
+    //       if(_node.getResponseBuffer(i) != 0xFFFF)  reg_data[i] = _node.getResponseBuffer(i);
+    //        vTaskDelay(pdMS_TO_TICKS(1000));
+    //      }
+    //    } else {
+    //      FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
+    //    }
        
-       return result;
-     }
+     
+    //  }
      
      /**
       * Write single register
@@ -195,5 +203,6 @@
    digitalWrite(_staticDePin, LOW);
  }
  
+ #endif // USE_LANFENG
  #endif // _FMS_LANFENG_H
  

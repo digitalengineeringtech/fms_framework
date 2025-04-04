@@ -14,7 +14,12 @@
         "typeinfo": "cpp",
         "cstdio": "cpp",
         "cstddef": "cpp",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "*.tcc": "cpp",
+        "limits": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp",
+        "tuple": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "C_Cpp.errorSquiggles": "disabled"
