@@ -166,7 +166,7 @@ volatile uint8_t bufferIndex = 0;  // for testing
 
 // free rtos task
 #define  NUM_REG 40
-static uint8_t reg_data[NUM_REG];
+static uint32_t reg_data[NUM_REG];
 
 
 

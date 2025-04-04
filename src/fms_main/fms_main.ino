@@ -16,22 +16,20 @@ fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default passwo
 
 // Uncomment this line to disable the library
 // #define DISABLE_LANFENG
-#ifdef DISABLE_LANFENG
-  #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
-#endif
+// #ifdef DISABLE_LANFENG
+//   #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+// #endif
 
 
-fmsLanfeng lanfeng(15,15,fms_uart2_serial);
+fmsLanfeng lanfeng(15,15);
 
 /* Main function */
 void setup() {
   fms_pin_mode(BUILTIN_LED, OUTPUT);
   fms_cli.begin(115200);                    // uart
   fms_initialize_uart2();                   // uart 2
-  // fmslanfeng.begin();
-  // fmslanfeng.beginModbus(1,fms_uart2_serial); // add slave id
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
+  fmsEnableSerialLogging(false);             // show serial logging data on Serial Monitor
   fms_boot_count(true);                     // boot count
   // cli command
   fms_cli.register_command("wifi",              "Configure WiFi settings",        handle_wifi_command, 2, 2);

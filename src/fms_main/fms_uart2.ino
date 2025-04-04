@@ -32,27 +32,23 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 }
 
 unsigned long lastUpdate = 0;
+
+uint32_t value[40];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-    #ifdef USE_LANFENG
-    uint8_t result = lanfeng._readHoldingRegisters(0x02BC, NUM_REG);  // process the received data from the serial stream
-    FMS_LOG_INFO(String(result).c_str());
-    if (result == 0) {
-      Serial.println("Read successful with delay!");
-      Serial.println("Register values:");
-      for (int i = 0; i < NUM_REG; i++) {
-        Serial.print("Register ");
-        Serial.print(i);
-        Serial.print(": ");
-       // reg_data[NUM_REG]
-        Serial.println(reg_data[i]);
-      }
-    } else {
-      Serial.print("Read failed with error code: ");
-      Serial.println(result);
-    }
-    #endif
+   //uint8_t state =  lanfeng._readHoldingRegisters(0x02BC, 40);  // process the received data from the serial stream 
+
+   vTaskDelay(pdMS_TO_TICKS(1000));
+    uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
+    Serial.print("[LANFENG] PUMP STATE :");
+    Serial.println(pumpState,HEX);
     vTaskDelay(pdMS_TO_TICKS(1000));
+
+    uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
+    Serial.print("[LANFENG] LIVE DATA :");
+    Serial.println(liveData,HEX);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
   }
 }
