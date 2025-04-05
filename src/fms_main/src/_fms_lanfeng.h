@@ -10,7 +10,7 @@
  // Debug logging macro - uncomment to enable debug logging
  #define FMS_DEBUG
  #ifdef FMS_DEBUG
-   #define FMS_LOG_DEBUG(format, ...) Serial.printf(format, ##__VA_ARGS__); Serial.println()
+   #define FMS_LOG_DEBUG(format, ...) Serial.print("[:DEBUG]"); Serial.printf(format, ##__VA_ARGS__); Serial.println()
  #else
    #define FMS_LOG_DEBUG(format, ...)
  #endif

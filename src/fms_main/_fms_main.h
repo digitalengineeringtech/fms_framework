@@ -124,8 +124,7 @@ const char* fms_sub_topics[] = { // subscribe topic
   "detpos/local_server/price",
   "detpos/local_server/preset"
 };
-
-const uint8_t fms_sub_topics_count = sizeof(fms_sub_topics)/sizeof(fms_sub_topic[0]);
+const uint8_t fms_sub_topics_count = sizeof(fms_sub_topics)/sizeof(fms_sub_topics[0]);
 
 
 // from old 

@@ -1,9 +1,9 @@
 void handleMessage(int ind, String msg){
-  FMS_LOG_DEBUG("Topic matched: %s", fms_sub_topics[i]);
+  FMS_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
   switch (ind) {
     case 0: //  "detpos/local_server/#",
       FMS_LOG_DEBUG("Wild card topic matched: %s", fms_sub_topics[ind]);
-      Serial.printf("Wild card topic matched: %s", fms_sbu_topics[ind]); // for testing // please remove this line
+      Serial.printf("Wild card topic matched: %s", fms_sub_topics[ind]); // for testing // please remove this line
       // add main code here
       break;
 
@@ -27,6 +27,17 @@ void handleMessage(int ind, String msg){
   }
 }
 
+char fms_nmf_tp_prefix[64];
+void fms_nmf_tp(char* t, String msg){ // not match found topic check
+ const char* tp_cmp = fms_sub_topics[0]; // for topic compare & check wild card topic
+ int len = strlen(tp_cmp);
+ if(len > 0 && tp_cmp[len-1] == '#' ){
+  strncpy(fms_nmf_tp_prefix,tp_cmp, len-1); // copy topic prefix to fms_nmf_tp_prefix
+  fms_nmf_tp_prefix[len-1]='\0';
+  FMS_LOG_DEBUG("Not Matched is  founted in sub topic : %s",fms_nmf_tp_prefix);
+}
+}
+
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String incommingMessage = "";
@@ -34,10 +45,11 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   FMS_LOG_DEBUG("Message arrived [%s] : %s", topic, incommingMessage.c_str());
   for (int i = 0; i < fms_sub_topics_count; i++){
     if (strcmp(topic, fms_sub_topics[i]) == 0) {
-        handelMessage(i,incommingMessage);
+      handleMessage(i,incommingMessage);
     } else{
       FMS_LOG_DEBUG("Topic not matched: %s", fms_sub_topics[i]);
       FMS_LOG_ERROR("Topic not matched found!");
+      fms_nmf_tp(topic,incommingMessage);
       // save to log file (logging function)
     }
   }

@@ -39,6 +39,7 @@ fork
 :Establish MQTT Connection;
 if (MQTT Connected?) then (Yes)
     :Synchronize with Server;
+    :Get permit message from server;
     :Transfer Logged Data from SDCard to Server;
 else (No)
     :Log Error: \"Server Unavailable\";
