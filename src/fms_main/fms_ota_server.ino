@@ -221,6 +221,8 @@ static void web_server_task(void* arg) {
       uptime++;
       lastUptimeUpdate = millis();
     }
+    // sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
+    // upgrade to mongoose wizard ui builder 
     UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
     Serial.print("Stack Remaining: ");
     Serial.println(stackRemaining);  // Prints remaining stack (in words)

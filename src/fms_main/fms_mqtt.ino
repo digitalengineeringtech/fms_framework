@@ -1,17 +1,28 @@
 void handleMessage(int ind, String msg){
   FMS_LOG_DEBUG("Topic matched: %s", fms_sub_topics[i]);
-  switch (i) {
-    case 0: // detpos/local_server/1
-      // Handle the first topic here
+  switch (ind) {
+    case 0: //  "detpos/local_server/#",
+      FMS_LOG_DEBUG("Wild card topic matched: %s", fms_sub_topics[ind]);
+      Serial.printf("Wild card topic matched: %s", fms_sbu_topics[ind]); // for testing // please remove this line
+      // add main code here
       break;
-    case 1: // detpos/local_server/preset
-      // Handle the second topic here
+
+    case 1: //"detpos/local_server/price",
+      FMS_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
+      Serial.printf("Topic matched: %s",fms_sub_topics[ind]);
       break;
-    case 2: // detpos/local_server/price
-      // Handle the third topic here
+
+    case 2: //"detpos/local_server/preset"
+      FMS_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
+      Serial.printf("Topic matched: %s",fms_sub_topics[ind]);
+      // add main code here
       break;
+
     default:
-      FMS_LOG_WARNING("Unknown topic index: %d", i);
+      FMS_LOG_WARNING("Unknown topic index: %d", ind);
+      FMS_LOG_ERROR("Unknown topic index found!");
+      Serial.printf("Unknown topic index:%d",ind); // for testing // please remove this line
+      // save to log file (logging function)
       break;
   }
 }
