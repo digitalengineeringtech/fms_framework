@@ -77,6 +77,10 @@ String deviceName                     = "ultramarine-v0.1-";
 #define MAX485_RE_NEG 15
 ModbusMaster node;
 
+// nozzle config
+#define MAX_NOZZLES                 2 // change your noz count
+bool pump_approve[MAX_NOZZLES]      = {false};
+
 // OTA  configuration 
 bool          otaInProgress         = false;
 uint8_t       otaProgress           = 0;
@@ -114,21 +118,35 @@ HTTPClient                          http;
 WiFiClient                          http_client;
 bool permitMessageSent             = false; // for sent permit message time
 // mqtt topic
-char pumpapprobuf[22]               = "detpos/local_server/1";
-const char permitTopic[23]          = "detpos/device/permit/"
-char pumprequest[23];
-char payload[10]; // for permit message                
-char pumppresetbuf[28]              = "detpos/local_server/preset";  // return from local server
+
+const char* fms_sub_topics[] = { // subscribe topic 
+  "detpos/local_server/#",
+  "detpos/local_server/price",
+  "detpos/local_server/preset"
+};
+
+const uint8_t fms_sub_topics_count = sizeof(fms_sub_topics)/sizeof(fms_sub_topic[0]);
+
+
+// from old 
+// char pumpapprobuf[22]               = "detpos/local_server/1";
+// char pumppresetbuf[28]              = "detpos/local_server/preset";  // return from local server
+// char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
+// char pricechange[26]                = "detpos/local_server/price";  // return from local server
+
+char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
 char pplive[25]                     = "detpos/device/livedata/1";
 char ppfinal[22]                    = "detpos/device/Final/1";
 char whreqbuf[20]                   = "detpos/device/whreq";
-char pricechange[26]                = "detpos/local_server/price";  // return from local server
 char pricereqbuf[25]                = "detpos/device/pricereq/1";
 char activebuf[23]                  = "detpos/device/active/1";
 char devicebuf[2]                   = "1";
-char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
 char Reset_topic[17]                = "detpos/hmi/reset";
-char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
+const char permitTopic[23]          = "detpos/device/permit/";
+char pumprequest[23];
+char payload[10]; // for permit message                
+
+
 
 struct SYSCFG {
   unsigned long bootcount;

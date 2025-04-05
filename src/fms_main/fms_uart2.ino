@@ -31,13 +31,15 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 
 
 
-void sendPumpRequest(uint8_t nozelNumber) {
+void sendPumpRequest(uint8_t nozzleNumber) {
 if(!permitMessageSent){
   snprintf(pumprequest, sizeof(pumprequest),"%s%d",permitTopic, nozzleNumber);
   snprintf(payload, sizeof(payload), "%02dpermit", nozzleNumber);
   Serial.println(String(pumprequest).c_str()); // testing // please remove
   Serial.println(String(payload).c_str()); // testing // please remove 
   fms_mqtt_client.publish(pumprequest, payload);
+  Serial.println("Permit message sent to MQTT broker."); // testing // please remove
+  FMS_LOG_INFO("Permit message sent to MQTT broker.")
   permitMessageSent = true;
 }
 }
@@ -98,7 +100,7 @@ void fms_uart2_task(void* arg) {
   //   vTaskDelay(pdMS_TO_TICKS(1000));
 
   uint32_t permit = lanfeng.readPermit(0x02E0);
-  if (permit == 1) sendpermitmessage()
+  if (permit == 1) sendPumpRequest(01); // send permit message to mqtt broker
     
     #endif
   }
