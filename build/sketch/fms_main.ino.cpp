@@ -13,22 +13,23 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
+
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
 
 // Uncomment this line to disable the library
-// #define DISABLE_LANFENG
-// #ifdef DISABLE_LANFENG
-//   #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
-// #endif
+//#define DISABLE_LANFENG
+#ifdef DISABLE_LANFENG
+  #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+#endif
 
 
-fmsLanfeng lanfeng(15,15);
+fmsLanfeng lanfeng(15,15);// set re de pin
 
 /* Main function */
-#line 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup();
-#line 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 53 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void loop();
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_wifi_command(const std::vector<String>& args);
@@ -72,11 +73,15 @@ String fms_generateLiveData(int pump_id,float price_liters,float live_liters);
 int fms_decodePresetAmount(String presetData);
 #line 117 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 int fms_decodePumpId(String presetData);
-#line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void handleMessage(char* tp, int ind, String msg);
+#line 40 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
-#line 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 103 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_subsbribe_topics();
+#line 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 130 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void fms_info_response();
@@ -108,11 +113,13 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
-#line 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fm_rx_irq_interrupt();
-#line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_decode(uint8_t* data, uint32_t len);
-#line 38 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 35 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+void sendPumpRequest(uint8_t nozzleNumber);
+#line 49 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_task(void* arg);
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 bool initialize_fms_wifi(bool flag);
@@ -120,7 +127,7 @@ bool initialize_fms_wifi(bool flag);
 bool wifi_led_ticker();
 #line 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 static void wifi_task(void *arg);
-#line 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup() {
   fms_pin_mode(BUILTIN_LED, OUTPUT);
   fms_cli.begin(115200);                    // uart
@@ -135,9 +142,10 @@ void setup() {
   fms_cli.register_command("wifiscan_safe",     "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread",          "Read current WiFi status",           handle_wifi_read_command);
   fms_cli.register_command("wifi_test",         "Test WiFi connection",               handle_wifi_test_command);
+  
   #ifdef USE_LANFENG
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
-  lanfeng.init(1,fms_uart2_serial); // add slave id
+  lanfeng.init(1,fms_uart2_serial); // add slave id 
   #endif
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
   if (fms_initialize_wifi()) {  // wifi is connected
@@ -570,29 +578,130 @@ int fms_decodePumpId(String presetData){
 
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#define FMS_MQTT_DEBUG
+#ifdef FMS_MQTT_DEBUG
+  #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[MQTT][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+  #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[MQTT][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+#else
+  #define FMS_MQTT_LOG_DEBUG(format, ...)
+  #define FMS_MQTT_LOG_ERROR(format, ...)
+#endif
+
+char fms_nmf_tp_prefix[64];
+
+void handleMessage(char* tp, int ind, String msg) {
+  
+  switch (ind) {
+    case 0: {
+      // String approv_tp = String(tp);
+      // FMS_MQTT_LOG_DEBUG("Wild card topic matched: %s", fms_sub_topics[ind]);
+      // int last = approv_tp.lastIndexOf('/'); // detpos/local_server/1
+      // int noz_id = approv_tp.substring(last + 1).toInt(); // get 1 or 2
+      // FMS_MQTT_LOG_DEBUG("Nozzle ID: %d", noz_id);
+      // FMS_MQTT_LOG_DEBUG("Message : %s", msg);
+      break;
+    } // "detpos/local_server/#"
+    case 1: { // "detpos/local_server/price"
+      FMS_MQTT_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
+      break;
+    }
+    case 2: { // "detpos/local_server/preset"
+      FMS_MQTT_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
+      // add main code here
+      break;
+    }
+    default: {
+      FMS_MQTT_LOG_ERROR("Unknown topic index: %d", ind);
+      break;
+    }
+  }
+}
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String incommingMessage = "";
-
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-  FMS_LOG_INFO("Message arrived [%s] : %s", topic, incommingMessage);
-  // Serial.println("Message arrived [" + String(topic) + "]" + incommingMessage);
-  // char payload_str[length + 1];
-  // memcpy(payload_str, payload, length);
-  // payload_str[length] = '\0';
-  // FMS_LOG_INFO("Message arrived on topic [%s]: %s", topic, payload_str);
+  FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
+  bool tp_match = false;
+  String topic_ = String(topic);
+  int last = topic_.lastIndexOf('/');
+  String topic_value = topic_.substring(last+1);
+  int nozzle_num = topic_value.toInt();
+  FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+  if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
+    snprintf(approvmsg,sizeof(approvmsg),"%02dapprov",nozzle_num);
+    FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
+    if (incommingMessage == String(approvmsg)){
+      pump_approve[nozzle_num-1] = true;
+      tp_match = true;
+      FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
+    }
+  }
+  
+  for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+      const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+    if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+    {
+      tp_match = true;
+      //handleMessage(topic, i, incommingMessage);
+      FMS_MQTT_LOG_DEBUG("MATCH TRUE");
+      break;
+    } 
+    else {
+        FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
+    }
+  }
+
+  // for (int i = 0; i < fms_sub_topics_count; i++) {
+  //   const char* sub_tp = fms_sub_topics[i];
+  //   if (strcmp(topic, sub_tp) == 0) {
+  //     tp_match = true;
+  //     handleMessage(topic, i, incommingMessage);
+  //     break;
+  //   }
+
+
+  //   int len = strlen(sub_tp);
+  //   if (len > 0 && sub_tp[len - 1] == '#') {
+  //     strncpy(fms_nmf_tp_prefix, sub_tp, len - 1); // copy topic prefix to fms_nmf_tp_prefix
+  //     fms_nmf_tp_prefix[len - 1] = '\0';
+  //     FMS_MQTT_LOG_DEBUG("Wild Card Topic : %s", fms_nmf_tp_prefix);
+  //     String topic_ = String(topic);
+  //     int last = topic_.lastIndexOf('/');
+  //     String topic_value = topic_.substring(last+1);
+  //     FMS_MQTT_LOG_DEBUG("Topic value : %s", topic_value.c_str());
+  //     // tp_match = true;
+  //     // handleMessage(topic, 0, incommingMessage);
+  //     break;
+  //   }
+  // }
+
+  if (!tp_match) {
+    FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
+  }
+}
+
+void fms_subsbribe_topics() {
+  for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
+    FMS_MQTT_LOG_DEBUG("Subscribing to topic: %s", fms_sub_topics[i]);
+    fms_mqtt_client.subscribe(fms_sub_topics[i]);
+  }
 }
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()) {
-    FMS_LOG_INFO("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
+    FMS_MQTT_LOG_DEBUG("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
     String clientId = String(deviceName) + String(random(0xffff), HEX);
     if (fms_mqtt_client.connect(clientId.c_str())) {
-      FMS_LOG_INFO("Connected to MQTT server");
-      fms_mqtt_client.subscribe("detpos/#");
+      FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
+      fms_subsbribe_topics();
+      // Uncomment the following lines to subscribe to additional topics
+      // fms_mqtt_client.subscribe("detpos/#");
+      // fms_mqtt_client.subscribe("detpos/local_server/#");
+      // fms_mqtt_client.subscribe("detpos/local_server/price");
+      // fms_mqtt_client.subscribe("detpos/local_server/preset");
       // Add additional topic subscriptions if necessary
     } else {
-      FMS_LOG_WARNING("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state());
+      FMS_MQTT_LOG_ERROR("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state());
       vTaskDelay(pdMS_TO_TICKS(5000));
     }
   }
@@ -607,7 +716,9 @@ static void mqtt_task(void* arg) {
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
-    } else FMS_LOG_INFO("Connected to MQTT server");
+    } else {
+      FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
+    }
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
@@ -835,6 +946,8 @@ static void web_server_task(void* arg) {
       uptime++;
       lastUptimeUpdate = millis();
     }
+    // sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
+    // upgrade to mongoose wizard ui builder 
     UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
     Serial.print("Stack Remaining: ");
     Serial.println(stackRemaining);  // Prints remaining stack (in words)
@@ -976,7 +1089,6 @@ bool fms_task_create() {
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
-
     if (fms_uart2_serial) {
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
@@ -985,7 +1097,6 @@ bool fms_uart2_begin(bool flag, int baudrate) {
     }
   }
 }
-
 
 void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
   uint8_t Buffer[50];
@@ -1001,30 +1112,47 @@ void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
   fms_uart2_decode(Buffer, size);  // decode uart2 data main function
 }
 
+
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
   FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data);
 }
 
-unsigned long lastUpdate = 0;
 
-uint32_t value[40];
+
+void sendPumpRequest(uint8_t nozzleNumber) {
+if(!permitMessageSent){
+  snprintf(pumprequest, sizeof(pumprequest),"%s%d",permitTopic, nozzleNumber);
+  snprintf(payload, sizeof(payload), "%02dpermit", nozzleNumber);
+  Serial.println(String(pumprequest).c_str()); // testing // please remove
+  Serial.println(String(payload).c_str()); // testing // please remove 
+  fms_mqtt_client.publish(pumprequest, payload);
+  Serial.println("Permit message sent to MQTT broker."); // testing // please remove
+  FMS_LOG_INFO("Permit message sent to MQTT broker.");
+  permitMessageSent = true;
+}
+}
+
 uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-  uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
-   vTaskDelay(pdMS_TO_TICKS(1000));
-    uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
-    Serial.print("[LANFENG] PUMP STATE :");
-    Serial.println(pumpState,HEX);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-4
-    uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
-    Serial.print("[LANFENG] LIVE DATA :");
-    Serial.println(liveData,HEX);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    #ifdef USE_LANFENG
+  uint32_t permit = lanfeng.readPermit(0x02E0);
+  if (permit == 1) {
+    sendPumpRequest(01); // send permit message to mqtt broker
+    int wait_time = 0; 
+    while(!pump_approve[0] && wait_time < PUMP_REQUEST_TIMEOUT_MS){
+      vTaskDelay(pdMS_TO_TICKS(100));
+      wait_time += 100;
+    }
+    if(pump_approve[0]){
 
+    }
   }
+  #endif
+  vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+
 }
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"

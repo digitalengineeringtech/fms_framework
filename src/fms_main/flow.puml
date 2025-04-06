@@ -1,0 +1,25 @@
+@startuml
+start
+
+:Read nozzle handle (readPermit);
+
+if (noz_handle == 1) then (Yes)
+  :sendPumpRequest(NOZ_ID);
+  if (waitForPumpApproval(0)) then (Approved)
+    :startPumpAndPublishData();
+    :LOG "LIVEPRICE";
+    :Convert liveLiterPrice to high/low word;
+    :lanfeng.setValue_helper(LIVE_PRICE_ADDR, highWord_, lowWord_);
+    :LOG set value;
+  else (Timeout)
+    :LOG "Pump approval timed out";
+  endif
+elseif (noz_handle == 0 && permitMessageSent) then (Pump done)
+  :lanfeng.setPumpState(PUMP_STATE_ADDR, OFF);
+  :LOG "Pump stopped";
+  :startFinalDataPublish();
+  :Reset pump_approve[0] and permitMessageSent;
+endif
+
+stop
+@enduml

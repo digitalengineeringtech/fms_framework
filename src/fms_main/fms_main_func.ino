@@ -85,17 +85,18 @@ void fms_dns_responder_init() {
   }
 }
 
+// format priceperliter/LSellLiter/SellLiter*PricePreLiter/Totalizer/TotalizerAmount
 // generate Final Data format 
-String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,float price,float totalizer,unsigned long long totalizer_amount){
+String fms_generateFinalData(int pump_id,float sell_price_liters,float sell_liters,float price,float totalizer,unsigned long long totalizer_amount){
   char buffer[100];
   snprintf(buffer, sizeof(buffer), "%02dS%.3fL%.3fP%.2fT%.3fA%llu",
-           pump_id, sell_liters, live_liters, price, totalizer, totalizer_amount);
+           pump_id, sell_price_liters, sell_liters, price, totalizer, totalizer_amount);
   return String(buffer);
 }
 
 // generate live data format
 String fms_generateLiveData(int pump_id,float price_liters,float live_liters){
-  float sell_liter = price_liters * live_liters;  // S = P × L
+  float liveLiterPrice = price_liters * live_liters;  // S = P × L
   char buffer[50];                                // Buffer to store formatted string
   // Format: "01S1097L18.232P20000"
   snprintf(buffer, sizeof(buffer), "%02dP%.2fL%.3f",

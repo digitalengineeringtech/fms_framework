@@ -11,7 +11,7 @@
  // Debug logging macro - uncomment to enable debug logging
  #define FMS_DEBUG
  #ifdef FMS_DEBUG
-   #define FMS_LOG_DEBUG(format, ...) Serial.printf(format, ##__VA_ARGS__); Serial.println()
+   #define FMS_LOG_DEBUG(format, ...) Serial.print("[DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
  #else
    #define FMS_LOG_DEBUG(format, ...)
  #endif
@@ -65,17 +65,7 @@
        digitalWrite(_dePin, LOW);
      }
      
-     /**
-      * Process received data from the serial stream
-      */
-    //  void processReceivedData() {
-    //    while (_serial->available()) {
-    //      yield();
-    //      uint8_t byte = _serial->read();
-    //      _node.receive(byte);
-    //    }
-    //  }
-     
+
 
      float convert_float(uint16_t highReg, uint16_t lowReg) {
        uint32_t combinedData = ((uint32_t)highReg << 16) | lowReg;
@@ -92,35 +82,6 @@
           if (_node.getResponseBuffer(i) != 0xFFFF) reg_data[i] = _node.getResponseBuffer(i);
           vTaskDelay(pdMS_TO_TICKS(100));
          }
-         String jsonResponse = "{\"rawdata\": [";
-         for (int i = 0; i < numRegisters; i++) {
-           jsonResponse += String(reg_data[i]);
-           if (i < numRegisters - 1) jsonResponse += ",";
-         }
-         jsonResponse += "],";
-         jsonResponse += "\"data\": [";
-         jsonResponse += String(convert_float(reg_data[0], reg_data[1]), 5);
-         jsonResponse += ",";
-         jsonResponse += String(convert_float(reg_data[4], reg_data[5]), 5);
-         jsonResponse += ",";
-         jsonResponse += reg_data[8];
-         jsonResponse += ",";
-         jsonResponse += reg_data[12];
-         jsonResponse += ",";
-         jsonResponse += String(convert_float(reg_data[24], reg_data[25]), 5);
-         jsonResponse += ",";
-         jsonResponse += reg_data[28];
-         jsonResponse += ",";
-         jsonResponse += String(convert_float(reg_data[32], reg_data[33]), 5);
-         jsonResponse += ",";
-         jsonResponse += reg_data[34];
-         jsonResponse += "]";
-         jsonResponse += "}";
-         // Send the response to PyQt
-     
-         //  17695,49152,0,0,17948,16384,0,0,3578,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16709,49807,0,0,30000,0,0,0,17075,62915,1,0,1,0,0,0
-         Serial.println(jsonResponse);
-
        } else {
          FMS_LOG_DEBUG("Error reading holding registers: %02X", result);
        }
@@ -169,11 +130,38 @@
       else return result;
      }
 
+     uint32_t readSellLiterPerPrice(uint16_t registerAddress){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,1);
+      if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
+      else return result;
+     }
 
+    uint32_t setSellLiterPerPrice(uint16_t registerAddress, uint16_t value) {
+       uint8_t result = _node.writeSingleRegister(registerAddress, value);
+       if (result == _node.ku8MBSuccess) {
+         return 0x01; // Success
+       } else {
+         return result; // Error code
+       }
+     }
+
+    uint32_t setPumpState(uint16_t registerAddress, uint16_t value) {
+       uint8_t result = _node.writeSingleRegister(registerAddress, value);
+       if (result == _node.ku8MBSuccess) {
+         return 0x01; // Success
+       } else {
+         return result; // Error code
+       }
+     }
+
+     uint32_t readPermit(uint16_t registerAddress){
+      uint8_t result = _node.readHoldingRegisters(registerAddress,1);
+      if(result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
+      else return result;
+     }
      
 
-
-     uint8_t writeSingleRegister(uint16_t registerAddress, uint16_t value) {
+     uint32_t writeSingleRegister(uint16_t registerAddress, uint16_t value) {
        return _node.writeSingleRegister(registerAddress, value);
      }
      
@@ -213,3 +201,56 @@
  #endif // USE_LANFENG
  #endif // _FMS_LANFENG_H
  
+
+ /*
+  * lanfeng test code 
+    //   uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
+  //   if (sellLiter == 0x01) {
+  //     Serial.print("[LANFENG] SELL LITER : ");
+  //     Serial.print(s_liter[0]);
+  //     Serial.print(" / ");
+  //     Serial.println(s_liter[1]);
+  //   } else {
+  //     Serial.print("[LANFENG] Error reading sell liter: ");
+  //     Serial.println(sellLiter, HEX);
+  //   }
+  //  vTaskDelay(pdMS_TO_TICKS(1000));
+  //   uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
+  //   Serial.print("[LANFENG] PUMP STATE :");
+  //   Serial.println(pumpState,HEX);
+  //   vTaskDelay(pdMS_TO_TICKS(1000));
+
+  //   uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
+  //   Serial.print("[LANFENG] LIVE DATA :");
+  //   Serial.println(liveData,HEX);
+  //   vTaskDelay(pdMS_TO_TICKS(1000));
+
+  //   uint32_t SLP_Price = lanfeng.readSellLiterPerPrice(0x02D8); // fix se,nd data error when (not included 03 function how to fix this,)
+  //   Serial.print("[LANFENG] SELL LITER PERPRICE DATA :");
+  //   Serial.println(SLP_Price,HEX);
+  //   vTaskDelay(pdMS_TO_TICKS(1000));
+
+  //   uint32_t respone = lanfeng.setSellLiterPerPrice(0x02D8, 0x0001); // fix send data error when (not included 03 function how to fix this,)
+  //   if (respone == 0x01) {
+  //     Serial.print("[LANFENG] SET SELL LITER PERPRICE DATA :");
+  //     Serial.println(respone,HEX);
+  //   } else {
+  //     Serial.print("[LANFENG] Error reading set sell liter per price: ");
+  //     Serial.println(respone, HEX);
+  //   }
+  //   vTaskDelay(pdMS_TO_TICKS(1000));
+  //   uint32_t setPump = lanfeng.setPumpState(0x02DE, 0x0001); // fix send data error when (not included 03 function how to fix this,)
+  //   if (setPump == 0x01) {
+  //     Serial.print("[LANFENG] SET PUMP STATE :");
+  //     Serial.println(setPump,HEX);
+  //   } else {
+  //     Serial.print("[LANFENG] Error reading set pump state: ");
+  //     Serial.println(setPump, HEX);
+  //   }
+  //   vTaskDelay(pdMS_TO_TICKS(1000));
+
+  //   uint32_t permit = lanfeng.readPermit(0x02E0); 
+  //   Serial.print("[LANFENG] PERMIT :");
+  //   Serial.println(permit,HEX);
+  //   vTaskDelay(pdMS_TO_TICKS(1000));
+ */

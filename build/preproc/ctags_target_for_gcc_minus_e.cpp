@@ -19,17 +19,18 @@
 # 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial0, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
 
 // Uncomment this line to disable the library
-// #define DISABLE_LANFENG
-// #ifdef DISABLE_LANFENG
-//   #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
-// #endif
+//#define DISABLE_LANFENG
 
 
-fmsLanfeng lanfeng(15,15);
+
+
+
+fmsLanfeng lanfeng(15,15);// set re de pin
 
 /* Main function */
 void setup() {
@@ -47,8 +48,9 @@ void setup() {
   fms_cli.register_command("wifiread", "Read current WiFi status", handle_wifi_read_command);
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
 
+
   fmsLog(FMS_LOG_INFO, "[LANFENG] Starting Lanfeng");
-  lanfeng.init(1,Serial1 /* uart2 serial port*/); // add slave id
+  lanfeng.init(1,Serial1 /* uart2 serial port*/); // add slave id 
 
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
   if (fms_initialize_wifi()) { // wifi is connected
@@ -483,33 +485,126 @@ int fms_decodePumpId(String presetData){
   return presetData.substring(0,2).toInt();
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+char fms_nmf_tp_prefix[64];
+
+void handleMessage(char* tp, int ind, String msg) {
+
+  switch (ind) {
+    case 0: {
+      // String approv_tp = String(tp);
+      // FMS_MQTT_LOG_DEBUG("Wild card topic matched: %s", fms_sub_topics[ind]);
+      // int last = approv_tp.lastIndexOf('/'); // detpos/local_server/1
+      // int noz_id = approv_tp.substring(last + 1).toInt(); // get 1 or 2
+      // FMS_MQTT_LOG_DEBUG("Nozzle ID: %d", noz_id);
+      // FMS_MQTT_LOG_DEBUG("Message : %s", msg);
+      break;
+    } // "detpos/local_server/#"
+    case 1: { // "detpos/local_server/price"
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Topic matched: %s", fms_sub_topics[ind]); Serial0.println();
+      break;
+    }
+    case 2: { // "detpos/local_server/preset"
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Topic matched: %s", fms_sub_topics[ind]); Serial0.println();
+      // add main code here
+      break;
+    }
+    default: {
+      Serial0.print("[MQTT][ERROR] "); Serial0.printf("Unknown topic index: %d", ind); Serial0.println();
+      break;
+    }
+  }
+}
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String incommingMessage = "";
-
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-  fmsLog(FMS_LOG_INFO, "Message arrived [%s] : %s", topic, incommingMessage);
-  // Serial.println("Message arrived [" + String(topic) + "]" + incommingMessage);
-  // char payload_str[length + 1];
-  // memcpy(payload_str, payload, length);
-  // payload_str[length] = '\0';
-  // FMS_LOG_INFO("Message arrived on topic [%s]: %s", topic, payload_str);
+  Serial0.print("[MQTT][DEBUG] "); Serial0.printf("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage); Serial0.println();
+  bool tp_match = false;
+  String topic_ = String(topic);
+  int last = topic_.lastIndexOf('/');
+  String topic_value = topic_.substring(last+1);
+  int nozzle_num = topic_value.toInt();
+  Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num); Serial0.println();
+  if(nozzle_num >=1 && nozzle_num <= 2 /* change your noz count*/){
+    snprintf(approvmsg,sizeof(approvmsg),"%02dapprov",nozzle_num);
+    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("APPROVED MESSAGE GENERTED : %s",approvmsg); Serial0.println();
+    if (incommingMessage == String(approvmsg)){
+      pump_approve[nozzle_num-1] = true;
+      tp_match = true;
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str()); Serial0.println();
+    }
+  }
+
+  for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+      const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+    if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+    {
+      tp_match = true;
+      //handleMessage(topic, i, incommingMessage);
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("MATCH TRUE"); Serial0.println();
+      break;
+    }
+    else {
+        Serial0.print("[MQTT][DEBUG] "); Serial0.printf("not matched : [%s] == %s",topic,fms_sub_topics_value[i]); Serial0.println();
+    }
+  }
+
+  // for (int i = 0; i < fms_sub_topics_count; i++) {
+  //   const char* sub_tp = fms_sub_topics[i];
+  //   if (strcmp(topic, sub_tp) == 0) {
+  //     tp_match = true;
+  //     handleMessage(topic, i, incommingMessage);
+  //     break;
+  //   }
+
+
+  //   int len = strlen(sub_tp);
+  //   if (len > 0 && sub_tp[len - 1] == '#') {
+  //     strncpy(fms_nmf_tp_prefix, sub_tp, len - 1); // copy topic prefix to fms_nmf_tp_prefix
+  //     fms_nmf_tp_prefix[len - 1] = '\0';
+  //     FMS_MQTT_LOG_DEBUG("Wild Card Topic : %s", fms_nmf_tp_prefix);
+  //     String topic_ = String(topic);
+  //     int last = topic_.lastIndexOf('/');
+  //     String topic_value = topic_.substring(last+1);
+  //     FMS_MQTT_LOG_DEBUG("Topic value : %s", topic_value.c_str());
+  //     // tp_match = true;
+  //     // handleMessage(topic, 0, incommingMessage);
+  //     break;
+  //   }
+  // }
+
+  if (!tp_match) {
+    Serial0.print("[MQTT][ERROR] "); Serial0.printf("Topic not matched : %s", topic); Serial0.println();
+  }
+}
+
+void fms_subsbribe_topics() {
+  for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
+    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Subscribing to topic: %s", fms_sub_topics[i]); Serial0.println();
+    fms_mqtt_client.subscribe(fms_sub_topics[i]);
+  }
 }
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()) {
-    fmsLog(FMS_LOG_INFO, "MQTT initialized, connecting to %s:%d...", sysCfg.mqtt_server_host /* mqtt server address*/, 1883);
+    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("MQTT initialized, connecting to %s:%d...", sysCfg.mqtt_server_host /* mqtt server address*/, 1883); Serial0.println();
     String clientId = String(deviceName) + String(random(0xffff), 16);
     if (fms_mqtt_client.connect(clientId.c_str())) {
-      fmsLog(FMS_LOG_INFO, "Connected to MQTT server");
-      fms_mqtt_client.subscribe("detpos/#");
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
+      fms_subsbribe_topics();
+      // Uncomment the following lines to subscribe to additional topics
+      // fms_mqtt_client.subscribe("detpos/#");
+      // fms_mqtt_client.subscribe("detpos/local_server/#");
+      // fms_mqtt_client.subscribe("detpos/local_server/price");
+      // fms_mqtt_client.subscribe("detpos/local_server/preset");
       // Add additional topic subscriptions if necessary
     } else {
-      fmsLog(FMS_LOG_WARNING, "Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state());
+      Serial0.print("[MQTT][ERROR] "); Serial0.printf("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state()); Serial0.println();
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 125 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 125 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -524,11 +619,13 @@ static void mqtt_task(void* arg) {
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
-    } else fmsLog(FMS_LOG_INFO, "Connected to MQTT server");
+    } else {
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
+    }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 142 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 142 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -772,17 +869,19 @@ static void web_server_task(void* arg) {
       uptime++;
       lastUptimeUpdate = millis();
     }
+    // sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
+    // upgrade to mongoose wizard ui builder 
     UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(
-# 224 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3 4
+# 226 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3 4
                                                             __null
-# 224 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 226 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                                                                 );
     Serial0.print("Stack Remaining: ");
     Serial0.println(stackRemaining); // Prints remaining stack (in words)
     vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 227 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+# 229 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                      1000 
-# 227 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 229 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                      ));
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
@@ -948,12 +1047,11 @@ bool fms_task_create() {
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     Serial1 /* uart2 serial port*/.begin(baudrate, SERIAL_8N1, 16, 17);
-
     if (Serial1 /* uart2 serial port*/) {
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+# 6 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
                 1000 
-# 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+# 6 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       return true;
     } else {
@@ -961,7 +1059,6 @@ bool fms_uart2_begin(bool flag, int baudrate) {
     }
   }
 }
-
 
 void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
   uint8_t Buffer[50];
@@ -977,42 +1074,55 @@ void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
   fms_uart2_decode(Buffer, size); // decode uart2 data main function
 }
 
+
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
-  Serial0.printf("[FMSUART2] Received : %s\n\r", data); Serial0.println();
+  Serial0.print("[DEBUG] "); Serial0.printf("[FMSUART2] Received : %s\n\r", data); Serial0.println();
 }
 
-unsigned long lastUpdate = 0;
 
-uint32_t value[40];
+
+void sendPumpRequest(uint8_t nozzleNumber) {
+if(!permitMessageSent){
+  snprintf(pumprequest, sizeof(pumprequest),"%s%d",permitTopic, nozzleNumber);
+  snprintf(payload, sizeof(payload), "%02dpermit", nozzleNumber);
+  Serial0.println(String(pumprequest).c_str()); // testing // please remove
+  Serial0.println(String(payload).c_str()); // testing // please remove 
+  fms_mqtt_client.publish(pumprequest, payload);
+  Serial0.println("Permit message sent to MQTT broker."); // testing // please remove
+  fmsLog(FMS_LOG_INFO, "Permit message sent to MQTT broker.");
+  permitMessageSent = true;
+}
+}
+
 uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-  uint32_t sellLiter = lanfeng.readSellLiter(0x02D4,s_liter);
-   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 42 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
-             1000 
-# 42 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-             ) / ( TickType_t ) 1000U ) ));
-    uint32_t pumpState = lanfeng.readPumpState(0x02DE); // fix send data error when (not included 03 function how to fix this,)
-    Serial0.print("[LANFENG] PUMP STATE :");
-    Serial0.println(pumpState,16);
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 46 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
-              1000 
-# 46 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-              ) / ( TickType_t ) 1000U ) ));
-4
-    uint32_t liveData = lanfeng.readLiveData(0x02C4); // fix send data error when (not included 03 function how to fix this,)
-    Serial0.print("[LANFENG] LIVE DATA :");
-    Serial0.println(liveData,16);
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
-              1000 
-# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-              ) / ( TickType_t ) 1000U ) ));
 
+  uint32_t permit = lanfeng.readPermit(0x02E0);
+  if (permit == 1) {
+    sendPumpRequest(01); // send permit message to mqtt broker
+    int wait_time = 0;
+    while(!pump_approve[0] && wait_time < 10000 /* 10 seconds timeout for pump request  */){
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
+# 58 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+                1000 
+# 58 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+                ) / ( TickType_t ) 1000U ) ));
+      wait_time += 100;
+    }
+    if(pump_approve[0]){
+
+    }
   }
+
+  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 66 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+            1000 
+# 66 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+            ) / ( TickType_t ) 1000U ) ));
+  }
+
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 bool initialize_fms_wifi(bool flag) {
@@ -1022,7 +1132,7 @@ bool initialize_fms_wifi(bool flag) {
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
     fms_nvs_storage.end();
-    Serial0.printf("SSID : %s , PASS : %s", ssid_str, pass_str); Serial0.println();
+    Serial0.print("[DEBUG] "); Serial0.printf("SSID : %s , PASS : %s", ssid_str, pass_str); Serial0.println();
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
     strncpy(sysCfg.wifi_password, pass_str.c_str(), sizeof(sysCfg.wifi_password) - 1);
     if (sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") {

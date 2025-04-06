@@ -11,6 +11,7 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
+
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
 
@@ -21,7 +22,7 @@ fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default passwo
 #endif
 
 
-fmsLanfeng lanfeng(15,15);
+fmsLanfeng lanfeng(15,15);// set re de pin
 
 /* Main function */
 void setup() {
