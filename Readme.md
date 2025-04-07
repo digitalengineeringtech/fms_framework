@@ -15,7 +15,9 @@ Fuel Station Monitoring System
 - [Badges](#badges)
 
 ## Flow
-
+1. board number
+2. crc 
+3. 
 ![App Screenshot](https://github.com/digitalengineeringtech/fms_framework/blob/main/Flow.jpg)
 
 ## VS Code Extension

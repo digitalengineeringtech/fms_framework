@@ -65,23 +65,21 @@ void log_debug_info();
 void fms_pin_mode(int pin, int mode);
 #line 76 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_dns_responder_init();
-#line 89 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
-String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,float price,float totalizer,unsigned long long totalizer_amount);
-#line 97 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+#line 90 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+String fms_generateFinalData(int pump_id,float sell_price_liters,float sell_liters,float price,float totalizer,unsigned long long totalizer_amount);
+#line 98 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 String fms_generateLiveData(int pump_id,float price_liters,float live_liters);
-#line 107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+#line 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 int fms_decodePresetAmount(String presetData);
-#line 117 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+#line 118 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 int fms_decodePumpId(String presetData);
 #line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
-void handleMessage(char* tp, int ind, String msg);
-#line 40 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
-#line 103 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 66 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_subsbribe_topics();
-#line 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 73 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 130 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void fms_info_response();
@@ -95,6 +93,26 @@ void handleLogout();
 void fms_set_ota_server();
 #line 206 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 static void web_server_task(void* arg);
+#line 3 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void sendPumpRequest(uint8_t nozzleNumber);
+#line 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+bool waitForPumpApproval(int pumpIndex);
+#line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void startPump(uint16_t pumpStateAddr);
+#line 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void stopPump(uint16_t pumpStateAddr);
+#line 44 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+float LivePrice(uint32_t literPerPrice, float l_liter_float);
+#line 49 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr);
+#line 65 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void startFinalDataPublish();
+#line 85 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void setLivePrice(float price);
+#line 96 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void fms_lanfeng_approval_state();
+#line 118 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+void fms_lanfeng_protocol();
 #line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 bool fms_sd_init();
 #line 23 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
@@ -111,15 +129,13 @@ void _led_state();
 bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size, UBaseType_t priority, TaskHandle_t* handle, BaseType_t& rc);
 #line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
 bool fms_task_create();
-#line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
-#line 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fm_rx_irq_interrupt();
-#line 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_decode(uint8_t* data, uint32_t len);
-#line 35 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-void sendPumpRequest(uint8_t nozzleNumber);
-#line 49 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_task(void* arg);
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 bool initialize_fms_wifi(bool flag);
@@ -542,17 +558,18 @@ void fms_dns_responder_init() {
   }
 }
 
+// format priceperliter/LSellLiter/SellLiter*PricePreLiter/Totalizer/TotalizerAmount
 // generate Final Data format 
-String fms_generateFinalData(int pump_id,float sell_liters,float live_liters,float price,float totalizer,unsigned long long totalizer_amount){
+String fms_generateFinalData(int pump_id,float sell_price_liters,float sell_liters,float price,float totalizer,unsigned long long totalizer_amount){
   char buffer[100];
   snprintf(buffer, sizeof(buffer), "%02dS%.3fL%.3fP%.2fT%.3fA%llu",
-           pump_id, sell_liters, live_liters, price, totalizer, totalizer_amount);
+           pump_id, sell_price_liters, sell_liters, price, totalizer, totalizer_amount);
   return String(buffer);
 }
 
 // generate live data format
 String fms_generateLiveData(int pump_id,float price_liters,float live_liters){
-  float sell_liter = price_liters * live_liters;  // S = P × L
+  float liveLiterPrice = price_liters * live_liters;  // S = P × L
   char buffer[50];                                // Buffer to store formatted string
   // Format: "01S1097L18.232P20000"
   snprintf(buffer, sizeof(buffer), "%02dP%.2fL%.3f",
@@ -589,34 +606,6 @@ int fms_decodePumpId(String presetData){
 
 char fms_nmf_tp_prefix[64];
 
-void handleMessage(char* tp, int ind, String msg) {
-  
-  switch (ind) {
-    case 0: {
-      // String approv_tp = String(tp);
-      // FMS_MQTT_LOG_DEBUG("Wild card topic matched: %s", fms_sub_topics[ind]);
-      // int last = approv_tp.lastIndexOf('/'); // detpos/local_server/1
-      // int noz_id = approv_tp.substring(last + 1).toInt(); // get 1 or 2
-      // FMS_MQTT_LOG_DEBUG("Nozzle ID: %d", noz_id);
-      // FMS_MQTT_LOG_DEBUG("Message : %s", msg);
-      break;
-    } // "detpos/local_server/#"
-    case 1: { // "detpos/local_server/price"
-      FMS_MQTT_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
-      break;
-    }
-    case 2: { // "detpos/local_server/preset"
-      FMS_MQTT_LOG_DEBUG("Topic matched: %s", fms_sub_topics[ind]);
-      // add main code here
-      break;
-    }
-    default: {
-      FMS_MQTT_LOG_ERROR("Unknown topic index: %d", ind);
-      break;
-    }
-  }
-}
-
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String incommingMessage = "";
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
@@ -628,7 +617,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   int nozzle_num = topic_value.toInt();
   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
-    snprintf(approvmsg,sizeof(approvmsg),"%02dapprov",nozzle_num);
+    snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
     if (incommingMessage == String(approvmsg)){
       pump_approve[nozzle_num-1] = true;
@@ -642,7 +631,21 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
     {
       tp_match = true;
-      //handleMessage(topic, i, incommingMessage);
+      switch (i){
+        case 0: {
+          FMS_MQTT_DEBUG("preset topic matched: %s", topic_value.c_str());
+          int pumpID = fms_decodePumpId(incommingMessage);
+          int presetAmount = fms_decodePresetAmount(incommingMessage);
+          presetMessageGet = true; // for preset message get from mqtt broker
+          // pump_approve[pumpID-1] = true;
+          FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
+          break;
+        }
+        case 1: {
+          FMS_MQTT_DEBUG("price topic matched: %s", topic_value.c_str());
+          break;
+        }
+      }
       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
       break;
     } 
@@ -651,34 +654,11 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
     }
   }
 
-  // for (int i = 0; i < fms_sub_topics_count; i++) {
-  //   const char* sub_tp = fms_sub_topics[i];
-  //   if (strcmp(topic, sub_tp) == 0) {
-  //     tp_match = true;
-  //     handleMessage(topic, i, incommingMessage);
-  //     break;
-  //   }
-
-
-  //   int len = strlen(sub_tp);
-  //   if (len > 0 && sub_tp[len - 1] == '#') {
-  //     strncpy(fms_nmf_tp_prefix, sub_tp, len - 1); // copy topic prefix to fms_nmf_tp_prefix
-  //     fms_nmf_tp_prefix[len - 1] = '\0';
-  //     FMS_MQTT_LOG_DEBUG("Wild Card Topic : %s", fms_nmf_tp_prefix);
-  //     String topic_ = String(topic);
-  //     int last = topic_.lastIndexOf('/');
-  //     String topic_value = topic_.substring(last+1);
-  //     FMS_MQTT_LOG_DEBUG("Topic value : %s", topic_value.c_str());
-  //     // tp_match = true;
-  //     // handleMessage(topic, 0, incommingMessage);
-  //     break;
-  //   }
-  // }
-
   if (!tp_match) {
     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
   }
 }
+
 
 void fms_subsbribe_topics() {
   for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
@@ -956,6 +936,152 @@ static void web_server_task(void* arg) {
   }
 }
 
+#line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#ifdef USE_LANFENG
+
+void sendPumpRequest(uint8_t nozzleNumber) {
+  if (!permitMessageSent) {
+    snprintf(pumprequest, sizeof(pumprequest), "%s%d", permitTopic, nozzleNumber);
+    snprintf(payload, sizeof(payload), "%02dpermit", nozzleNumber);
+    Serial.println(String(pumprequest).c_str());  // testing // please remove
+    Serial.println(String(payload).c_str());     // testing // please remove
+    fms_mqtt_client.publish(pumprequest, payload);
+    Serial.println("Permit message sent to MQTT broker.");  // testing // please remove
+    FMS_LOG_INFO("Permit message sent to MQTT broker.");
+    permitMessageSent = true;
+  }
+}
+
+bool waitForPumpApproval(int pumpIndex) {
+  int wait_time = 0;
+  while (!pump_approve[pumpIndex] && wait_time < PUMP_REQUEST_TIMEOUT_MS) {
+    vTaskDelay(pdMS_TO_TICKS(100));
+    wait_time += 100;
+    if (wait_time % 1000 == 0) {
+      FMS_LOG_DEBUG("Waiting for pump approval ... %d ms\n", wait_time);
+    }
+  }
+  return pump_approve[pumpIndex];
+}
+
+void startPump(uint16_t pumpStateAddr) {
+  uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0001); // pump on & off control 
+  if (setPumpResult != 0x01) {
+    FMS_LOG_DEBUG("Error starting pump: 0x%X\n", setPumpResult);
+    return;
+  }
+}
+
+void stopPump(uint16_t pumpStateAddr) {
+  uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0000); // pump on & off control 
+  if (setPumpResult != 0x01) {
+    FMS_LOG_DEBUG("Error stopping pump: 0x%X\n", setPumpResult);
+    return;
+  }
+}
+
+float LivePrice(uint32_t literPerPrice, float l_liter_float) {
+  return (literPerPrice) * l_liter_float;  // optional features // S = P × L // live price = Liter per price * live liter
+}
+
+
+void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
+  uint32_t liveData_result = lanfeng.readLiveData(liveDataAddr, l_liter); // get Live Liter
+  uint32_t literPerPrice = lanfeng.readSellLiterPerPrice(priceAddr); // get price per liter 
+  float l_liter_float = lanfeng.convert_float(l_liter[0], l_liter[1]); // convert to float (live liter ) (modbus returs value is two 16 bit register so we convert to float vlaue
+ liveLiterPrice = LivePrice(literPerPrice, l_liter_float);  // optional features // S = P × L // live price = Liter per price * live liter
+  if (liveData_result == 0x01) { // check if live data is read successfully
+    snprintf(pplive + strlen(pplive), sizeof(pplive) - strlen(pplive), "%d", pumpIndex); // mqtt topic to publish live data
+    String l_liter_str = fms_generateLiveData(pumpIndex, literPerPrice, l_liter_float);
+    fms_mqtt_client.publish(pplive, l_liter_str.c_str());
+    FMS_LOG_DEBUG("Live data sent to MQTT broker.");
+  } else {
+    FMS_LOG_DEBUG("[LANFENG] Error reading live data: 0x%X\n", liveData_result);
+  }
+}
+
+
+void startFinalDataPublish() {
+  snprintf(ppfinal, sizeof(ppfinal), "%s%d", ppfinal, 1);
+  uint32_t literPerPrice = lanfeng.readSellLiterPerPrice(PRICE_ADDR);
+  uint32_t sellLiter = lanfeng.readSellLiter(SELL_LITER_ADDR, s_liter);
+  if (sellLiter == 0x01) {
+    s_liter_float = lanfeng.convert_float(s_liter[0], s_liter[1]);
+  }
+  uint32_t finalPrice = sellLiter * literPerPrice;
+  uint32_t totalLiter = lanfeng.readTotalizerLiter(TOTALIZER_LITER_ADDR, t_liter);
+  if (totalLiter == 0x01) {
+    t_liter_float = lanfeng.convert_float(t_liter[0], t_liter[1]);
+  }
+  uint32_t totalAmount = lanfeng.readTotalizerAmount(TOTALIZER_AMOUNT_ADDR, t_amount);
+  if (totalAmount == 0x01) {
+    t_amount_float = lanfeng.convert_float(t_amount[0], t_amount[1]);
+  }
+  String finalMessage = fms_generateFinalData(1, literPerPrice, s_liter_float, finalPrice, t_liter_float, t_amount_float);
+  fms_mqtt_client.publish(ppfinal, finalMessage.c_str());
+}
+
+void setLivePrice(float price) {
+  uint32_t floatAsInt;
+  memcpy(&floatAsInt, &price, sizeof(price));  // Safely convert float to 32-bit integer
+  uint16_t highWord_ = (floatAsInt >> 16) & 0xFFFF;             // Extract high word
+  uint16_t lowWord_ = floatAsInt & 0xFFFF;                      // Extract low word
+  lanfeng.setValue_helper(LIVE_PRICE_ADDR, highWord_, lowWord_);  // Set live price in lanfeng class
+  FMS_LOG_DEBUG("Setting value: %f, High Word: %04X, Low Word: %04X", price, highWord_, lowWord_);
+}
+
+
+
+void fms_lanfeng_approval_state() {
+  uint32_t noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); // check  nozel handle 
+  if (noz_handle == 1) {
+    sendPumpRequest(NOZ_ID);  // send permit message to mqtt broker
+    if (waitForPumpApproval(0)) {
+      startPump(PUMP_STATE_ADDR);  // start pump
+      publishPumpData(1, LIVE_DATA_ADDR, PRICE_ADDR);  // publish live data to mqtt broker
+      FMS_LOG_DEBUG("LIVEPRICE %f", liveLiterPrice);  // 32 float to 16 bit low, high word check in startPumpAndPublishData
+      setLivePrice(liveLiterPrice);  // set live price in lanfeng class
+
+    } else {
+      FMS_LOG_DEBUG("Pump approval timed out.");
+    }
+  } else if (noz_handle == 0 && permitMessageSent) {
+    lanfeng.setPumpState(PUMP_STATE_ADDR, 0x0000);  // stop pump
+    FMS_LOG_DEBUG("Pump 1 stopped.");
+    startFinalDataPublish();
+    pump_approve[0] = false;       // reset after using
+    permitMessageSent = false;    // reset permit message sent flag
+  }
+}
+
+void fms_lanfeng_protocol() {
+  if(!presetMessageGet) {
+   fms_lanfeng_approval_state(); // check lanfeng protocol
+  } else if(presetMessageGet) {
+    startPump(PUMP_STATE_ADDR);  // start pump
+    uint32_t noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); // check  nozel handle 
+    while(noz_handle == 0){
+      vTaskDelay(pdMS_TO_TICKS(200)); // wait for 200ms
+      noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); 
+      FMS_LOG_DEBUG("Waiting for pump approval (0)... %d ms\n", 200);
+    }
+    publishPumpData(1, LIVE_DATA_ADDR, PRICE_ADDR);  // publish live data to mqtt broker
+    setLivePrice(liveLiterPrice);  // set live price in lanfeng class
+    while(noz_handle == 1) {
+      vTaskDelay(pdMS_TO_TICKS(200)); // wait for 200ms
+      noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); 
+      FMS_LOG_DEBUG("Waiting for pump approval (1)... %d ms\n", 200);
+      publishPumpData(1, LIVE_DATA_ADDR, PRICE_ADDR);  // publish live data to mqtt broker
+      setLivePrice(liveLiterPrice);  // set live price in lanfeng class
+    }
+    stopPump(PUMP_STATE_ADDR);  // stop pump
+    FMS_LOG_DEBUG("Pump 1 stopped.");
+    startFinalDataPublish();
+    presetMessageGet = false; // reset after using
+  }
+}
+#endif
+
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 /*
   * fms_sd.cpp
@@ -1085,7 +1211,6 @@ bool fms_task_create() {
 }
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
     fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
@@ -1101,58 +1226,29 @@ bool fms_uart2_begin(bool flag, int baudrate) {
 void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
   uint8_t Buffer[50];
   int bytes_received = 0;
-  uint16_t size = fms_uart2_serial.available();  // serial.available  // #define fms_cli_serial Serial
-  fms_uart2_serial.printf("Got byes on serial : %d\n", size);
+  uint16_t size = fms_uart2_serial.available();  // serial.available
+  fms_uart2_serial.printf("Got bytes on serial : %d\n", size);
   while (fms_uart2_serial.available()) {
     yield();
     Buffer[bytes_received] = fms_uart2_serial.read();
     bytes_received++;
   }
-  fms_uart2_serial.printf("\n uart2  data process \n\r");
+  fms_uart2_serial.printf("\n uart2 data process \n\r");
   fms_uart2_decode(Buffer, size);  // decode uart2 data main function
 }
-
 
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
   FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data);
 }
 
-
-
-void sendPumpRequest(uint8_t nozzleNumber) {
-if(!permitMessageSent){
-  snprintf(pumprequest, sizeof(pumprequest),"%s%d",permitTopic, nozzleNumber);
-  snprintf(payload, sizeof(payload), "%02dpermit", nozzleNumber);
-  Serial.println(String(pumprequest).c_str()); // testing // please remove
-  Serial.println(String(payload).c_str()); // testing // please remove 
-  fms_mqtt_client.publish(pumprequest, payload);
-  Serial.println("Permit message sent to MQTT broker."); // testing // please remove
-  FMS_LOG_INFO("Permit message sent to MQTT broker.");
-  permitMessageSent = true;
-}
-}
-
-uint32_t s_liter[2];
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-    #ifdef USE_LANFENG
-  uint32_t permit = lanfeng.readPermit(0x02E0);
-  if (permit == 1) {
-    sendPumpRequest(01); // send permit message to mqtt broker
-    int wait_time = 0; 
-    while(!pump_approve[0] && wait_time < PUMP_REQUEST_TIMEOUT_MS){
-      vTaskDelay(pdMS_TO_TICKS(100));
-      wait_time += 100;
-    }
-    if(pump_approve[0]){
-
-    }
+#ifdef USE_LANFENG // development features 
+fms_lanfeng_protocol();
+#endif
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
-  #endif
-  vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-
 }
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"

@@ -6,9 +6,7 @@
   #define FMS_MQTT_LOG_DEBUG(format, ...)
   #define FMS_MQTT_LOG_ERROR(format, ...)
 #endif
-
 char fms_nmf_tp_prefix[64];
-
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String incommingMessage = "";
@@ -62,6 +60,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
   }
 }
+
 
 void fms_subsbribe_topics() {
   for (uint8_t i = 0; i < fms_sub_topics_count; i++) {

@@ -34,7 +34,7 @@
 
 Ticker ticker;
 String firmwareVersion                = "0.1.0";              // Current firmware version
-String deviceName                     = "ultramarine-v0.1-";
+String deviceName                     = "ultramarine-v0.1-";  // device ID (for) 
 
 #define CLI_PASSWORD                    "admin"               // cli password     // change this password
 #define BUILTIN_LED                     2  
@@ -119,12 +119,12 @@ PubSubClient                        fms_mqtt_client(wf_client);
 HTTPClient                          http;
 WiFiClient                          http_client;
 bool permitMessageSent             = false; // for sent permit message time
+bool finalMessageSent              = false; // for sent final message time= 
+bool presetMessageGet              = false; // for preset message get from mqtt broker
 // mqtt topic
-
 const char* fms_sub_topics[] = { // subscribe topic 
   "detpos/local_server/#"
 };
-
 char approvmsg[10];
 const char* fms_sub_topics_value[] {
   "preset",
@@ -138,6 +138,28 @@ const uint8_t fms_sub_topics_count = sizeof(fms_sub_topics)/sizeof(fms_sub_topic
 const uint8_t fms_sub_topics_value_count = sizeof(fms_sub_topics_value)/sizeof(fms_sub_topics_value[0]);
 
 
+uint32_t s_liter[2];
+uint32_t l_liter[2];
+uint32_t t_amount[2];
+uint32_t t_liter[2];
+float s_liter_float;
+float t_liter_float;
+float t_amount_float;
+float liveLiterPrice;
+
+
+
+const uint16_t NOZ_HANDLE_ADDR  = 0x02E0;
+const uint16_t PUMP_STATE_ADDR  = 0x02DE;
+const uint16_t LIVE_DATA_ADDR   = 0x02C4;
+const uint16_t PRICE_ADDR       = 0x02D8;
+const uint16_t SELL_LITER_ADDR  = 0x02D4;
+const uint16_t TOTALIZER_LITER_ADDR = 0x02BC;
+const uint16_t TOTALIZER_AMOUNT_ADDR = 0x02C0;
+const uint16_t LIVE_PRICE_ADDR       = 0x02C8;
+const uint8_t  NOZ_ID            = 01;
+
+
 // from old 
 // char pumpapprobuf[22]               = "detpos/local_server/1";
 // char pumppresetbuf[28]              = "detpos/local_server/preset";  // return from local server
@@ -145,8 +167,8 @@ const uint8_t fms_sub_topics_value_count = sizeof(fms_sub_topics_value)/sizeof(f
 // char pricechange[26]                = "detpos/local_server/price";  // return from local server
 
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
-char pplive[25]                     = "detpos/device/livedata/1";
-char ppfinal[22]                    = "detpos/device/Final/1";
+char pplive[25]                     = "detpos/device/livedata/";
+char ppfinal[22]                    = "detpos/device/Final/";
 char whreqbuf[20]                   = "detpos/device/whreq";
 char pricereqbuf[25]                = "detpos/device/pricereq/1";
 char activebuf[23]                  = "detpos/device/active/1";
@@ -163,7 +185,7 @@ struct SYSCFG {
   unsigned long version;
   char          wifi_ssid[32]         = "";
   char          wifi_password[64]     = " ";
-  char          mqtt_server_host[32]  = "192.168.1.142";
+  char          mqtt_server_host[32]  = "192.168.1.124";
   char*         mqtt_user             = MQTT_USER;
   char*         mqtt_password         = MQTT_PASSWORD;
   uint32_t      mqtt_port             = MQTT_PORT;

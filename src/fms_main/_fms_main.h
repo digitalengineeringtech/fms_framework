@@ -33,7 +33,7 @@
 
 Ticker ticker;
 String firmwareVersion                = "0.1.0";              // Current firmware version
-String deviceName                     = "ultramarine-v0.1-";
+String deviceName                     = "ultramarine-v0.1-";  // device ID (for) 
 
 #define CLI_PASSWORD                    "admin"               // cli password     // change this password
 #define BUILTIN_LED                     2  
@@ -145,6 +145,8 @@ float s_liter_float;
 float t_liter_float;
 float t_amount_float;
 float liveLiterPrice;
+
+
 
 const uint16_t NOZ_HANDLE_ADDR  = 0x02E0;
 const uint16_t PUMP_STATE_ADDR  = 0x02DE;
