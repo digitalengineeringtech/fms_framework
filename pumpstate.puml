@@ -1,0 +1,25 @@
+@startuml
+start
+
+:Read nozzle state;
+
+repeat
+  :Check nozzle state;
+repeat while (noz_handle == 0) is (Waiting for nozzle lift)
+
+:Nozzle lifted;
+:startPump(PUMP_STATE_ADDR);
+:publishPumpData();
+:setLivePrice(liveLiterPrice);
+
+repeat
+  :Monitor nozzle state;
+repeat while (noz_handle == 1) is (Filling in progress)
+
+:Nozzle down;
+:stopPump(PUMP_STATE_ADDR);
+:startFinalDataPublish();
+:presetMessageGet = false;
+
+stop
+@enduml

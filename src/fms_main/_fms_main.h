@@ -119,6 +119,7 @@ HTTPClient                          http;
 WiFiClient                          http_client;
 bool permitMessageSent             = false; // for sent permit message time
 bool finalMessageSent              = false; // for sent final message time= 
+bool presetMessageGet              = false; // for preset message get from mqtt broker
 // mqtt topic
 const char* fms_sub_topics[] = { // subscribe topic 
   "detpos/local_server/#"
@@ -181,7 +182,7 @@ struct SYSCFG {
   unsigned long version;
   char          wifi_ssid[32]         = "";
   char          wifi_password[64]     = " ";
-  char          mqtt_server_host[32]  = "192.168.1.142";
+  char          mqtt_server_host[32]  = "192.168.1.124";
   char*         mqtt_user             = MQTT_USER;
   char*         mqtt_password         = MQTT_PASSWORD;
   uint32_t      mqtt_port             = MQTT_PORT;
