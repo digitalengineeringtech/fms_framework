@@ -1,6 +1,17 @@
 #ifndef _FMS_LANFENG_H
 #define _FMS_LANFENG_H
 
+/*
+lanfeng protocol all state
+author : trion
+guideline : sir thiha kyaw
+copyright : iih
+*/
+
+// v 0.1 (development features)
+// to change (config for lanfeng)
+// add slave id and address , multiple read features
+
 #define USE_LANFENG
 
 #include <Arduino.h>
@@ -60,14 +71,14 @@ class fmsLanfeng {
       digitalWrite(_dePin, LOW);
     }
 
-    float convert_float(uint16_t highReg, uint16_t lowReg) {
+    float convert_float(uint16_t highReg, uint16_t lowReg) {  // get 32 bit register address to float
       uint32_t combinedData = ((uint32_t)highReg << 16) | lowReg;
       float floatData;
       memcpy(&floatData, &combinedData, sizeof(float));
       return floatData;
     }
 
-    void readAllData(uint16_t registerAddress, uint8_t numRegisters) {
+    void readAllData(uint16_t registerAddress, uint8_t numRegisters) { // read all data from modbus
       uint8_t result = _node.readHoldingRegisters(0x02BC, 40);
       if (result == _node.ku8MBSuccess) {
         for (int i = 0; i < numRegisters; i++) {
@@ -79,13 +90,13 @@ class fmsLanfeng {
       }
     }
 
-    uint32_t readPumpState(uint16_t registerAddress) {
+    uint32_t readPumpState(uint16_t registerAddress) { // read pump state for lanfeng modbus
       uint8_t result = _node.readHoldingRegisters(registerAddress, 1);
       if (result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
       else return result;
     }
 
-    uint32_t readLiveData(uint16_t registerAddress, uint32_t* data) {
+    uint32_t readLiveData(uint16_t registerAddress, uint32_t* data) { // read live data from lanfeng modbus
       uint8_t result = _node.readHoldingRegisters(registerAddress, 2);
       if (result == _node.ku8MBSuccess) {
         for (int i = 0; i < 2; i++) {
@@ -95,15 +106,13 @@ class fmsLanfeng {
       } else return result;
     }
 
-    uint32_t readLivePrice(uint16_t registerAddress) {
+    uint32_t readLivePrice(uint16_t registerAddress) { // read live price from lanfeng modbus
       uint8_t result = _node.readHoldingRegisters(registerAddress, 1);
       if (result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
       else return result;
     }
 
-  
-
-    uint32_t readTotalizerLiter(uint16_t registerAddress, uint32_t* data) {
+    uint32_t readTotalizerLiter(uint16_t registerAddress, uint32_t* data) { // read totallizer liter
       uint8_t result = _node.readHoldingRegisters(registerAddress, 2);
       if (result == _node.ku8MBSuccess) {
         for (int i = 0; i < 2; i++) {
@@ -112,7 +121,6 @@ class fmsLanfeng {
         return 0x01;
       } else return result;
     }
-
 
     uint32_t readTotalizerAmount(uint16_t registerAddress, uint32_t* data) {
       uint8_t result = _node.readHoldingRegisters(registerAddress, 2);
@@ -148,23 +156,24 @@ class fmsLanfeng {
         return result; // Error code
       }
     }
-
-    uint32_t setLivePrice(uint16_t registerAddress, uint16_t highword,uint16_t lowword) {
-      return setValue_helper(registerAddress,  highword, lowword);
+    // setlive price to lanfeng modbus
+    uint32_t setLivePrice(uint16_t registerAddress, uint16_t highword, uint16_t lowword) {
+      return setValue_helper(registerAddress, highword, lowword);
     }
 
-    uint32_t setValue_helper(uint16_t registerAddress, uint16_t highWord,uint16_t lowWord) {
+    // 32 bit float to lanfeng modbus (split 16 bit high bye and low byte)
+    uint32_t setValue_helper(uint16_t registerAddress, uint16_t highWord, uint16_t lowWord) {
       _node.beginTransmission(registerAddress);
       _node.send(highWord);
       _node.send(lowWord);
       uint8_t result = _node.writeMultipleRegisters();
       if (result == _node.ku8MBSuccess) {
         return 0x01; // Success
-      }  else {
+      } else {
         return result; // Error code
       }
     }
-
+ // set pump on and off (optional features current not used in code)
     uint32_t setPumpState(uint16_t registerAddress, uint16_t value) {
       uint8_t result = _node.writeSingleRegister(registerAddress, value);
       if (result == _node.ku8MBSuccess) {
@@ -173,7 +182,7 @@ class fmsLanfeng {
         return result; // Error code
       }
     }
-
+    // read  permit status from lanfeng modbus (different address)
     uint32_t readPermit(uint16_t registerAddress) {
       uint8_t result = _node.readHoldingRegisters(registerAddress, 1);
       if (result == _node.ku8MBSuccess) return _node.getResponseBuffer(0);
@@ -184,6 +193,7 @@ class fmsLanfeng {
       return _node.writeSingleRegister(registerAddress, value);
     }
 
+    // read register for lanfeng modbus optional features (current not used in code)
     uint8_t readInputRegisters(uint16_t registerAddress, uint8_t numRegisters, uint16_t* data) {
       uint8_t result = _node.readInputRegisters(registerAddress, numRegisters);
       if (result == _node.ku8MBSuccess) {
@@ -196,7 +206,7 @@ class fmsLanfeng {
       return result;
     }
 
-    ModbusMaster& getNode() {
+    ModbusMaster& getNode() {a
       return _node;
     }
 };

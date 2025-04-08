@@ -32,7 +32,7 @@ void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
 #ifdef USE_LANFENG // development features 
-fms_lanfeng_protocol();
+fms_lanfeng_protocol(); // lanfeng protocol 
 #endif
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
