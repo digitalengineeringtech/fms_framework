@@ -206,7 +206,7 @@ class fmsLanfeng {
       return result;
     }
 
-    ModbusMaster& getNode() {a
+    ModbusMaster& getNode() {
       return _node;
     }
 };

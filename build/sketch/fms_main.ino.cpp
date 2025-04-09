@@ -24,7 +24,7 @@ fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default passwo
 #endif
 
 
-fmsLanfeng lanfeng(15,15);// set re de pin
+fmsLanfeng lanfeng(22,22);// set re de pin (DTR PIN)
 
 /* Main function */
 #line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
@@ -75,11 +75,11 @@ int fms_decodePresetAmount(String presetData);
 int fms_decodePumpId(String presetData);
 #line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
-#line 66 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 71 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_subsbribe_topics();
-#line 73 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 78 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 98 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void fms_info_response();
@@ -95,23 +95,23 @@ void fms_set_ota_server();
 static void web_server_task(void* arg);
 #line 3 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void sendPumpRequest(uint8_t nozzleNumber);
-#line 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 17 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 bool waitForPumpApproval(int pumpIndex);
-#line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void startPump(uint16_t pumpStateAddr);
-#line 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void stopPump(uint16_t pumpStateAddr);
-#line 44 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 47 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 float LivePrice(uint32_t literPerPrice, float l_liter_float);
-#line 49 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 52 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr);
-#line 65 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 67 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void startFinalDataPublish();
-#line 85 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void setLivePrice(float price);
-#line 96 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 97 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void fms_lanfeng_approval_state();
-#line 118 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+#line 122 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
 void fms_lanfeng_protocol();
 #line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 bool fms_sd_init();
@@ -170,6 +170,7 @@ void setup() {
 }
 
 void loop() {
+  
 }
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
@@ -611,11 +612,15 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
   bool tp_match = false;
+
   String topic_ = String(topic);
+ // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
   int last = topic_.lastIndexOf('/');
   String topic_value = topic_.substring(last+1);
+  // some return topic contain noz id detpos/local_server/1 , check noz id or other 
   int nozzle_num = topic_value.toInt();
   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+  // check if the topic is approved message or not
   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
@@ -625,6 +630,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
     }
   }
+
   
   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
@@ -952,6 +958,7 @@ void sendPumpRequest(uint8_t nozzleNumber) {
   }
 }
 
+
 bool waitForPumpApproval(int pumpIndex) {
   int wait_time = 0;
   while (!pump_approve[pumpIndex] && wait_time < PUMP_REQUEST_TIMEOUT_MS) {
@@ -964,6 +971,7 @@ bool waitForPumpApproval(int pumpIndex) {
   return pump_approve[pumpIndex];
 }
 
+
 void startPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0001); // pump on & off control 
   if (setPumpResult != 0x01) {
@@ -971,6 +979,7 @@ void startPump(uint16_t pumpStateAddr) {
     return;
   }
 }
+
 
 void stopPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0000); // pump on & off control 
@@ -1000,7 +1009,6 @@ void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
   }
 }
 
-
 void startFinalDataPublish() {
   snprintf(ppfinal, sizeof(ppfinal), "%s%d", ppfinal, 1);
   uint32_t literPerPrice = lanfeng.readSellLiterPerPrice(PRICE_ADDR);
@@ -1021,6 +1029,7 @@ void startFinalDataPublish() {
   fms_mqtt_client.publish(ppfinal, finalMessage.c_str());
 }
 
+
 void setLivePrice(float price) {
   uint32_t floatAsInt;
   memcpy(&floatAsInt, &price, sizeof(price));  // Safely convert float to 32-bit integer
@@ -1029,8 +1038,6 @@ void setLivePrice(float price) {
   lanfeng.setValue_helper(LIVE_PRICE_ADDR, highWord_, lowWord_);  // Set live price in lanfeng class
   FMS_LOG_DEBUG("Setting value: %f, High Word: %04X, Low Word: %04X", price, highWord_, lowWord_);
 }
-
-
 
 void fms_lanfeng_approval_state() {
   uint32_t noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); // check  nozel handle 
@@ -1041,19 +1048,22 @@ void fms_lanfeng_approval_state() {
       publishPumpData(1, LIVE_DATA_ADDR, PRICE_ADDR);  // publish live data to mqtt broker
       FMS_LOG_DEBUG("LIVEPRICE %f", liveLiterPrice);  // 32 float to 16 bit low, high word check in startPumpAndPublishData
       setLivePrice(liveLiterPrice);  // set live price in lanfeng class
-
     } else {
       FMS_LOG_DEBUG("Pump approval timed out.");
+      sendPumpRequest(NOZ_ID);
     }
   } else if (noz_handle == 0 && permitMessageSent) {
     lanfeng.setPumpState(PUMP_STATE_ADDR, 0x0000);  // stop pump
     FMS_LOG_DEBUG("Pump 1 stopped.");
     startFinalDataPublish();
-    pump_approve[0] = false;       // reset after using
+    pump_approve[0] = false;       // reset after usings
     permitMessageSent = false;    // reset permit message sent flag
+  } else {
+    FMS_LOG_DEBUG("Modbus Error on 0x%02X : 0x%02X\n",NOZ_HANDLE_ADDR, noz_handle);
   }
 }
 
+// start here lanfeng 
 void fms_lanfeng_protocol() {
   if(!presetMessageGet) {
    fms_lanfeng_approval_state(); // check lanfeng protocol
@@ -1245,7 +1255,7 @@ void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
 #ifdef USE_LANFENG // development features 
-fms_lanfeng_protocol();
+fms_lanfeng_protocol(); // lanfeng protocol 
 #endif
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

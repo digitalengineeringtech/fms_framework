@@ -30,7 +30,7 @@ fms_cli fms_cli(Serial0, "admin" /* cli password     // change this password*/);
 
 
 
-fmsLanfeng lanfeng(15,15);// set re de pin
+fmsLanfeng lanfeng(22,22);// set re de pin (DTR PIN)
 
 /* Main function */
 void setup() {
@@ -59,6 +59,7 @@ void setup() {
 }
 
 void loop() {
+
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 // cli command function 
@@ -494,11 +495,15 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
   Serial0.print("[MQTT][DEBUG] "); Serial0.printf("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage); Serial0.println();
   bool tp_match = false;
+
   String topic_ = String(topic);
+ // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
   int last = topic_.lastIndexOf('/');
   String topic_value = topic_.substring(last+1);
+  // some return topic contain noz id detpos/local_server/1 , check noz id or other 
   int nozzle_num = topic_value.toInt();
   Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num); Serial0.println();
+  // check if the topic is approved message or not
   if(nozzle_num >=1 && nozzle_num <= 2 /* change your noz count*/){
     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
     Serial0.print("[MQTT][DEBUG] "); Serial0.printf("APPROVED MESSAGE GENERTED : %s",approvmsg); Serial0.println();
@@ -508,6 +513,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
       Serial0.print("[MQTT][DEBUG] "); Serial0.printf("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str()); Serial0.println();
     }
   }
+
 
   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
@@ -566,9 +572,9 @@ void fms_mqtt_reconnect() {
     } else {
       Serial0.print("[MQTT][ERROR] "); Serial0.printf("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state()); Serial0.println();
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -587,9 +593,9 @@ static void mqtt_task(void* arg) {
       Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -866,13 +872,14 @@ void sendPumpRequest(uint8_t nozzleNumber) {
   }
 }
 
+
 bool waitForPumpApproval(int pumpIndex) {
   int wait_time = 0;
   while (!pump_approve[pumpIndex] && wait_time < 10000 /* 10 seconds timeout for pump request  */) {
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino" 3
+# 20 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino" 3
               1000 
-# 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+# 20 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
               ) / ( TickType_t ) 1000U ) ));
     wait_time += 100;
     if (wait_time % 1000 == 0) {
@@ -882,6 +889,7 @@ bool waitForPumpApproval(int pumpIndex) {
   return pump_approve[pumpIndex];
 }
 
+
 void startPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0001); // pump on & off control 
   if (setPumpResult != 0x01) {
@@ -889,6 +897,7 @@ void startPump(uint16_t pumpStateAddr) {
     return;
   }
 }
+
 
 void stopPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0000); // pump on & off control 
@@ -918,7 +927,6 @@ void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
   }
 }
 
-
 void startFinalDataPublish() {
   snprintf(ppfinal, sizeof(ppfinal), "%s%d", ppfinal, 1);
   uint32_t literPerPrice = lanfeng.readSellLiterPerPrice(PRICE_ADDR);
@@ -939,6 +947,7 @@ void startFinalDataPublish() {
   fms_mqtt_client.publish(ppfinal, finalMessage.c_str());
 }
 
+
 void setLivePrice(float price) {
   uint32_t floatAsInt;
   memcpy(&floatAsInt, &price, sizeof(price)); // Safely convert float to 32-bit integer
@@ -947,8 +956,6 @@ void setLivePrice(float price) {
   lanfeng.setValue_helper(LIVE_PRICE_ADDR, highWord_, lowWord_); // Set live price in lanfeng class
   Serial0.print("[DEBUG] "); Serial0.printf("Setting value: %f, High Word: %04X, Low Word: %04X", price, highWord_, lowWord_); Serial0.println();
 }
-
-
 
 void fms_lanfeng_approval_state() {
   uint32_t noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); // check  nozel handle 
@@ -959,19 +966,22 @@ void fms_lanfeng_approval_state() {
       publishPumpData(1, LIVE_DATA_ADDR, PRICE_ADDR); // publish live data to mqtt broker
       Serial0.print("[DEBUG] "); Serial0.printf("LIVEPRICE %f", liveLiterPrice); Serial0.println(); // 32 float to 16 bit low, high word check in startPumpAndPublishData
       setLivePrice(liveLiterPrice); // set live price in lanfeng class
-
     } else {
       Serial0.print("[DEBUG] "); Serial0.printf("Pump approval timed out."); Serial0.println();
+      sendPumpRequest(NOZ_ID);
     }
   } else if (noz_handle == 0 && permitMessageSent) {
     lanfeng.setPumpState(PUMP_STATE_ADDR, 0x0000); // stop pump
     Serial0.print("[DEBUG] "); Serial0.printf("Pump 1 stopped."); Serial0.println();
     startFinalDataPublish();
-    pump_approve[0] = false; // reset after using
+    pump_approve[0] = false; // reset after usings
     permitMessageSent = false; // reset permit message sent flag
+  } else {
+    Serial0.print("[DEBUG] "); Serial0.printf("Modbus Error on 0x%02X : 0x%02X\n",NOZ_HANDLE_ADDR, noz_handle); Serial0.println();
   }
 }
 
+// start here lanfeng 
 void fms_lanfeng_protocol() {
   if(!presetMessageGet) {
    fms_lanfeng_approval_state(); // check lanfeng protocol
@@ -980,9 +990,9 @@ void fms_lanfeng_protocol() {
     uint32_t noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); // check  nozel handle 
     while(noz_handle == 0){
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 200 ) * ( TickType_t ) 
-# 125 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino" 3
+# 129 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino" 3
                 1000 
-# 125 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+# 129 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // wait for 200ms
       noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR);
       Serial0.print("[DEBUG] "); Serial0.printf("Waiting for pump approval (0)... %d ms\n", 200); Serial0.println();
@@ -991,9 +1001,9 @@ void fms_lanfeng_protocol() {
     setLivePrice(liveLiterPrice); // set live price in lanfeng class
     while(noz_handle == 1) {
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 200 ) * ( TickType_t ) 
-# 132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino" 3
+# 136 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino" 3
                 1000 
-# 132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
+# 136 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_protocol_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // wait for 200ms
       noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR);
       Serial0.print("[DEBUG] "); Serial0.printf("Waiting for pump approval (1)... %d ms\n", 200); Serial0.println();
@@ -1201,7 +1211,7 @@ void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
 
-fms_lanfeng_protocol();
+fms_lanfeng_protocol(); // lanfeng protocol 
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 37 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3

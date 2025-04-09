@@ -7,10 +7,10 @@ void handle_wifi_command(const std::vector<String>& args) {
     String ssid = args[0];
     String password = args[1];
     // Save to preferences
-    preferences.begin("fms_config", false);
-    preferences.putString("ssid", ssid);
-    preferences.putString("pass", password);
-    preferences.end();
+    fms_nvs_storage.begin("fms_config", false);
+    fms_nvs_storage.putString("ssid", ssid);
+    fms_nvs_storage.putString("pass", password);
+    fms_nvs_storage.end();
     
     fms_cli.respond("wifi", "WiFi settings updated. SSID: " + ssid);
 }
@@ -203,10 +203,10 @@ void handle_wifi_test_command(const std::vector<String>& args) {
     fms_cli.respond("wifi_test", "Running WiFi connection tests...");
     
     // Get stored WiFi credentials
-    preferences.begin("fms_config", true); // Read-only mode
-    String ssid = preferences.getString("ssid", "");
-    String password = preferences.getString("pass", "");
-    preferences.end();
+    fms_nvs_storage.begin("fms_config", true); // Read-only mode
+    String ssid = fms_nvs_storage.getString("ssid", "");
+    String password = fms_nvs_storage.getString("pass", "");
+    fms_nvs_storage.end();
     
     if (ssid.length() == 0 || password.length() == 0) {
         fms_cli.respond("wifi_test", "No WiFi credentials stored. Use 'wifi <ssid> <password>' first.", false);
@@ -271,6 +271,21 @@ void handle_wifi_test_command(const std::vector<String>& args) {
         fms_cli.respond("wifi_test", "WiFi connection test failed: " + errorMsg, false);
     }
 }
+
+// Device Id Change Command
+void handle_device_id_change_command(const std::vector<String>& args){
+    if (args.size() != 2) {
+        fms_cli.respond("device", "Usage: UUID <id> ", false);
+        return;
+    }
+    String uuid = args[0];
+    // Save to preferences
+    fms_nvs_storage.begin("fms_config", false);
+    fms_nvs_storage.putString("uuid", uuid);
+    fms_nvs_storage.end();
+    fms_cli.respond("UUID", "UUID  updated. UUID: " + uuid);
+}
+
 
 // Custom print function that captures output for the web interface
 size_t custom_print(const uint8_t *buffer, size_t size) {

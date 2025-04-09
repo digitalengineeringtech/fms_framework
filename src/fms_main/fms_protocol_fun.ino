@@ -13,6 +13,7 @@ void sendPumpRequest(uint8_t nozzleNumber) {
   }
 }
 
+
 bool waitForPumpApproval(int pumpIndex) {
   int wait_time = 0;
   while (!pump_approve[pumpIndex] && wait_time < PUMP_REQUEST_TIMEOUT_MS) {
@@ -25,6 +26,7 @@ bool waitForPumpApproval(int pumpIndex) {
   return pump_approve[pumpIndex];
 }
 
+
 void startPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0001); // pump on & off control 
   if (setPumpResult != 0x01) {
@@ -32,6 +34,7 @@ void startPump(uint16_t pumpStateAddr) {
     return;
   }
 }
+
 
 void stopPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0000); // pump on & off control 
@@ -47,11 +50,11 @@ float LivePrice(uint32_t literPerPrice, float l_liter_float) {
 
 
 void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
-  uint32_t liveData_result = lanfeng.readLiveData(liveDataAddr, l_liter); // get Live Liter
-  uint32_t literPerPrice = lanfeng.readSellLiterPerPrice(priceAddr); // get price per liter 
-  float l_liter_float = lanfeng.convert_float(l_liter[0], l_liter[1]); // convert to float (live liter ) (modbus returs value is two 16 bit register so we convert to float vlaue
- liveLiterPrice = LivePrice(literPerPrice, l_liter_float);  // optional features // S = P × L // live price = Liter per price * live liter
-  if (liveData_result == 0x01) { // check if live data is read successfully
+  uint32_t liveData_result = lanfeng.readLiveData(liveDataAddr, l_liter);     // get Live Liter
+  uint32_t literPerPrice = lanfeng.readSellLiterPerPrice(priceAddr);          // get price per liter 
+  float l_liter_float = lanfeng.convert_float(l_liter[0], l_liter[1]);        // convert to float (live liter ) (modbus returs value is two 16 bit register so we convert to float vlaue
+ liveLiterPrice = LivePrice(literPerPrice, l_liter_float);                    // optional features // S = P × L // live price = Liter per price * live liter
+  if (liveData_result == 0x01) {                                              // check if live data is read successfully
     snprintf(pplive + strlen(pplive), sizeof(pplive) - strlen(pplive), "%d", pumpIndex); // mqtt topic to publish live data
     String l_liter_str = fms_generateLiveData(pumpIndex, literPerPrice, l_liter_float);
     fms_mqtt_client.publish(pplive, l_liter_str.c_str());
@@ -60,7 +63,6 @@ void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
     FMS_LOG_DEBUG("[LANFENG] Error reading live data: 0x%X\n", liveData_result);
   }
 }
-
 
 void startFinalDataPublish() {
   snprintf(ppfinal, sizeof(ppfinal), "%s%d", ppfinal, 1);
@@ -82,6 +84,7 @@ void startFinalDataPublish() {
   fms_mqtt_client.publish(ppfinal, finalMessage.c_str());
 }
 
+
 void setLivePrice(float price) {
   uint32_t floatAsInt;
   memcpy(&floatAsInt, &price, sizeof(price));  // Safely convert float to 32-bit integer
@@ -90,8 +93,6 @@ void setLivePrice(float price) {
   lanfeng.setValue_helper(LIVE_PRICE_ADDR, highWord_, lowWord_);  // Set live price in lanfeng class
   FMS_LOG_DEBUG("Setting value: %f, High Word: %04X, Low Word: %04X", price, highWord_, lowWord_);
 }
-
-
 
 void fms_lanfeng_approval_state() {
   uint32_t noz_handle = lanfeng.readPermit(NOZ_HANDLE_ADDR); // check  nozel handle 
@@ -102,19 +103,22 @@ void fms_lanfeng_approval_state() {
       publishPumpData(1, LIVE_DATA_ADDR, PRICE_ADDR);  // publish live data to mqtt broker
       FMS_LOG_DEBUG("LIVEPRICE %f", liveLiterPrice);  // 32 float to 16 bit low, high word check in startPumpAndPublishData
       setLivePrice(liveLiterPrice);  // set live price in lanfeng class
-
     } else {
       FMS_LOG_DEBUG("Pump approval timed out.");
+      sendPumpRequest(NOZ_ID);
     }
   } else if (noz_handle == 0 && permitMessageSent) {
     lanfeng.setPumpState(PUMP_STATE_ADDR, 0x0000);  // stop pump
     FMS_LOG_DEBUG("Pump 1 stopped.");
     startFinalDataPublish();
-    pump_approve[0] = false;       // reset after using
+    pump_approve[0] = false;       // reset after usings
     permitMessageSent = false;    // reset permit message sent flag
+  } else {
+    FMS_LOG_DEBUG("Modbus Error on 0x%02X : 0x%02X\n",NOZ_HANDLE_ADDR, noz_handle);
   }
 }
 
+// start here lanfeng 
 void fms_lanfeng_protocol() {
   if(!presetMessageGet) {
    fms_lanfeng_approval_state(); // check lanfeng protocol

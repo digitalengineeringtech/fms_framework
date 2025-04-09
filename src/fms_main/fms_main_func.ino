@@ -59,6 +59,8 @@ void fms_run_sd_test() {
   } else {
     Serial.println("[STORAGE] File system mounted");
   }
+  // load system config file
+
 #endif
 }
 
@@ -69,7 +71,7 @@ void log_debug_info() {
 #endif
 }
 
-void fms_pin_mode(int pin, int mode) {
+void fms_pin_mode(int pin, int mode) { // pin out declare
   pinMode(pin, mode);
 }
 
@@ -118,5 +120,14 @@ int fms_decodePresetAmount(String presetData){
 int fms_decodePumpId(String presetData){
   return presetData.substring(0,2).toInt();
 }
+
+/*
+{
+  "device": "U8990",
+  "payload": "N01L18.90P2000",
+  "crc_hex": "A1B2",
+  "crc_dec": 41394
+}
+*/
 
 

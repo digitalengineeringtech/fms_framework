@@ -118,6 +118,8 @@ WiFiClient                          wf_client;
 PubSubClient                        fms_mqtt_client(wf_client);
 HTTPClient                          http;
 WiFiClient                          http_client;
+
+
 bool permitMessageSent             = false; // for sent permit message time
 bool finalMessageSent              = false; // for sent final message time= 
 bool presetMessageGet              = false; // for preset message get from mqtt broker
@@ -126,7 +128,8 @@ const char* fms_sub_topics[] = { // subscribe topic
   "detpos/local_server/#"
 };
 char approvmsg[10];
-const char* fms_sub_topics_value[] {
+
+const char* fms_sub_topics_value[] { // subscibe topic eg : detpos/local_server/preset , detpos/local_server/price
   "preset",
   "price"
 };

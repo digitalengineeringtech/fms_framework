@@ -6,6 +6,7 @@
   #define FMS_MQTT_LOG_DEBUG(format, ...)
   #define FMS_MQTT_LOG_ERROR(format, ...)
 #endif
+
 char fms_nmf_tp_prefix[64];
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
@@ -13,11 +14,15 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
   bool tp_match = false;
+
   String topic_ = String(topic);
+ // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
   int last = topic_.lastIndexOf('/');
   String topic_value = topic_.substring(last+1);
+  // some return topic contain noz id detpos/local_server/1 , check noz id or other 
   int nozzle_num = topic_value.toInt();
   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+  // check if the topic is approved message or not
   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
@@ -27,6 +32,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
     }
   }
+
   
   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
