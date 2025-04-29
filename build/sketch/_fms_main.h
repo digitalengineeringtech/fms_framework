@@ -34,7 +34,7 @@
 
 Ticker ticker;
 String firmwareVersion                = "0.1.0";              // Current firmware version
-String deviceName                     = "ultramarine-v0.1-";  // device ID (for) 
+String deviceName                     = "ultramarine-v0.1-";  // device ID (for)  change here like this user can change with configpanel
 
 #define CLI_PASSWORD                    "admin"               // cli password     // change this password
 #define BUILTIN_LED                     2  
@@ -79,10 +79,20 @@ String deviceName                     = "ultramarine-v0.1-";  // device ID (for)
 ModbusMaster node;
 #define PUMP_REQUEST_TIMEOUT_MS     10000             // 10 seconds timeout for pump request  
 
+// multiplexer
+// additional information datasheet : https://www.lcsc.com/datasheet/lcsc_datasheet_2004021806_HGSEMI-74HC4052M-TR_C507179.pdf
+#define USE_MUX_PC817    // using  Multiplexers (74hc4052m)
+//#define DISABLE_PC817
+#ifdef DISABLE_MUX_PC817 /// pc817 close
+  #undef USE_MUX_PC817
+#endif
+#define MUX_S0                      25
+#define MUX_S1                      26
+#define MUX_E                       27 // enable input (active LOW) 
+
 // nozzle config
 #define MAX_NOZZLES                 2 // change your noz count
 bool pump_approve[MAX_NOZZLES]      = {false};
-
 // OTA  configuration 
 bool          otaInProgress         = false;
 uint8_t       otaProgress           = 0;
@@ -120,6 +130,7 @@ HTTPClient                          http;
 WiFiClient                          http_client;
 
 
+// mqtt config
 bool permitMessageSent             = false; // for sent permit message time
 bool finalMessageSent              = false; // for sent final message time= 
 bool presetMessageGet              = false; // for preset message get from mqtt broker
@@ -139,7 +150,7 @@ const char* fms_sub_topics_value[] { // subscibe topic eg : detpos/local_server/
 */
 const uint8_t fms_sub_topics_count = sizeof(fms_sub_topics)/sizeof(fms_sub_topics[0]);
 const uint8_t fms_sub_topics_value_count = sizeof(fms_sub_topics_value)/sizeof(fms_sub_topics_value[0]);
-
+// end mqtt config
 
 uint32_t s_liter[2];
 uint32_t l_liter[2];
@@ -151,7 +162,7 @@ float t_amount_float;
 float liveLiterPrice;
 
 
-
+// modbus address
 const uint16_t NOZ_HANDLE_ADDR  = 0x02E0;
 const uint16_t PUMP_STATE_ADDR  = 0x02DE;
 const uint16_t LIVE_DATA_ADDR   = 0x02C4;
@@ -161,14 +172,14 @@ const uint16_t TOTALIZER_LITER_ADDR = 0x02BC;
 const uint16_t TOTALIZER_AMOUNT_ADDR = 0x02C0;
 const uint16_t LIVE_PRICE_ADDR       = 0x02C8;
 const uint8_t  NOZ_ID            = 01;
-
+// end modbus address
 
 // from old 
 // char pumpapprobuf[22]               = "detpos/local_server/1";
 // char pumppresetbuf[28]              = "detpos/local_server/preset";  // return from local server
 // char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
 // char pricechange[26]                = "detpos/local_server/price";  // return from local server
-
+// 
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
 char pplive[25]                     = "detpos/device/livedata/";
 char ppfinal[22]                    = "detpos/device/Final/";
@@ -180,7 +191,7 @@ char Reset_topic[17]                = "detpos/hmi/reset";
 const char permitTopic[23]          = "detpos/device/permit/";
 char pumprequest[23];
 char payload[10]; // for permit message                
-
+// old topic for old version
 
 
 struct SYSCFG {
@@ -198,7 +209,7 @@ struct SYSCFG {
   uint32_t      station_id            = STATION_ID;
 } sysCfg;
 
-
+// cli config
 struct FMSMAILBOX {
   String command;
   String data;
@@ -206,6 +217,8 @@ struct FMSMAILBOX {
   uint32_t payload;
   uint32_t index;
 } fmsMailBox;
+// end cli config
+
 
 static TaskHandle_t heventTask;
 static TaskHandle_t hwifiTask;
@@ -222,7 +235,6 @@ volatile uint8_t bufferIndex = 0;  // for testing
 // free rtos task
 #define  NUM_REG 40
 static uint32_t reg_data[NUM_REG];
-
 
 
 #endif  // _FMS_HEADER_H_

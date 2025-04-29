@@ -14,18 +14,34 @@ void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
   uint8_t Buffer[50];
   int bytes_received = 0;
   uint16_t size = fms_uart2_serial.available();  // serial.available
-  fms_uart2_serial.printf("Got bytes on serial : %d\n", size);
-  while (fms_uart2_serial.available()) {
+  FMS_LOG_DEBUG("Got bytes on serial : %d\n", size);
+  while (fms_uart2_serial.available() && bytes_received < sizeof(Buffer)) {
     yield();
     Buffer[bytes_received] = fms_uart2_serial.read();
     bytes_received++;
   }
-  fms_uart2_serial.printf("\n uart2 data process \n\r");
-  fms_uart2_decode(Buffer, size);  // decode uart2 data main function
+  if(bytes_received > 0) {
+    FMS_LOG_DEBUG("\n uart2 data process \n\r");
+    fms_uart2_decode(Buffer, bytes_received);  // decode uart2 data main function
+  }
+ 
 }
 
 void fms_uart2_decode(uint8_t* data, uint32_t len) {
-  FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data);
+  
+
+  // Print the raw byte data for debugging
+  Serial.print("[FMSUART2] Received Data: ");
+  for (int i = 0; i < len; i++) {
+    Serial.print(data[i], HEX);  // Print each byte in hex format
+    Serial.print(" ");
+  }
+  Serial.println();
+
+  // Example of how to process the data, depending on your protocol
+  // FMS_LOG_DEBUG("[FMSUART2] Received : %s\n\r", data); // If data is string
+  // Or process the data byte by byte
+
 }
 
 void fms_uart2_task(void* arg) {
@@ -33,6 +49,9 @@ void fms_uart2_task(void* arg) {
   while (1) {
 #ifdef USE_LANFENG // development features 
 fms_lanfeng_protocol(); // lanfeng protocol 
+#endif
+#ifdef USE_MUX_PC817
+test_mux();
 #endif
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

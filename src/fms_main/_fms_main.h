@@ -30,11 +30,6 @@
 #include <esp_task_wdt.h>
 #include <esp_ota_ops.h> 
 
-// Uncomment this line to disable the library
-#define DISABLE_LANFENG
-#ifdef DISABLE_LANFENG
-  #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
-#endif
 
 Ticker ticker;
 String firmwareVersion                = "0.1.0";              // Current firmware version

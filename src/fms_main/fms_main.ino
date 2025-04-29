@@ -11,6 +11,11 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
+// Uncomment this line to disable the library
+#define DISABLE_LANFENG
+#ifdef DISABLE_LANFENG
+  #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+#endif
 
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
@@ -23,12 +28,13 @@ void setup() {
   fms_cli.begin(115200);                    // uart
   fms_initialize_uart2();                   // uart 2
   fms_pin_mode(BUILTIN_LED, OUTPUT);   
-  #if USE_MUX_PC817    
+  #ifdef USE_MUX_PC817    
   // multiplexer pinout
   fms_pin_mode(MUX_S0,OUTPUT);               // Multiplexer
   fms_pin_mode(MUX_S1  ,OUTPUT);
   fms_pin_mode(MUX_E,OUTPUT);
-  
+  enable_mux(MUX_E); // enable multiplexer (active low)
+
 #endif
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(false);             // show serial logging data on Serial Monitor
@@ -40,7 +46,7 @@ void setup() {
   fms_cli.register_command("wifiscan_safe",     "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread",          "Read current WiFi status",           handle_wifi_read_command);
   fms_cli.register_command("wifi_test",         "Test WiFi connection",               handle_wifi_test_command);
-  fms_cli.register_command("uuid_change"        "Change Your Device Id unique address", handle_device_id_change_command);
+  fms_cli.register_command("uuid_change",        "Change Your Device Id unique address", handle_device_id_change_command,1,1);
   
   #ifdef USE_LANFENG
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
