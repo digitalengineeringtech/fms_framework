@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Fuel Dispenser Control System - User Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            margin: 0;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #3498db;
+            margin-top: 25px;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        .note {
+            background-color: #e7f4ff;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning {
+            background-color: #fff5e6;
+            border-left: 4px solid #e67e22;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .toc li {
+            margin-bottom: 8px;
+        }
+        .toc a {
+            text-decoration: none;
+            color: #3498db;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .protocol-example {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ESP32 Fuel Dispenser Control System</h1>
+        <p>User Guide and Documentation</p>
+    </header>
+
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#introduction">1. Introduction</a></li>
+            <li><a href="#hardware-requirements">2. Hardware Requirements</a></li>
+            <li><a href="#installation">3. Installation</a>
+                <ul>
+                    <li><a href="#hardware-setup">3.1 Hardware Setup</a></li>
+                    <li><a href="#software-setup">3.2 Software Setup</a></li>
+                </ul>
+            </li>
+            <li><a href="#usage">4. Usage</a>
+                <ul>
+                    <li><a href="#web-interface">4.1 Web Interface</a></li>
+                    <li><a href="#commands">4.2 Available Commands</a></li>
+                </ul>
+            </li>
+            <li><a href="#protocol">5. Communication Protocol</a>
+                <ul>
+                    <li><a href="#protocol-overview">5.1 Protocol Overview</a></li>
+                    <li><a href="#parity-switching">5.2 Parity Switching Technique</a></li>
+                    <li><a href="#command-format">5.3 Command Format</a></li>
+                    <li><a href="#response-format">5.4 Response Format</a></li>
+                </ul>
+            </li>
+            <li><a href="#troubleshooting">6. Troubleshooting</a></li>
+            <li><a href="#advanced">7. Advanced Tools</a>
+                <ul>
+                    <li><a href="#protocol-analyzer">7.1 Protocol Analyzer</a></li>
+                </ul>
+            </li>
+            <li><a href="#appendix">8. Appendix</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <h2>1. Introduction</h2>
+        <p>The ESP32 Fuel Dispenser Control System is a modern replacement for traditional control systems, allowing you to manage fuel dispensers using an ESP32 microcontroller. This system provides both a web interface and serial communication capabilities to control various aspects of fuel dispensers.</p>
+        
+        <p>This system is a direct replacement for the legacy Visual Basic application, offering the same functionality but with modern hardware and improved connectivity options.</p>
+        
+        <h3>Key Features</h3>
+        <ul>
+            <li>Price change functionality</li>
+            <li>Reading and clearing shift totals</li>
+            <li>Stopping pumps</li>
+            <li>Requesting real-time amount and volume data</li>
+            <li>Web-based interface accessible from any device</li>
+            <li>WiFi connectivity</li>
+            <li>Serial communication with fuel dispensers</li>
+            <li>Protocol analyzer for debugging</li>
+        </ul>
+    </section>
+
+    <section id="hardware-requirements">
+        <h2>2. Hardware Requirements</h2>
+        <p>To set up the ESP32 Fuel Dispenser Control System, you will need the following components:</p>
+        
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Description</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>ESP32 Development Board</td>
+                <td>Any ESP32-based board (e.g., ESP32 DevKit, NodeMCU-32S)</td>
+                <td>Main controller</td>
+            </tr>
+            <tr>
+                <td>RS232 to TTL Converter</td>
+                <td>MAX3232 or similar converter</td>
+                <td>Interface between ESP32 and fuel dispenser</td>
+            </tr>
+            <tr>
+                <td>Power Supply</td>
+                <td>5V DC power supply</td>
+                <td>Power for the ESP32</td>
+            </tr>
+            <tr>
+                <td>Connecting Wires</td>
+                <td>Jumper wires, connectors</td>
+                <td>Connections between components</td>
+            </tr>
+            <tr>
+                <td>Optional: Display</td>
+                <td>OLED or LCD display</td>
+                <td>Local status display</td>
+            </tr>
+            <tr>
+                <td>Optional: Buttons</td>
+                <td>Push buttons</td>
+                <td>Physical control interface</td>
+            </tr>
+        </table>
+        
+        <div class="note">
+            <strong>Note:</strong> The ESP32 must be connected to a WiFi network for the web interface to be accessible.
+        </div>
+    </section>
+
+    <section id="installation">
+        <h2>3. Installation</h2>
+        
+        <section id="hardware-setup">
+            <h3>3.1 Hardware Setup</h3>
+            <p>Follow these steps to set up the hardware components:</p>
+            
+            <ol>
+                <li>
+                    <strong>Connect the RS232 to TTL converter to the ESP32:</strong>
+                    <ul>
+                        <li>Connect the TX pin of the ESP32 (GPIO17) to the RX pin of the converter</li>
+                        <li>Connect the RX pin of the ESP32 (GPIO16) to the TX pin of the converter</li>
+                        <li>Connect GND of the ESP32 to GND of the converter</li>
+                        <li>Connect VCC of the converter to 3.3V of the ESP32</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Connect the RS232 side of the converter to the fuel dispenser:</strong>
+                    <ul>
+                        <li>Use a standard DB9 connector to connect to the fuel dispenser</li>
+                        <li>Ensure proper pinout according to the fuel dispenser's specifications</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Power the ESP32:</strong>
+                    <ul>
+                        <li>Connect the ESP32 to a 5V power supply via USB or external power input</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <div class="warning">
+                <strong>Warning:</strong> Always ensure that all connections are correct before powering on the system. Incorrect wiring may damage the components.
+            </div>
+            
+            <h4>Wiring Diagram</h4>
+            <pre>
+ESP32           RS232-TTL Converter           Fuel Dispenser
+------          -----------------             --------------
+GPIO17 (TX) --> RX                            
+GPIO16 (RX) <-- TX                            
+3.3V        --> VCC                           
+GND         --> GND                           
+                RS232 TX        ------------> RX
+                RS232 RX        <------------ TX
+                RS232 GND       <-----------> GND
+            </pre>
+        </section>
+        
+        <section id="software-setup">
+            <h3>3.2 Software Setup</h3>
+            <p>Follow these steps to set up the software:</p>
+            
+            <ol>
+                <li>
+                    <strong>Install the Arduino IDE:</strong>
+                    <ul>
+                        <li>Download and install the Arduino IDE from <a href="https://www.arduino.cc/en/software">arduino.cc</a></li>
+                        <li>Install the ESP32 board package in the Arduino IDE</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Install Required Libraries:</strong>
+                    <ul>
+                        <li>Open the Arduino IDE</li>
+                        <li>Go to Sketch > Include Library > Manage Libraries</li>
+                        <li>Search for and install the following libraries:
+                            <ul>
+                                <li>ArduinoJson</li>
+                                <li>CircularBuffer (for the Protocol Analyzer)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Configure the Code:</strong>
+                    <ul>
+                        <li>Open the provided Arduino sketch</li>
+                        <li>Modify the WiFi credentials:
+                            <pre>const char* ssid = "YourWiFiSSID";
+const char* password = "YourWiFiPassword";</pre>
+                        </li>
+                        <li>Adjust the serial pins if necessary:
+                            <pre>#define DISPENSER_RX_PIN 16  // GPIO16 for RX
+#define DISPENSER_TX_PIN 17  // GPIO17 for TX</pre>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Upload the Code:</strong>
+                    <ul>
+                        <li>Connect the ESP32 to your computer via USB</li>
+                        <li>Select the correct board and port in the Arduino IDE</li>
+                        <li>Click the Upload button</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Verify Installation:</strong>
+                    <ul>
+                        <li>Open the Serial Monitor in the Arduino IDE (115200 baud)</li>
+                        <li>Check for the "Connected to WiFi" message and note the IP address</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <div class="note">
+                <strong>Note:</strong> The ESP32 will automatically connect to the configured WiFi network on startup. If the connection fails, the system will continue to retry.
+            </div>
+        </section>
+    </section>
+
+    <section id="usage">
+        <h2>4. Usage</h2>
+        
+        <section id="web-interface">
+            <h3>4.1 Web Interface</h3>
+            <p>The system provides a web interface that can be accessed from any device on the same network as the ESP32.</p>
+            
+            <h4>Accessing the Web Interface</h4>
+            <ol>
+                <li>Connect your device (computer, tablet, smartphone) to the same WiFi network as the ESP32</li>
+                <li>Open a web browser</li>
+                <li>Enter the IP address of the ESP32 in the address bar (e.g., 192.168.1.100)</li>
+                <li>The web interface should load, showing the control panel</li>
+            </ol>
+            
+            <h4>Web Interface Features</h4>
+            <ul>
+                <li><strong>Nozzle ID Setting:</strong> Set the ID of the nozzle/pump you want to control</li>
+                <li><strong>COM Port Setting:</strong> Set the COM port number (maintained for compatibility)</li>
+                <li><strong>Command Buttons:</strong> Buttons for each available command</li>
+                <li><strong>Price Data Input:</strong> Input field for price data (used for price change command)</li>
+                <li><strong>Response Display:</strong> Area showing the command sent and response received from the dispenser</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Note:</strong> The web interface automatically updates the response area when new data is received from the fuel dispenser.
+            </div>
+        </section>
+        
+        <section id="commands">
+            <h3>4.2 Available Commands</h3>
+            <p>The system supports the following commands for controlling the fuel dispenser:</p>
+            
+            <table>
+                <tr>
+                    <th>Command</th>
+                    <th>Description</th>
+                    <th>Parameters</th>
+                    <th>Response</th>
+                </tr>
+                <tr>
+                    <td>Price Change</td>
+                    <td>Changes the price setting on the fuel dispenser</td>
+                    <td>Price value (numeric)</td>
+                    <td>3 bytes confirmation</td>
+                </tr>
+                <tr>
+                    <td>Clear Shift Total</td>
+                    <td>Clears the shift total counters</td>
+                    <td>None</td>
+                    <td>3 bytes confirmation</td>
+                </tr>
+                <tr>
+                    <td>Read Shift Total</td>
+                    <td>Reads the current shift total values</td>
+                    <td>None</td>
+                    <td>15 bytes with total data</td>
+                </tr>
+                <tr>
+                    <td>Stop Pump</td>
+                    <td>Stops the pump operation immediately</td>
+                    <td>None</td>
+                    <td>3 bytes confirmation</td>
+                </tr>
+                <tr>
+                    <td>Request Real-time Data</td>
+                    <td>Requests current amount and volume data</td>
+                    <td>None</td>
+                    <td>13 bytes with real-time data</td>
+                </tr>
+            </table>
+            
+            <h4>Using Commands</h4>
+            <ol>
+                <li>Set the Nozzle ID to match the target fuel dispenser</li>
+                <li>For Price Change command, enter the price value in the Price Data field</li>
+                <li>Click the desired command button</li>
+                <li>The system will send the command and display the response in the Response area</li>
+            </ol>
+        </section>
+    </section>
+
+    <section id="protocol">
+        <h2>5. Communication Protocol</h2>
+        
+        <section id="protocol-overview">
+            <h3>5.1 Protocol Overview</h3>
+            <p>The system communicates with fuel dispensers using a specific protocol over serial connection. Understanding this protocol is essential for troubleshooting and advanced usage.</p>
+            
+            <h4>Basic Protocol Specifications</h4>
+            <ul>
+                <li><strong>Baud Rate:</strong> 2400 bps</li>
+                <li><strong>Data Bits:</strong> 8</li>
+                <li><strong>Parity:</strong> Varies (Mark for address, Space for data)</li>
+                <li><strong>Stop Bits:</strong> 1</li>
+            </ul>
+        </section>
+        
+        <section id="parity-switching">
+            <h3>5.2 Parity Switching Technique</h3>
+            <p>A key aspect of this protocol is the use of different parity settings for different parts of the communication:</p>
+            
+            <ul>
+                <li><strong>Mark Parity (m):</strong> Used when sending the initial address byte
+                    <ul>
+                        <li>Settings: "2400,m,8,1"</li>
+                        <li>Parity bit is always set to 1</li>
+                        <li>This signals to the dispenser that the byte is an address</li>
+                    </ul>
+                </li>
+                <li><strong>Space Parity (s):</strong> Used when sending the command data
+                    <ul>
+                        <li>Settings: "2400,s,8,1"</li>
+                        <li>Parity bit is always set to 0</li>
+                        <li>This signals to the dispenser that these bytes are command data</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <p>This parity switching technique is a protocol-specific way to differentiate between address bytes and data bytes without requiring additional framing or control bytes.</p>
+            
+            <div class="note">
+                <strong>Note:</strong> The ESP32 implementation handles this parity switching automatically when sending commands.
+            </div>
+        </section>
+        
+        <section id="command-format">
+            <h3>5.3 Command Format</h3>
+            <p>Each command follows this general structure:</p>
+            <ol>
+                <li>Send the nozzle address byte with MARK parity</li>
+                <li>Send the command packet with SPACE parity:
+                    <ul>
+                        <li>First byte: Length of the command (including length byte)</li>
+                        <li>Second byte: Command code</li>
+                        <li>Additional bytes: Command parameters (if any)</li>
+                        <li>Last byte: Checksum</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <h4>Checksum Calculation</h4>
+            <p>The checksum is calculated as follows:</p>
+            <pre>
+checksum = (0x10000 - (address + all command bytes)) & 0xFF
+</pre>
+            
+            <h4>Command Examples</h4>
+            
+            <div class="protocol-example">
+                <p><strong>Price Change Command (Address = 1, Price = 1234)</strong></p>
+                <p>Address byte (Mark parity): 01</p>
+                <p>Command bytes (Space parity): 07 80 00 00 04 D2 A2</p>
+                <ul>
+                    <li>07: Length (7 bytes)</li>
+                    <li>80: Command code for price change</li>
+                    <li>00 00 04 D2: Price value (1234 in hex)</li>
+                    <li>A2: Checksum</li>
+                </ul>
+            </div>
+            
+            <div class="protocol-example">
+                <p><strong>Read Shift Total Command (Address = 1)</strong></p>
+                <p>Address byte (Mark parity): 01</p>
+                <p>Command bytes (Space parity): 03 8D 6F</p>
+                <ul>
+                    <li>03: Length (3 bytes)</li>
+                    <li>8D: Command code for read shift total</li>
+                    <li>6F: Checksum</li>
+                </ul>
+            </div>
+            
+            <div class="protocol-example">
+                <p><strong>Stop Pump Command (Address = 1)</strong></p>
+                <p>Address byte (Mark parity): 01</p>
+                <p>Command bytes (Space parity): 03 10 EC</p>
+                <ul>
+                    <li>03: Length (3 bytes)</li>
+                    <li>10: Command code for stop pump</li>
+                    <li>EC: Checksum</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="response-format">
+            <h3>5.4 Response Format</h3>
+            <p>The fuel dispenser responds to commands with different formats depending on the command type:</p>
+            
+            <h4>Standard Acknowledgement (3 bytes)</h4>
+            <ul>
+                <li>First byte: Status code (0x00 = success)</li>
+                <li>Second byte: Echo of the command code</li>
+                <li>Third byte: Checksum</li>
+            </ul>
+            
+            <h4>Shift Total Response (15 bytes)</h4>
+            <ul>
+                <li>First byte: Status code</li>
+                <li>Second byte: Echo of the command code (0x8D)</li>
+                <li>Third byte: Data length</li>
+                <li>Bytes 4-7: Volume data (4 bytes)</li>
+                <li>Bytes 8-11: Amount data (4 bytes)</li>
+                <li>Bytes 12-13: Transaction count (2 bytes)</li>
+                <li>Bytes 14-15: Reserved</li>
+            </ul>
+            
+            <h4>Real-time Data Response (13 bytes)</h4>
+            <ul>
+                <li>First byte: Status code</li>
+                <li>Second byte: Echo of the command code (0x8F)</li>
+                <li>Third byte: Data length</li>
+                <li>Bytes 4-7: Volume data (4 bytes)</li>
+                <li>Bytes 8-11: Amount data (4 bytes)</li>
+                <li>Byte 12: Pump status</li>
+                <li>Byte 13: Checksum</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Note:</strong> All multi-byte values are in big-endian format (most significant byte first).
+            </div>
+        </section>
+    </section>
+
+    <section id="troubleshooting">
+        <h2>6. Troubleshooting</h2>
+        <p>If you encounter issues with the system, try these troubleshooting steps:</p>
+        
+        <h3>Common Issues and Solutions</h3>
+        
+        <h4>System Not Connecting to WiFi</h4>
+        <ul>
+            <li>Check that the WiFi credentials are correct in the code</li>
+            <li>Ensure the WiFi network is operational</li>
+            <li>Verify the ESP32 is within range of the WiFi router</li>
+            <li>Try rebooting the ESP32</li>
+        </ul>
+        
+        <h4>No Response from Fuel Dispenser</h4>
+        <ul>
+            <li>Verify the wiring connections between ESP32, converter, and dispenser</li>
+            <li>Check that the correct nozzle ID is being used</li>
+            <li>Ensure the baud rate and parity settings are correct</li>
+            <li>Check if the dispenser is powered on and operational</li>
+            <li>Try a different RS232 to TTL converter</li>
+            <li>Use the Protocol Analyzer to debug the communication</li>
+        </ul>
+        
+        <h4>Incorrect Parity Settings</h4>
+        <ul>
+            <li>Ensure the code is correctly switching between Mark and Space parity</li>
+            <li>Verify that the ESP32 hardware supports parity switching</li>
+            <li>Try using the Protocol Analyzer to manually test different parity settings</li>
+        </ul>
+        
+        <h4>Web Interface Not Loading</h4>
+        <ul>
+            <li>Verify you're using the correct IP address</li>
+            <li>Ensure your device is on the same network as the ESP32</li>
+            <li>Try accessing the interface from a different device or browser</li>
+            <li>Restart the ESP32</li>
+        </ul>
+        
+        <h4>Commands Not Working</h4>
+        <ul>
+            <li>Check the serial monitor for error messages</li>
+            <li>Verify the command format is correct</li>
+            <li>Ensure the dispenser is in a state where it can accept the command</li>
+            <li>Try a simpler command first (like Read Shift Total) to test communication</li>
+        </ul>
+        
+        <div class="warning">
+            <strong>Warning:</strong> If you're experiencing persistent issues with the fuel dispenser, consult the dispenser's manual or contact the manufacturer for support.
+        </div>
+    </section>
+
+    <section id="advanced">
+        <h2>7. Advanced Tools</h2>
+        
+        <section id="protocol-analyzer">
+            <h3>7.1 Protocol Analyzer</h3>
+            <p>The system includes a Protocol Analyzer tool that helps debug communication issues with the fuel dispenser. This tool allows you to:</p>
+            
+            <ul>
+                <li>Monitor all serial communication in real-time</li>
+                <li>Manually switch between Mark and Space parity</li>
+                <li>Send custom hex commands to the dispenser</li>
+                <li>View detailed logs of all communication</li>
+            </ul>
+            
+            <h4>Using the Protocol Analyzer</h4>
+            <ol>
+                <li>Upload the protocol-analyzer.ino sketch to your ESP32</li>
+                <li>Connect to the ESP32's web interface</li>
+                <li>Use the control panel to:
+                    <ul>
+                        <li>Start/stop monitoring</li>
+                        <li>Switch parity settings</li>
+                        <li>Send custom hex data</li>
+                        <li>View the communication log</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <h4>Interpreting the Logs</h4>
+            <p>The Protocol Analyzer logs show all communication with timestamps:</p>
+            <ul>
+                <li><strong>TX:</strong> Data transmitted from ESP32 to dispenser</li>
+                <li><strong>RX:</strong> Data received from dispenser to ESP32</li>
+                <li><strong>System:</strong> System messages and status updates</li>
+                <li><strong>Error:</strong> Error messages and warnings</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Note:</strong> The Protocol Analyzer is an advanced tool intended for debugging and development. It requires understanding of the fuel dispenser protocol.
+            </div>
+        </section>
+    </section>
+
+    <section id="appendix">
+        <h2>8. Appendix</h2>
+        
+        <h3>Command Reference</h3>
+        
+        <h4>Price Change Command (0x80)</h4>
+        <p>Format: [Address] [0x07] [0x80] [Price Byte 3] [Price Byte 2] [Price Byte 1] [Price Byte 0] [Checksum]</p>
+        <p>Example (Price = 1234, Address = 1):</p>
+        <pre>01 07 80 00 00 04 D2 A2</pre>
+        
+        <h4>Clear Shift Total Command (0x04)</h4>
+        <p>Format: [Address] [0x03] [0x04] [Checksum]</p>
+        <p>Example (Address = 1):</p>
+        <pre>01 03 04 F8</pre>
+        
+        <h4>Read Shift Total Command (0x8D)</h4>
+        <p>Format: [Address] [0x03] [0x8D] [Checksum]</p>
+        <p>Example (Address = 1):</p>
+        <pre>01 03 8D 6F</pre>
+        
+        <h4>Stop Pump Command (0x10)</h4>
+        <p>Format: [Address] [0x03] [0x10] [Checksum]</p>
+        <p>Example (Address = 1):</p>
+        <pre>01 03 10 EC</pre>
+        
+        <h4>Request Real-time Data Command (0x8F)</h4>
+        <p>Format: [Address] [0x03] [0x8F] [Checksum]</p>
+        <p>Example (Address = 1):</p>
+        <pre>01 03 8F 6D</pre>
+        
+        <h3>Response Formats</h3>
+        
+        <h4>Standard Acknowledgement (3 bytes)</h4>
+        <p>Format: [Status] [Command Echo] [Checksum]</p>
+        
+        <h4>Shift Total Response (15 bytes)</h4>
+        <p>Format: [Status] [Command Echo] [Data Length] [Volume Bytes (4)] [Amount Bytes (4)] [Transaction Count (2)] [Reserved (2)] [Checksum]</p>
+        
+        <h4>Real-time Data Response (13 bytes)</h4>
+        <p>Format: [Status] [Command Echo] [Data Length] [Volume Bytes (4)] [Amount Bytes (4)] [Status Byte] [Checksum]</p>
+        
+        <h3>Status Codes</h3>
+        <table>
+            <tr>
+                <th>Code</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>0x00</td>
+                <td>Success</td>
+            </tr>
+            <tr>
+                <td>0x01</td>
+                <td>Error - Invalid Command</td>
+            </tr>
+            <tr>
+                <td>0x02</td>
+                <td>Error - Invalid Parameter</td>
+            </tr>
+            <tr>
+                <td>0x03</td>
+                <td>Error - Device Busy</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>Error - Operation Failed</td>
+            </tr>
+        </table>
+        
+        <h3>Pump Status Codes</h3>
+        <table>
+            <tr>
+                <th>Code</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>0x00</td>
+                <td>Idle</td>
+            </tr>
+            <tr>
+                <td>0x01</td>
+                <td>Authorized</td>
+            </tr>
+            <tr>
+                <td>0x02</td>
+                <td>Fueling</td>
+            </tr>
+            <tr>
+                <td>0x03</td>
+                <td>Fueling Complete</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>Suspended</td>
+            </tr>
+        </table>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 ESP32 Fuel Dispenser Control System</p>
+        <p>Version 1.0</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,337 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\cores\\esp32"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\variants\\esp32"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "WebServer.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WebServer\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "FS.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\FS\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "Network.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "ArduinoJson.h",
+    "Includepath": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\ArduinoJson\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "WiFi.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "LittleFS.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\LittleFS\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "Preferences.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Preferences\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "Ticker.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Ticker\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "HTTPClient.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\HTTPClient\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "NetworkClientSecure.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\NetworkClientSecure\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "HTTPUpdate.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\HTTPUpdate\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "Update.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Update\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "WebSocketsServer.h",
+    "Includepath": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "PubSubClient.h",
+    "Includepath": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\PubSubClient\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "ModbusMaster.h",
+    "Includepath": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\ModbusMaster\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "SD.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\SD\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "SPI.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\SPI\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "ESPmDNS.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\ESPmDNS\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\#define MUX_A 2.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\_fms_cli.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\_fms_debug.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\_fms_filemanager.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WebServer\\src\\Parsing.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WebServer\\src\\WebServer.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WebServer\\src\\detail\\mimetable.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\FS\\src\\FS.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\FS\\src\\vfs_api.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src\\NetworkClient.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src\\NetworkEvents.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src\\NetworkInterface.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src\\NetworkManager.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src\\NetworkServer.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Network\\src\\NetworkUdp.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\AP.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\STA.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\WiFi.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\WiFiAP.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\WiFiGeneric.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\WiFiMulti.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\WiFiSTA.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\WiFi\\src\\WiFiScan.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\LittleFS\\src\\LittleFS.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Preferences\\src\\Preferences.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Ticker\\src\\Ticker.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\HTTPClient\\src\\HTTPClient.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\NetworkClientSecure\\src\\NetworkClientSecure.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\NetworkClientSecure\\src\\ssl_client.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\HTTPUpdate\\src\\HTTPUpdate.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Update\\src\\HttpsOTAUpdate.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\Update\\src\\Updater.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\SocketIOclient.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\WebSockets.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\WebSocketsClient.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\WebSocketsServer.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\libb64\\cdecode.c",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\libb64\\cencode.c",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\arduinoWebSockets-2.6.1\\src\\libsha1\\libsha1.c",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\PubSubClient\\src\\PubSubClient.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\Documents\\Arduino\\libraries\\ModbusMaster\\src\\ModbusMaster.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\SD\\src\\SD.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\SD\\src\\sd_diskio.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\SD\\src\\sd_diskio_crc.c",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\SPI\\src\\SPI.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.1.0\\libraries\\ESPmDNS\\src\\ESPmDNS.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

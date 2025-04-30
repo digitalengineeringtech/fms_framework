@@ -26,6 +26,113 @@ fms_cli fms_cli(Serial, CLI_PASSWORD);      // Use "admin" as the default passwo
 fmsLanfeng lanfeng(22,22);// set re de pin (DTR PIN)
 
 /* Main function */
+#line 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+void setup();
+#line 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+void loop();
+#line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_wifi_command(const std::vector<String>& args);
+#line 18 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_restart_command(const std::vector<String>& args);
+#line 25 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_wifi_scan_safe_command(const std::vector<String>& args);
+#line 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_wifi_connect_command(const std::vector<String>& args);
+#line 157 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_wifi_read_command(const std::vector<String>& args);
+#line 177 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_test_command(const std::vector<String>& args);
+#line 202 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_wifi_test_command(const std::vector<String>& args);
+#line 276 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+void handle_device_id_change_command(const std::vector<String>& args);
+#line 292 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+size_t custom_print(const uint8_t *buffer, size_t size);
+#line 307 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+static void cli_task(void *arg);
+#line 8 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void fms_boot_count(bool bootsave);
+#line 26 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void log_chip_info();
+#line 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+bool fms_initialize_uart2();
+#line 44 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+bool fms_initialize_wifi();
+#line 54 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void fms_run_sd_test();
+#line 67 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void log_debug_info();
+#line 74 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void fms_pin_mode(int pin, int mode);
+#line 78 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void fms_dns_responder_init();
+#line 92 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+String fms_generateFinalData(int pump_id,float sell_price_liters,float sell_liters,float price,float totalizer,unsigned long long totalizer_amount);
+#line 100 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+String fms_generateLiveData(int pump_id,float price_liters,float live_liters);
+#line 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+int fms_decodePresetAmount(String presetData);
+#line 120 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+int fms_decodePumpId(String presetData);
+#line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
+#line 71 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_subsbribe_topics();
+#line 78 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_mqtt_reconnect();
+#line 98 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+static void mqtt_task(void* arg);
+#line 3 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+void selectMuxChannel(uint8_t channel);
+#line 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+void enable_mux(int pin);
+#line 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+void disable_mux(int pin);
+#line 17 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+void test_mux();
+#line 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+void fms_info_response();
+#line 37 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+void handleDashboard();
+#line 52 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+void handleLogin();
+#line 68 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+void handleLogout();
+#line 73 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+void fms_set_ota_server();
+#line 206 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+static void web_server_task(void* arg);
+#line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+bool fms_sd_init();
+#line 23 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+void fms_sd_dir(fs::FS& fs, const char* dirname, uint8_t levels);
+#line 54 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+void fms_config_load_sd_test();
+#line 60 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+bool write_data_sd(char* input);
+#line 70 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+static void sd_task(void* arg);
+#line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
+void _led_state();
+#line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
+bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size, UBaseType_t priority, TaskHandle_t* handle, BaseType_t& rc);
+#line 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
+bool fms_task_create();
+#line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+bool fms_uart2_begin(bool flag, int baudrate);
+#line 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+void fm_rx_irq_interrupt();
+#line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+void fms_uart2_decode(uint8_t* data, uint32_t len);
+#line 47 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+void fms_uart2_task(void* arg);
+#line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+bool initialize_fms_wifi(bool flag);
+#line 26 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+bool wifi_led_ticker();
+#line 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+static void wifi_task(void *arg);
+#line 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup() {
   fms_cli.begin(115200);                    // uart
   fms_initialize_uart2();                   // uart 2
