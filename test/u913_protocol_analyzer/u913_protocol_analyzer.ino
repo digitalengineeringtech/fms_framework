@@ -42,8 +42,6 @@ channel >> 1:  00000001   (decimal 1)
 
 // Serial communication settings
 #define DISPENSER_SERIAL Serial2
-// #define DISPENSER_RX_PIN 16  // GPIO16 for RX
-// #define DISPENSER_TX_PIN 17  // GPIO17 for TX
 #define BAUD_RATE 2400
 
 // Buffer for storing communication logs
@@ -74,18 +72,15 @@ void setup() {
 
   // Initialize dispenser serial with mark parity (odd parity)
   DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8O1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
-
   // Add initial log entry
   logMessage("Protocol Analyzer started. Waiting for communication...");
-
   // Print help
   printHelp();
 }
 
 void loop() {
   // Check for serial commands
-  checkSerialCommands(2);
-
+  checkSerialCommands(3);
   // Monitor serial communication if active
   if (monitoringActive) {
     monitorSerialCommunication();

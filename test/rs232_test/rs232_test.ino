@@ -1,6 +1,7 @@
 unsigned char Show_infor[6] = { 0x5A, 0xA5, 0x21, 0x82, 0x80, 0x00 };
 int byte_count = 6;
 
+
 void setup() {
   Serial.begin(115200);
   Serial2.begin(115200, SERIAL_8N1, 16, 17);
@@ -17,3 +18,4 @@ void loop() {
     Serial.println(receive, HEX);
   }
 }
+

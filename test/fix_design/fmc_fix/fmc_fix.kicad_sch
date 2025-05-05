@@ -1,0 +1,98 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "4572c7cb-4fa0-4da8-b313-0be5096c4cb7")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 132.715 84.455)
+		(size 35.56 17.145)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "8704df69-ebbd-4f26-a936-a98d4bc58bd3")
+		(property "Sheetname" "Pump"
+			(at 132.715 83.7434 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "untitled.kicad_sch"
+			(at 132.715 102.1846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "fmc_fix"
+				(path "/4572c7cb-4fa0-4da8-b313-0be5096c4cb7"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 133.35 107.95)
+		(size 35.56 17.78)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f5ada1b9-98fe-4518-91a1-70152c7210f8")
+		(property "Sheetname" "Micro SD"
+			(at 133.35 107.2384 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sd.kicad_sch"
+			(at 133.35 126.3146 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "fmc_fix"
+				(path "/4572c7cb-4fa0-4da8-b313-0be5096c4cb7"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)
