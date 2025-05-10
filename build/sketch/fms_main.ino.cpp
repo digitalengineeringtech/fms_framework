@@ -13,6 +13,8 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
+#include "src/Redstar.h"
+
 // Uncomment this line to disable the library
 #define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
@@ -36,7 +38,6 @@ void setup() {
   fms_pin_mode(MUX_S1  ,OUTPUT);
   fms_pin_mode(MUX_E,OUTPUT);
   enable_mux(MUX_E); // enable multiplexer (active low)
-
 #endif
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(false);             // show serial logging data on Serial Monitor
@@ -1172,7 +1173,7 @@ bool fms_task_create() {
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
-    fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
+    fms_uart2_serial.begin(baudrate, SERIAL_8N1, RXD2, TXD2);  // RXD2 and TXD2 are the GPIO pins for RX and TX
     if (fms_uart2_serial) {
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;

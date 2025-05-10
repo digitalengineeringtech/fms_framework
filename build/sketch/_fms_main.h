@@ -71,7 +71,7 @@ String deviceName                     = "ultramarine-v0.1-";  // device ID (for)
 #define fms_cli_serial Serial                       // cli serial port
 #define fms_uart2_serial Serial1                    // uart2 serial port
 
-#define LED_BUILTIN                 16
+#define LED_BUILTIN                 2
 #define chip_report_printf          log_printf  
 // lanfeng modbus
 #define MAX485_DE 15
@@ -90,6 +90,9 @@ ModbusMaster node;
 #define MUX_S1                      26
 #define MUX_E                       27 // enable input (active LOW) 
 
+// uart 2 config
+#define RXD2                      16
+#define TXD2                      17
 // nozzle config
 #define MAX_NOZZLES                 2 // change your noz count
 bool pump_approve[MAX_NOZZLES]      = {false};

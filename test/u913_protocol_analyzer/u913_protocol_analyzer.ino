@@ -31,6 +31,26 @@ channel >> 1:  00000001   (decimal 1)
 */
 
 
+// New Mark Parity (M) - Parity bit always 1
+#define SERIAL_5M1 0x8000015
+#define SERIAL_6M1 0x8000019
+#define SERIAL_7M1 0x800001d
+#define SERIAL_8M1 0x8000021
+#define SERIAL_5M2 0x8000035
+#define SERIAL_6M2 0x8000039
+#define SERIAL_7M2 0x800003d
+#define SERIAL_8M2 0x8000041
+
+// New Space Parity (S) - Parity bit always 0
+#define SERIAL_5S1 0x8000014
+#define SERIAL_6S1 0x8000018
+#define SERIAL_7S1 0x800001c
+#define SERIAL_8S1 0x8000020
+#define SERIAL_5S2 0x8000034
+#define SERIAL_6S2 0x8000038
+#define SERIAL_7S2 0x800003c
+#define SERIAL_8S2 0x8000040
+
 #include <HardwareSerial.h>
 // Simple circular buffer implementation
 #define LOG_BUFFER_SIZE 100
@@ -71,7 +91,7 @@ void setup() {
   pinMode(MUX_EN, OUTPUT);
 
   // Initialize dispenser serial with mark parity (odd parity)
-  DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8O1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
+  DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8M1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
   // Add initial log entry
   logMessage("Protocol Analyzer started. Waiting for communication...");
   // Print help
@@ -103,7 +123,7 @@ void printHelp() {
 }
 
 void checkSerialCommands(uint8_t channel) {
-  selectMuxChannel(channel);
+  // selectMuxChannel(channel);
   if (Serial.available()) {
     String command = Serial.readStringUntil('\n');
     command.trim();
@@ -125,13 +145,17 @@ void checkSerialCommands(uint8_t channel) {
     } else if (command == "MARK") {
       markParity = true;
       DISPENSER_SERIAL.end();
-      DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8O1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
+      DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8M1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
       logMessage("Switched to MARK parity");
       Serial.println("Switched to MARK parity");
+      uint8_t address[] = { 0x01 };
+      DISPENSER_SERIAL.write(address, 1);
     } else if (command == "SPACE") {
       markParity = false;
       DISPENSER_SERIAL.end();
-      DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8E1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
+      DISPENSER_SERIAL.begin(BAUD_RATE, SERIAL_8S1, DISPENSER_RX_PIN, DISPENSER_TX_PIN);
+      uint8_t cmd[] = { 0x03, 0x08, 0xF4 };
+      DISPENSER_SERIAL.write(cmd, 3);
       logMessage("Switched to SPACE parity");
       Serial.println("Switched to SPACE parity");
     } else if (command.startsWith("SEND ")) {

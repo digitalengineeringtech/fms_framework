@@ -11,6 +11,8 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
+#include "src/Redstar.h"
+
 // Uncomment this line to disable the library
 #define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
@@ -34,7 +36,6 @@ void setup() {
   fms_pin_mode(MUX_S1  ,OUTPUT);
   fms_pin_mode(MUX_E,OUTPUT);
   enable_mux(MUX_E); // enable multiplexer (active low)
-
 #endif
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(false);             // show serial logging data on Serial Monitor

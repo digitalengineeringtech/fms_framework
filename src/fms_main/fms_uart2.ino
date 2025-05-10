@@ -1,6 +1,6 @@
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
-    fms_uart2_serial.begin(baudrate, SERIAL_8N1, 16, 17);
+    fms_uart2_serial.begin(baudrate, SERIAL_8N1, RXD2, TXD2);  // RXD2 and TXD2 are the GPIO pins for RX and TX
     if (fms_uart2_serial) {
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
       return true;
