@@ -31,9 +31,15 @@ bool fms_task_create() {
   if (!create_task(sd_task, "sdcard", 3000, 2, &hsdCardTask, sd_rc)) return false;
   if (!create_task(wifi_task, "wifi", 3000, 3, &hwifiTask, wifi_rc)) return false;
   if (!create_task(mqtt_task, "mqtt", 3000, 3, &hmqttTask, mqtt_rc)) return false;
-  if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   if (!create_task(fms_uart2_task, "uart2", 3000, 1, &huart2Task, uart2_rc)) return false;
+  if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   if (!create_task(web_server_task, "webserver", 4096, 4, &hwebServerTask, webserver_rc)) return false;
 
+  return true;
+}
+
+bool fm_cli_task_create() {
+  BaseType_t cli_rc;
+  if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   return true;
 }

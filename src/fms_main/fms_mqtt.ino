@@ -1,4 +1,4 @@
-#define FMS_MQTT_DEBUG
+
 #ifdef FMS_MQTT_DEBUG
   #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[MQTT][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
   #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[MQTT][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
@@ -41,7 +41,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
       tp_match = true;
       switch (i){
         case 0: {
-          FMS_MQTT_DEBUG("preset topic matched: %s", topic_value.c_str());
+          FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
           int pumpID = fms_decodePumpId(incommingMessage);
           int presetAmount = fms_decodePresetAmount(incommingMessage);
           presetMessageGet = true; // for preset message get from mqtt broker
@@ -50,7 +50,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
           break;
         }
         case 1: {
-          FMS_MQTT_DEBUG("price topic matched: %s", topic_value.c_str());
+          FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
           break;
         }
       }

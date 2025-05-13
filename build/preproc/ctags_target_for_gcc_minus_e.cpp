@@ -19,371 +19,367 @@
 # 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 15 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-
-// Uncomment this line to disable the library
-
-
-
-
-
+# 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 FMS_FileManager fileManager;
-fms_cli fms_cli(Serial0, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
-
-
-fmsLanfeng lanfeng(22,22);// set re de pin (DTR PIN)
+fms_cli fms_cli(Serial0 /* cli serial port*/, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
+fmsLanfeng lanfeng(22, 22); // set re de pin (DTR PIN)s
 
 /* Main function */
 void setup() {
-  fms_cli.begin(115200); // uart
-  fms_initialize_uart2(); // uart 2
-  fms_pin_mode(2, 0x03);
+  init_staus_leds(); // initialize status LEDs
 
-  // multiplexer pinout
-  fms_pin_mode(25,0x03); // Multiplexer
-  fms_pin_mode(26 ,0x03);
-  fms_pin_mode(27 /* enable input (active LOW) */,0x03);
-  enable_mux(27 /* enable input (active LOW) */); // enable multiplexer (active low)
-
-  fms_run_sd_test(); // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(false); // show serial logging data on Serial Monitor
-  fms_boot_count(true); // boot count
-  // cli command
+  fms_cli.begin(115200); // Initialize the CLI with a baud rate of 115200
   fms_cli.register_command("wifi", "Configure WiFi settings", handle_wifi_command, 2, 2);
   fms_cli.register_command("wifi_connect", "Connect to WiFi network", handle_wifi_connect_command, 2, 2);
   fms_cli.register_command("restart", "Restart the system", handle_restart_command);
   fms_cli.register_command("wifiscan_safe", "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread", "Read current WiFi status", handle_wifi_read_command);
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
-  fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command,1,1);
+  fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
+
+
+  //fms_initialize_uart2();                   // uart 2
+  fms_pin_mode(2, 0x03);
+
+
+  fms_pin_mode(25, 0x03); // Multiplexer
+  fms_pin_mode(26, 0x03);
+  fms_pin_mode(27 /* enable input (active LOW) */, 0x03);
+  enable_mux(27 /* enable input (active LOW) */); // enable multiplexer (active low)
+
+
+  fms_run_sd_test(); // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(false); // show serial logging data on Serial Monitor
+  fms_boot_count(true); // boot count
 
 
 
 
+
+
+  red_star_init(); // redstar init
 
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
-  if (fms_initialize_wifi()) { // wifi is connected
+  if (fms_initialize_wifi()) { // wifi is connected create all task s
     fms_task_create();
   }
 }
 
 void loop() {
-
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
-// cli command function 
+// cli command function
 void handle_wifi_command(const std::vector<String>& args) {
-    if (args.size() != 2) {
-        fms_cli.respond("wifi", "Usage: wifi <ssid> <password>", false);
-        return;
-    }
-    String ssid = args[0];
-    String password = args[1];
-    // Save to preferences
-    fms_nvs_storage.begin("fms_config", false);
-    fms_nvs_storage.putString("ssid", ssid);
-    fms_nvs_storage.putString("pass", password);
-    fms_nvs_storage.end();
+  if (args.size() != 2) {
+    fms_cli.respond("wifi", "Usage: wifi <ssid> <password>", false);
+    return;
+  }
+  String ssid = args[0];
+  String password = args[1];
+  // Save to preferences
+  fms_nvs_storage.begin("fms_config", false);
+  fms_nvs_storage.putString("ssid", ssid);
+  fms_nvs_storage.putString("pass", password);
+  fms_nvs_storage.end();
 
-    fms_cli.respond("wifi", "WiFi settings updated. SSID: " + ssid);
+  fms_cli.respond("wifi", "WiFi settings updated. SSID: " + ssid);
 }
 
 void handle_restart_command(const std::vector<String>& args) {
-    fms_cli.respond("restart", "Restarting system...");
-    delay(1000);
-    ESP.restart();
+  fms_cli.respond("restart", "Restarting system...");
+  delay(1000);
+  ESP.restart();
 }
 
 // Alternative WiFi scan implementation that uses even less memory
 void handle_wifi_scan_safe_command(const std::vector<String>& args) {
-    // Set a very conservative limit on the number of networks to scan
-    const int MAX_NETWORKS = 5;
+  // Set a very conservative limit on the number of networks to scan
+  const int MAX_NETWORKS = 5;
 
-    // Start scan
-    fms_cli.respond("wifiscan_safe", "Scanning for networks...");
+  // Start scan
+  fms_cli.respond("wifiscan_safe", "Scanning for networks...");
 
-    // Set WiFi to station mode
-    WiFi.mode(WIFI_MODE_STA);
-    WiFi.disconnect();
-    delay(100);
+  // Set WiFi to station mode
+  WiFi.mode(WIFI_MODE_STA);
+  WiFi.disconnect();
+  delay(100);
 
-    // Use synchronous scan with limited time per channel
-    int numNetworks = WiFi.scanNetworks(false, true, false, 200);
+  // Use synchronous scan with limited time per channel
+  int numNetworks = WiFi.scanNetworks(false, true, false, 200);
 
-    if (numNetworks <= 0) {
-        fms_cli.respond("wifiscan_safe", numNetworks == 0 ? "No networks found" : "Scan failed");
-        return;
-    }
+  if (numNetworks <= 0) {
+    fms_cli.respond("wifiscan_safe", numNetworks == 0 ? "No networks found" : "Scan failed");
+    return;
+  }
 
-    // Limit the number of networks to prevent memory issues
-    if (numNetworks > MAX_NETWORKS) {
-        numNetworks = MAX_NETWORKS;
-    }
+  // Limit the number of networks to prevent memory issues
+  if (numNetworks > MAX_NETWORKS) {
+    numNetworks = MAX_NETWORKS;
+  }
 
-    // Send a simplified response with minimal memory usage
-    fms_cli.respond("wifiscan_safe", "Found " + String(numNetworks) + " networks");
+  // Send a simplified response with minimal memory usage
+  fms_cli.respond("wifiscan_safe", "Found " + String(numNetworks) + " networks");
 
-    // Process each network individually
-    for (int i = 0; i < numNetworks; i++) {
-        // Send SSID
-        Serial0.print("Network ");
-        Serial0.print(i + 1);
-        Serial0.print(": ");
-        Serial0.println(WiFi.SSID(i));
+  // Process each network individually
+  for (int i = 0; i < numNetworks; i++) {
+    // Send SSID
+    Serial0.print("Network ");
+    Serial0.print(i + 1);
+    Serial0.print(": ");
+    Serial0.println(WiFi.SSID(i));
 
-        // Send RSSI
-        Serial0.print("  Signal: ");
-        Serial0.print(WiFi.RSSI(i));
-        Serial0.println(" dBm");
+    // Send RSSI
+    Serial0.print("  Signal: ");
+    Serial0.print(WiFi.RSSI(i));
+    Serial0.println(" dBm");
 
-        // Send Channel
-        Serial0.print("  Channel: ");
-        Serial0.println(WiFi.channel(i));
+    // Send Channel
+    Serial0.print("  Channel: ");
+    Serial0.println(WiFi.channel(i));
 
-        // Send Encryption
-        Serial0.print("  Security: ");
-        Serial0.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "OPEN" : "WPA/WPA2");
+    // Send Encryption
+    Serial0.print("  Security: ");
+    Serial0.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "OPEN" : "WPA/WPA2");
 
-        Serial0.println("---");
+    Serial0.println("---");
 
-        // Give the system time to process
-        delay(10);
-        yield();
-    }
+    // Give the system time to process
+    delay(10);
+    yield();
+  }
 
-    // Free the memory used by the scan
-    WiFi.scanDelete();
+  // Free the memory used by the scan
+  WiFi.scanDelete();
 
-    // Final message
-    fms_cli.respond("wifiscan_safe", "Scan complete");
+  // Final message
+  fms_cli.respond("wifiscan_safe", "Scan complete");
 }
 
 void handle_wifi_connect_command(const std::vector<String>& args) {
-    if (args.size() != 2) {
-        fms_cli.respond("wifi_connect", "Usage: wifi_connect <ssid> <password>", false);
-        return;
+  if (args.size() != 2) {
+    fms_cli.respond("wifi_connect", "Usage: wifi_connect <ssid> <password>", false);
+    return;
+  }
+
+  String ssid = args[0];
+  String password = args[1];
+
+  // Disconnect from any current WiFi connection
+  WiFi.disconnect();
+  delay(100);
+
+  // Set WiFi mode to station
+  WiFi.mode(WIFI_MODE_STA);
+
+  // Begin connection attempt
+  fms_cli.respond("wifi_connect", "Connecting to " + ssid + "...");
+
+  WiFi.begin(ssid.c_str(), password.c_str());
+
+  // Wait for connection with timeout
+  unsigned long startTime = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startTime < WIFI_TIMEOUT) {
+    delay(500);
+    Serial0.print(".");
+  }
+  Serial0.println();
+
+  // Check connection result
+  if (WiFi.status() == WL_CONNECTED) {
+    // Use individual prints instead of building a large JSON string
+    Serial0.println("{");
+    Serial0.print("  \"command\": \"wifi_connect\",");
+    Serial0.print("  \"result\": \"Connected successfully\",");
+    Serial0.print("  \"success\": true,");
+    Serial0.print("  \"ip\": \"");
+    Serial0.print(WiFi.localIP().toString());
+    Serial0.print("\",");
+    Serial0.print("  \"ssid\": \"");
+    Serial0.print(WiFi.SSID());
+    Serial0.print("\",");
+    Serial0.print("  \"rssi\": ");
+    Serial0.print(WiFi.RSSI());
+    Serial0.println("}");
+  } else {
+    // Connection failed, report error code
+    String errorMsg;
+    switch (WiFi.status()) {
+      case WL_NO_SSID_AVAIL:
+        errorMsg = "SSID not available";
+        break;
+      case WL_CONNECT_FAILED:
+        errorMsg = "Connection failed (wrong password?)";
+        break;
+      case WL_CONNECTION_LOST:
+        errorMsg = "Connection lost";
+        break;
+      case WL_DISCONNECTED:
+        errorMsg = "Disconnected";
+        break;
+      default:
+        errorMsg = "Unknown error: " + String(WiFi.status());
     }
 
-    String ssid = args[0];
-    String password = args[1];
-
-    // Disconnect from any current WiFi connection
-    WiFi.disconnect();
-    delay(100);
-
-    // Set WiFi mode to station
-    WiFi.mode(WIFI_MODE_STA);
-
-    // Begin connection attempt
-    fms_cli.respond("wifi_connect", "Connecting to " + ssid + "...");
-
-    WiFi.begin(ssid.c_str(), password.c_str());
-
-    // Wait for connection with timeout
-    unsigned long startTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startTime < WIFI_TIMEOUT) {
-        delay(500);
-        Serial0.print(".");
-    }
-    Serial0.println();
-
-    // Check connection result
-    if (WiFi.status() == WL_CONNECTED) {
-        // Use individual prints instead of building a large JSON string
-        Serial0.println("{");
-        Serial0.print("  \"command\": \"wifi_connect\",");
-        Serial0.print("  \"result\": \"Connected successfully\",");
-        Serial0.print("  \"success\": true,");
-        Serial0.print("  \"ip\": \"");
-        Serial0.print(WiFi.localIP().toString());
-        Serial0.print("\",");
-        Serial0.print("  \"ssid\": \"");
-        Serial0.print(WiFi.SSID());
-        Serial0.print("\",");
-        Serial0.print("  \"rssi\": ");
-        Serial0.print(WiFi.RSSI());
-        Serial0.println("}");
-    } else {
-        // Connection failed, report error code
-        String errorMsg;
-        switch (WiFi.status()) {
-            case WL_NO_SSID_AVAIL:
-                errorMsg = "SSID not available";
-                break;
-            case WL_CONNECT_FAILED:
-                errorMsg = "Connection failed (wrong password?)";
-                break;
-            case WL_CONNECTION_LOST:
-                errorMsg = "Connection lost";
-                break;
-            case WL_DISCONNECTED:
-                errorMsg = "Disconnected";
-                break;
-            default:
-                errorMsg = "Unknown error: " + String(WiFi.status());
-        }
-
-        fms_cli.respond("wifi_connect", "Failed to connect: " + errorMsg, false);
-    }
+    fms_cli.respond("wifi_connect", "Failed to connect: " + errorMsg, false);
+  }
 }
 
 void handle_wifi_read_command(const std::vector<String>& args) {
-    if (WiFi.status() == WL_CONNECTED) {
-        // Use individual prints instead of building a large string
-        Serial0.println("{");
-        Serial0.print("  \"ssid\": \"");
-        Serial0.print(WiFi.SSID());
-        Serial0.print("\",");
-        Serial0.print("  \"rssi\": ");
-        Serial0.print(WiFi.RSSI());
-        Serial0.print(",");
-        Serial0.print("  \"ip\": \"");
-        Serial0.print(WiFi.localIP().toString());
-        Serial0.println("\"");
-        Serial0.println("}");
-    } else {
-        fms_cli.respond("wifiread", "WiFi not connected", false);
-    }
+  if (WiFi.status() == WL_CONNECTED) {
+    // Use individual prints instead of building a large string
+    Serial0.println("{");
+    Serial0.print("  \"ssid\": \"");
+    Serial0.print(WiFi.SSID());
+    Serial0.print("\",");
+    Serial0.print("  \"rssi\": ");
+    Serial0.print(WiFi.RSSI());
+    Serial0.print(",");
+    Serial0.print("  \"ip\": \"");
+    Serial0.print(WiFi.localIP().toString());
+    Serial0.println("\"");
+    Serial0.println("}");
+  } else {
+    fms_cli.respond("wifiread", "WiFi not connected", false);
+  }
 }
 
 // Test command to run a series of tests
 void handle_test_command(const std::vector<String>& args) {
-    fms_cli.respond("test", "Running fms_cli tests...");
+  fms_cli.respond("test", "Running fms_cli tests...");
 
-    // Test help command
-    Serial0.println("\n--- Testing help command ---");
-    fms_cli.execute_test_command("help");
+  // Test help command
+  Serial0.println("\n--- Testing help command ---");
+  fms_cli.execute_test_command("help");
 
-    // Test echo command
-    Serial0.println("\n--- Testing echo command ---");
-    fms_cli.execute_test_command("echo on");
-    fms_cli.execute_test_command("echo off");
-    fms_cli.execute_test_command("echo");
+  // Test echo command
+  Serial0.println("\n--- Testing echo command ---");
+  fms_cli.execute_test_command("echo on");
+  fms_cli.execute_test_command("echo off");
+  fms_cli.execute_test_command("echo");
 
-    // Test wifi read command
-    Serial0.println("\n--- Testing wifiread command ---");
-    fms_cli.execute_test_command("wifiread");
+  // Test wifi read command
+  Serial0.println("\n--- Testing wifiread command ---");
+  fms_cli.execute_test_command("wifiread");
 
-    // Test invalid command
-    Serial0.println("\n--- Testing invalid command ---");
-    fms_cli.execute_test_command("invalidcommand");
+  // Test invalid command
+  Serial0.println("\n--- Testing invalid command ---");
+  fms_cli.execute_test_command("invalidcommand");
 
-    fms_cli.respond("test", "Tests completed");
+  fms_cli.respond("test", "Tests completed");
 }
 
 // WiFi connection test command
 void handle_wifi_test_command(const std::vector<String>& args) {
-    fms_cli.respond("wifi_test", "Running WiFi connection tests...");
+  fms_cli.respond("wifi_test", "Running WiFi connection tests...");
 
-    // Get stored WiFi credentials
-    fms_nvs_storage.begin("fms_config", true); // Read-only mode
-    String ssid = fms_nvs_storage.getString("ssid", "");
-    String password = fms_nvs_storage.getString("pass", "");
-    fms_nvs_storage.end();
+  // Get stored WiFi credentials
+  fms_nvs_storage.begin("fms_config", true); // Read-only mode
+  String ssid = fms_nvs_storage.getString("ssid", "");
+  String password = fms_nvs_storage.getString("pass", "");
+  fms_nvs_storage.end();
 
-    if (ssid.length() == 0 || password.length() == 0) {
-        fms_cli.respond("wifi_test", "No WiFi credentials stored. Use 'wifi <ssid> <password>' first.", false);
-        return;
+  if (ssid.length() == 0 || password.length() == 0) {
+    fms_cli.respond("wifi_test", "No WiFi credentials stored. Use 'wifi <ssid> <password>' first.", false);
+    return;
+  }
+
+  // Test WiFi connection
+  Serial0.println("\n--- Testing WiFi connection ---");
+  Serial0.printf("Connecting to %s...\n", ssid.c_str());
+
+  // Disconnect from any current WiFi connection
+  WiFi.disconnect();
+  delay(100);
+
+  // Set WiFi mode to station
+  WiFi.mode(WIFI_MODE_STA);
+  WiFi.begin(ssid.c_str(), password.c_str());
+
+  // Wait for connection with timeout
+  unsigned long startTime = millis();
+  bool connected = false;
+
+  while (millis() - startTime < WIFI_TIMEOUT) {
+    if (WiFi.status() == WL_CONNECTED) {
+      connected = true;
+      break;
+    }
+    delay(500);
+    Serial0.print(".");
+  }
+  Serial0.println();
+
+  if (connected) {
+    Serial0.printf("Connected to %s\n", ssid.c_str());
+    Serial0.printf("IP address: %s\n", WiFi.localIP().toString().c_str());
+    Serial0.printf("Signal strength (RSSI): %d dBm\n", WiFi.RSSI());
+
+    // Test ping to gateway
+    IPAddress gateway = WiFi.gatewayIP();
+    Serial0.printf("Gateway IP: %s\n", gateway.toString().c_str());
+
+    fms_cli.respond("wifi_test", "WiFi connection test successful");
+  } else {
+    String errorMsg;
+    switch (WiFi.status()) {
+      case WL_NO_SSID_AVAIL:
+        errorMsg = "SSID not available";
+        break;
+      case WL_CONNECT_FAILED:
+        errorMsg = "Connection failed (wrong password?)";
+        break;
+      case WL_CONNECTION_LOST:
+        errorMsg = "Connection lost";
+        break;
+      case WL_DISCONNECTED:
+        errorMsg = "Disconnected";
+        break;
+      default:
+        errorMsg = "Unknown error: " + String(WiFi.status());
     }
 
-    // Test WiFi connection
-    Serial0.println("\n--- Testing WiFi connection ---");
-    Serial0.printf("Connecting to %s...\n", ssid.c_str());
-
-    // Disconnect from any current WiFi connection
-    WiFi.disconnect();
-    delay(100);
-
-    // Set WiFi mode to station
-    WiFi.mode(WIFI_MODE_STA);
-    WiFi.begin(ssid.c_str(), password.c_str());
-
-    // Wait for connection with timeout
-    unsigned long startTime = millis();
-    bool connected = false;
-
-    while (millis() - startTime < WIFI_TIMEOUT) {
-        if (WiFi.status() == WL_CONNECTED) {
-            connected = true;
-            break;
-        }
-        delay(500);
-        Serial0.print(".");
-    }
-    Serial0.println();
-
-    if (connected) {
-        Serial0.printf("Connected to %s\n", ssid.c_str());
-        Serial0.printf("IP address: %s\n", WiFi.localIP().toString().c_str());
-        Serial0.printf("Signal strength (RSSI): %d dBm\n", WiFi.RSSI());
-
-        // Test ping to gateway
-        IPAddress gateway = WiFi.gatewayIP();
-        Serial0.printf("Gateway IP: %s\n", gateway.toString().c_str());
-
-        fms_cli.respond("wifi_test", "WiFi connection test successful");
-    } else {
-        String errorMsg;
-        switch (WiFi.status()) {
-            case WL_NO_SSID_AVAIL:
-                errorMsg = "SSID not available";
-                break;
-            case WL_CONNECT_FAILED:
-                errorMsg = "Connection failed (wrong password?)";
-                break;
-            case WL_CONNECTION_LOST:
-                errorMsg = "Connection lost";
-                break;
-            case WL_DISCONNECTED:
-                errorMsg = "Disconnected";
-                break;
-            default:
-                errorMsg = "Unknown error: " + String(WiFi.status());
-        }
-
-        fms_cli.respond("wifi_test", "WiFi connection test failed: " + errorMsg, false);
-    }
+    fms_cli.respond("wifi_test", "WiFi connection test failed: " + errorMsg, false);
+  }
 }
 
 // Device Id Change Command
-void handle_device_id_change_command(const std::vector<String>& args){
-    if (args.size() != 2) {
-        fms_cli.respond("device", "Usage: UUID <id> ", false);
-        return;
-    }
-    String uuid = args[0];
-    // Save to preferences
-    fms_nvs_storage.begin("fms_config", false);
-    fms_nvs_storage.putString("uuid", uuid);
-    fms_nvs_storage.end();
-    fms_cli.respond("UUID", "UUID  updated. UUID: " + uuid);
+void handle_device_id_change_command(const std::vector<String>& args) {
+  if (args.size() != 2) {
+    fms_cli.respond("device", "Usage: UUID <id> ", false);
+    return;
+  }
+  String uuid = args[0];
+  // Save to preferences
+  fms_nvs_storage.begin("fms_config", false);
+  fms_nvs_storage.putString("uuid", uuid);
+  fms_nvs_storage.end();
+  fms_cli.respond("UUID", "UUID  updated. UUID: " + uuid);
 }
-
-
 
 // Custom print function that captures output for the web interface
-size_t custom_print(const uint8_t *buffer, size_t size) {
-    if (testModeActive) {
-        // Add to buffer
-        for (size_t i = 0; i < size; i++) {
-            serialOutputBuffer += (char)buffer[i];
-        }
-        // Trim buffer if it gets too large
-        if (serialOutputBuffer.length() > MAX_BUFFER_SIZE) {
-            serialOutputBuffer = serialOutputBuffer.substring(serialOutputBuffer.length() - MAX_BUFFER_SIZE);
-        }
+size_t custom_print(const uint8_t* buffer, size_t size) {
+  if (testModeActive) {
+    // Add to buffer
+    for (size_t i = 0; i < size; i++) {
+      serialOutputBuffer += (char)buffer[i];
     }
-    // Pass through to original Serial
-    return Serial0.write(buffer, size);
+    // Trim buffer if it gets too large
+    if (serialOutputBuffer.length() > MAX_BUFFER_SIZE) {
+      serialOutputBuffer = serialOutputBuffer.substring(serialOutputBuffer.length() - MAX_BUFFER_SIZE);
+    }
+  }
+  // Pass through to original Serial
+  return Serial0.write(buffer, size);
 }
 
-static void cli_task(void *arg) {
+static void cli_task(void* arg) {
   BaseType_t rc;
+  // cli command
   while (1) {
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 310 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 309 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 310 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 309 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -398,7 +394,7 @@ static void cli_task(void *arg) {
     * main function link file
 
 */
-# 8 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+# 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_boot_count(bool bootsave) {
   if (!bootsave) {
     return;
@@ -454,7 +450,6 @@ void fms_run_sd_test() {
     Serial0.println("[STORAGE] File system mounted");
   }
   // load system config file
-
 
 }
 
@@ -530,6 +525,22 @@ int fms_decodePumpId(String presetData){
 }
 
 */
+# 131 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void init_staus_leds() {
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_32) | (1ULL << GPIO_NUM_14) |
+                        (1ULL << GPIO_NUM_13) | (1ULL << GPIO_NUM_33),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_NUM_32, 1);
+    gpio_set_level(GPIO_NUM_14, 1);
+    gpio_set_level(GPIO_NUM_13, 1);
+    gpio_set_level(GPIO_NUM_33, 1);
+}
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 # 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 char fms_nmf_tp_prefix[64];
@@ -537,7 +548,7 @@ char fms_nmf_tp_prefix[64];
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String incommingMessage = "";
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-  Serial0.print("[MQTT][DEBUG] "); Serial0.printf("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage); Serial0.println();
+  ;
   bool tp_match = false;
 
   String topic_ = String(topic);
@@ -546,15 +557,15 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String topic_value = topic_.substring(last+1);
   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
   int nozzle_num = topic_value.toInt();
-  Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num); Serial0.println();
+  ;
   // check if the topic is approved message or not
   if(nozzle_num >=1 && nozzle_num <= 2 /* change your noz count*/){
     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
-    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("APPROVED MESSAGE GENERTED : %s",approvmsg); Serial0.println();
+    ;
     if (incommingMessage == String(approvmsg)){
       pump_approve[nozzle_num-1] = true;
       tp_match = true;
-      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str()); Serial0.println();
+      ;
     }
   }
 
@@ -566,46 +577,46 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
       tp_match = true;
       switch (i){
         case 0: {
-          ("preset topic matched: %s", topic_value.c_str());
+          ;
           int pumpID = fms_decodePumpId(incommingMessage);
           int presetAmount = fms_decodePresetAmount(incommingMessage);
           presetMessageGet = true; // for preset message get from mqtt broker
           // pump_approve[pumpID-1] = true;
-          Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount); Serial0.println();
+          ;
           break;
         }
         case 1: {
-          ("price topic matched: %s", topic_value.c_str());
+          ;
           break;
         }
       }
-      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("MATCH TRUE"); Serial0.println();
+      ;
       break;
     }
     else {
-        Serial0.print("[MQTT][DEBUG] "); Serial0.printf("not matched : [%s] == %s",topic,fms_sub_topics_value[i]); Serial0.println();
+        ;
     }
   }
 
   if (!tp_match) {
-    Serial0.print("[MQTT][ERROR] "); Serial0.printf("Topic not matched : %s", topic); Serial0.println();
+    ;
   }
 }
 
 
 void fms_subsbribe_topics() {
   for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
-    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Subscribing to topic: %s", fms_sub_topics[i]); Serial0.println();
+    ;
     fms_mqtt_client.subscribe(fms_sub_topics[i]);
   }
 }
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()) {
-    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("MQTT initialized, connecting to %s:%d...", sysCfg.mqtt_server_host /* mqtt server address*/, 1883); Serial0.println();
+    ;
     String clientId = String(deviceName) + String(random(0xffff), 16);
     if (fms_mqtt_client.connect(clientId.c_str())) {
-      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
+      ;
       fms_subsbribe_topics();
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
@@ -614,7 +625,7 @@ void fms_mqtt_reconnect() {
       // fms_mqtt_client.subscribe("detpos/local_server/preset");
       // Add additional topic subscriptions if necessary
     } else {
-      Serial0.print("[MQTT][ERROR] "); Serial0.printf("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state()); Serial0.println();
+      ;
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
 # 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
@@ -634,7 +645,7 @@ static void mqtt_task(void* arg) {
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
     } else {
-      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
+      ;
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
@@ -921,13 +932,9 @@ static void web_server_task(void* arg) {
     }
     // sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
     // pending to upgrade  mongoose wizard ui builder 
-    UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(
-# 226 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3 4
-                                                            __null
-# 226 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
-                                                                );
-    Serial0.print("Stack Remaining: ");
-    Serial0.println(stackRemaining); // Prints remaining stack (in words)
+    // UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
+    // Serial.print("Stack Remaining: ");
+    // Serial.println(stackRemaining);  // Prints remaining stack (in words)
     vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
 # 229 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                      1000 
@@ -935,6 +942,25 @@ static void web_server_task(void* arg) {
                      ));
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
+}
+# 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 2
+Redstar redstar(Serial1 /* uart2 serial port*/); // Create an instance of the Redstar class
+void red_star_init() {
+  redstar.begin(9600, true, 16, 17); // Initialize the Redstar object with the specified baud rate and pins
+}
+
+void red_star_main() {
+
+    // Example usage of the Redstar class
+    uint8_t nozzleId = 1; // Example nozzle ID
+    redstar.readState(nozzleId); // Read the state of the specified nozzle
+    redstar.readPrice(nozzleId); // Read the price of the specified nozzle
+    redstar.readTotal(nozzleId); // Read the total amount for the specified nozzle
+    redstar.sendApproval(nozzleId); // Send approval for the specified nozzle
+    redstar.sendFuel(nozzleId); // Send fuel command for the specified nozzle
+    redstar.presetAmount(nozzleId, 1000); // Set a preset amount for the specified nozzle
+    redstar.setPrice(nozzleId, 1500); // Set a price for the specified nozzle
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 /*
@@ -1082,16 +1108,22 @@ bool fms_task_create() {
   if (!create_task(sd_task, "sdcard", 3000, 2, &hsdCardTask, sd_rc)) return false;
   if (!create_task(wifi_task, "wifi", 3000, 3, &hwifiTask, wifi_rc)) return false;
   if (!create_task(mqtt_task, "mqtt", 3000, 3, &hmqttTask, mqtt_rc)) return false;
-  if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   if (!create_task(fms_uart2_task, "uart2", 3000, 1, &huart2Task, uart2_rc)) return false;
+  if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   if (!create_task(web_server_task, "webserver", 4096, 4, &hwebServerTask, webserver_rc)) return false;
 
+  return true;
+}
+
+bool fm_cli_task_create() {
+  BaseType_t cli_rc;
+  if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   return true;
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
-    Serial1 /* uart2 serial port*/.begin(baudrate, SERIAL_8N1, 16, 17);
+    Serial1 /* uart2 serial port*/.begin(baudrate, SERIAL_8N1, 16, 17); // RXD2 and TXD2 are the GPIO pins for RX and TX
     if (Serial1 /* uart2 serial port*/) {
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 5 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
@@ -1106,7 +1138,7 @@ bool fms_uart2_begin(bool flag, int baudrate) {
 }
 
 void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
-  uint8_t Buffer[50];
+  uint8_t Buffer[30];
   int bytes_received = 0;
   uint16_t size = Serial1 /* uart2 serial port*/.available(); // serial.available
   Serial0.print("[DEBUG] "); Serial0.printf("Got bytes on serial : %d\n", size); Serial0.println();
@@ -1117,6 +1149,9 @@ void fm_rx_irq_interrupt() { // interrupt RS485/RS232 function
   }
   if(bytes_received > 0) {
     Serial0.print("[DEBUG] "); Serial0.printf("\n uart2 data process \n\r"); Serial0.println();
+    Serial0.print("[DEBUG] "); Serial0.printf("uart2 data : %s\n\r", Buffer); Serial0.println();
+    Serial0.print("[DEBUG] "); Serial0.printf("uart2 data length : %d\n\r", bytes_received); Serial0.println();
+    UART_RECEIVE_STATE = true;
     fms_uart2_decode(Buffer, bytes_received); // decode uart2 data main function
   }
 
@@ -1146,12 +1181,15 @@ void fms_uart2_task(void* arg) {
 
 
 
+    red_star_main(); // redstar protocol
+
+
 test_mux();
 
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 56 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
+# 62 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
               1000 
-# 56 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+# 62 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -1162,6 +1200,17 @@ bool initialize_fms_wifi(bool flag) {
     fms_nvs_storage.begin("fms_config", false);
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
+    if(ssid_str.length() == 0 || pass_str.length() == 0) {
+      gpio_set_level(GPIO_NUM_33, 0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+                1000 
+# 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+                ) / ( TickType_t ) 1000U ) ));
+      fmsLog(FMS_LOG_ERROR, "[DEBUG WiFi] wifi .. credential .. value is empty");
+      fms_nvs_storage.end();
+      return false;
+    }
     fms_nvs_storage.end();
     Serial0.print("[DEBUG] "); Serial0.printf("SSID : %s , PASS : %s", ssid_str, pass_str); Serial0.println();
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
@@ -1174,11 +1223,23 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.setAutoReconnect(true); // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
+      gpio_set_level(GPIO_NUM_33, 0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+                1000 
+# 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+                ) / ( TickType_t ) 1000U ) ));
+      gpio_set_level(GPIO_NUM_33, 0x1);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+                1000 
+# 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+                ) / ( TickType_t ) 1000U ) ));
       fmsLog(FMS_LOG_INFO, "WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 20 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 20 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
     }
     return true;
@@ -1197,26 +1258,29 @@ static void wifi_task(void *arg) {
   while (1) {
     if (WiFi.status() != WL_CONNECTED) {
       fmsLog(FMS_LOG_WARNING, "Failed to connect to WiFi");
-      gpio_set_level(GPIO_NUM_2, 0x1);
+      gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 50 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 39 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 50 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
-      gpio_set_level(GPIO_NUM_2, 0x0);
+      gpio_set_level(GPIO_NUM_33, 0x1);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 52 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 52 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
     } else {
       fmsLog(FMS_LOG_INFO, "Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
-      gpio_set_level(GPIO_NUM_2, 0x1);
+      gpio_set_level(GPIO_NUM_33, 0x1);
+      gpio_set_level(GPIO_NUM_32, 0x1);
+      gpio_set_level(GPIO_NUM_13, 0x1);
+      gpio_set_level(GPIO_NUM_14, 0x0);
     }
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 46 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 60 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
               1000 
-# 46 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 60 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

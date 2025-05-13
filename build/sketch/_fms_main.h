@@ -8,6 +8,7 @@
 #include <LittleFS.h>
 #include "chip-debug-report.h"
 #include "esp32-hal-uart.h"
+
 #include <Preferences.h>
 #include <nvs.h>
 #include <nvs_flash.h>
@@ -89,10 +90,16 @@ ModbusMaster node;
 #define MUX_S0                      25
 #define MUX_S1                      26
 #define MUX_E                       27 // enable input (active LOW) 
-
 // uart 2 config
-#define RXD2                      16
-#define TXD2                      17
+#define RXD2                        16
+#define TXD2                        17
+// led status config
+#define LED_RED                     GPIO_NUM_32
+#define LED_GREEN                   GPIO_NUM_14 
+#define LED_BLUE                    GPIO_NUM_13
+#define LED_YELLOW                  GPIO_NUM_33
+// uartReceive state
+bool UART_RECEIVE_STATE             = true;
 // nozzle config
 #define MAX_NOZZLES                 2 // change your noz count
 bool pump_approve[MAX_NOZZLES]      = {false};
@@ -202,7 +209,7 @@ struct SYSCFG {
   unsigned long version;
   char          wifi_ssid[32]         = "";
   char          wifi_password[64]     = " ";
-  char          mqtt_server_host[32]  = "192.168.1.124";
+  char          mqtt_server_host[32]  = "192.168.1.134";
   char*         mqtt_user             = MQTT_USER;
   char*         mqtt_password         = MQTT_PASSWORD;
   uint32_t      mqtt_port             = MQTT_PORT;

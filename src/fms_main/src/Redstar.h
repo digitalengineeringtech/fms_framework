@@ -1,11 +1,3 @@
-/**
- * @file Redstar.h
- * @brief Communication library for Redstar fuel dispensers
- * 
- * This library provides an interface for communicating with Redstar fuel dispensers
- * using a serial protocol. It handles command construction, checksum calculation,
- * and response parsing.
- */
 
  #ifndef REDSTAR_H
  #define REDSTAR_H
@@ -53,7 +45,7 @@
  class Redstar {
  public:
    Redstar(HardwareSerial& serial);
-   void begin(unsigned long baudRate, bool debug = false);
+   bool begin(unsigned long baudRate, bool debug = false, uint8_t rxPin = 0, uint8_t txPin = 1);
    bool readState(uint8_t nozzleId);
    bool readPrice(uint8_t nozzleId);
    bool readTotal(uint8_t nozzleId);
@@ -69,6 +61,8 @@
    bool waitForResponse();
  private:
    HardwareSerial& _serial;           // Serial interface
+   uint8_t _rxPin;                   // RX pin
+   uint8_t _txPin;                   // TX pin
    bool _debug;                        // Debug mode flag
    unsigned long _timeout;             // Response timeout in milliseconds
    uint8_t _buffer[REDSTAR_BUFFER_SIZE]; // Response buffer
@@ -84,6 +78,7 @@
    int countBits(uint8_t byte);
    void sendByteMarkParity(uint8_t byte);
    void sendByteSpaceParity(uint8_t byte);
+   void processInput();
  };
  
  #endif // REDSTAR_H

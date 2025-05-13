@@ -4,7 +4,6 @@
     * main function link file
 */
 
-
 void fms_boot_count(bool bootsave) {
   if (!bootsave) {
     return;
@@ -60,7 +59,6 @@ void fms_run_sd_test() {
     Serial.println("[STORAGE] File system mounted");
   }
   // load system config file
-
 #endif
 }
 
@@ -129,5 +127,21 @@ int fms_decodePumpId(String presetData){
   "crc_dec": 41394
 }
 */
+
+void init_staus_leds() {
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << LED_RED) | (1ULL << LED_GREEN) |
+                        (1ULL << LED_BLUE) | (1ULL << LED_YELLOW),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
+    gpio_set_level(LED_RED, 1);
+    gpio_set_level(LED_GREEN, 1);
+    gpio_set_level(LED_BLUE, 1);
+    gpio_set_level(LED_YELLOW, 1);
+}
 
 

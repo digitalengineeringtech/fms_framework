@@ -11,7 +11,7 @@ bool fms_uart2_begin(bool flag, int baudrate) {
 }
 
 void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
-  uint8_t Buffer[50];
+  uint8_t Buffer[30];
   int bytes_received = 0;
   uint16_t size = fms_uart2_serial.available();  // serial.available
   FMS_LOG_DEBUG("Got bytes on serial : %d\n", size);
@@ -22,6 +22,9 @@ void fm_rx_irq_interrupt() {  // interrupt RS485/RS232 function
   }
   if(bytes_received > 0) {
     FMS_LOG_DEBUG("\n uart2 data process \n\r");
+    FMS_LOG_DEBUG("uart2 data : %s\n\r", Buffer);
+    FMS_LOG_DEBUG("uart2 data length : %d\n\r", bytes_received);
+    UART_RECEIVE_STATE = true;
     fms_uart2_decode(Buffer, bytes_received);  // decode uart2 data main function
   }
  
@@ -50,9 +53,12 @@ void fms_uart2_task(void* arg) {
 #ifdef USE_LANFENG // development features 
 fms_lanfeng_protocol(); // lanfeng protocol 
 #endif
+#ifdef USE_RESTAR
+    red_star_main();  // redstar protocol
+#endif
 #ifdef USE_MUX_PC817
 test_mux();
 #endif
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

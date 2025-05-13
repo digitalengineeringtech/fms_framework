@@ -14,14 +14,44 @@ Redstar::Redstar(HardwareSerial& serial) :
   _lastResponse.valid = false;
 }
 
-void Redstar::begin(unsigned long baudRate, bool debug,uint8_t rxPin, uint8_t txPin) {
+bool Redstar::begin(unsigned long baudRate, bool debug,uint8_t rxPin, uint8_t txPin) {
+  _rxPin = rxPin;
+  _txPin = txPin;
+  // Initialize the serial port
   _serial.begin(baudRate, SERIAL_8N1, rxPin, txPin);
   _debug = debug;
   // configure gpio for direct manipulation
-  pinMode(txPin, OUTPUT);
-  delay(100); // Give some time for serial to initialize
+  //pinMode(txPin, OUTPUT);
+  vTaskDelay(pdMS_TO_TICKS(100)); // Wait for serial to be ready
+
+
   if (_debug) {
     Serial.println(F("[DEBUG]Redstar: Initialized"));
+  }
+  // // Set up interrupt handler
+  // _serial.onReceive([this]() {
+  //   this->processInput();
+  // });
+  // Print welcome message
+      // Print welcome message
+      Serial.println("\n\r+--------------------------------------+");
+      Serial.println("|       REDSTAR Firmware v1.0          |");
+      Serial.println("+--------------------------------------+");
+      
+}
+
+void Redstar::processInput() {
+  while (_serial.available()) {
+    uint8_t byte = _serial.read();
+    if (_bufferIndex < REDSTAR_BUFFER_SIZE) {
+      _buffer[_bufferIndex++] = byte;
+    } else {
+      // Buffer overflow, reset index
+      _bufferIndex = 0;
+    }
+  }
+  if (_debug) {
+    printFrame("Received data:", _buffer, _bufferIndex);
   }
 }
 
@@ -396,30 +426,30 @@ bool Redstar::waitForResponse() {
 
 void Redstar::sendByteMarkParity(uint8_t byte) {
   // Set TX pin to HIGH (mark)
-  digitalWrite(_serial->getTxPin(), HIGH);
+  digitalWrite(_txPin, HIGH);
   delayMicroseconds(100); // Adjust delay as needed
   int bitCount = countBits(byte);
   if(bitCount % 2 == 0) {
-    _serial->end();
-    _serial->begin(2400, SERIAL_8O1, _serial.getRxPin(), _serial.getTxPin());
+    _serial.end();
+    _serial.begin(2400, SERIAL_8O1,_rxPin, _txPin);
   } else {
-   _serial->end();
-    _serial->begin(2400, SERIAL_8E1, _serial.getRxPin(), _serial.getTxPin());
+   _serial.end();
+    _serial.begin(2400, SERIAL_8E1, _rxPin, _txPin);
   }
   _serial.write(byte);
 }
 
 void Redstar::sendByteSpaceParity(uint8_t byte) {
   // Set TX pin to LOW (space)
-  digitalWrite(_serial->getTxPin(), LOW);
+  digitalWrite(_txPin, LOW);
   delayMicroseconds(100); // Adjust delay as needed
   int bitCount = countBits(byte);
   if(bitCount % 2 == 0) {
-    _serial->end();
-    _serial->begin(2400, SERIAL_8E1, _serial.getRxPin(), _serial.getTxPin());
+    _serial.end();
+    _serial.begin(2400, SERIAL_8E1,_rxPin, _txPin);
   } else {
-   _serial->end();
-    _serial->begin(2400, SERIAL_801, _serial.getRxPin(), _serial.getTxPin());
+   _serial.end();
+    _serial.begin(2400, SERIAL_8O1, _rxPin, _txPin);
   }
   _serial.write(byte);
 }

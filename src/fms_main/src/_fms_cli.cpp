@@ -75,6 +75,7 @@ void fms_cli::register_command(const String& name, const String& description,
 
 // Process incoming data
 void fms_cli::process_input() {
+    
     while (_serial.available()) {
         char c = _serial.read();
         

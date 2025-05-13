@@ -4,6 +4,13 @@ bool initialize_fms_wifi(bool flag) {
     fms_nvs_storage.begin("fms_config", false);
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
+    if(ssid_str.length() == 0 || pass_str.length() == 0) {
+      gpio_set_level(LED_YELLOW, LOW);
+      vTaskDelay(pdMS_TO_TICKS(500));
+      FMS_LOG_ERROR("[DEBUG WiFi] wifi .. credential .. value is empty");
+      fms_nvs_storage.end();
+      return false;
+    }
     fms_nvs_storage.end();
     FMS_LOG_DEBUG("SSID : %s , PASS : %s", ssid_str, pass_str);
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
@@ -16,6 +23,10 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.setAutoReconnect(true);  // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
+      gpio_set_level(LED_YELLOW, LOW);
+      vTaskDelay(pdMS_TO_TICKS(500));
+      gpio_set_level(LED_YELLOW, HIGH);
+      vTaskDelay(pdMS_TO_TICKS(500));
       FMS_LOG_INFO("WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
     }
@@ -35,14 +46,17 @@ static void wifi_task(void *arg) {
   while (1) {
     if (WiFi.status() != WL_CONNECTED) {
       FMS_LOG_WARNING("Failed to connect to WiFi");
-      gpio_set_level(GPIO_NUM_2, HIGH);
+      gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(500));
-      gpio_set_level(GPIO_NUM_2, LOW);
+      gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(500));
     } else {
       FMS_LOG_INFO("Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
-      gpio_set_level(GPIO_NUM_2, HIGH);
+      gpio_set_level(LED_YELLOW, HIGH);
+      gpio_set_level(LED_RED, HIGH);
+      gpio_set_level(LED_BLUE, HIGH);
+      gpio_set_level(LED_GREEN, LOW);
     }
-    vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
+    vTaskDelay(pdMS_TO_TICKS(500));  // Wait for 1 second before repeating
   }
 }
