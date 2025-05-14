@@ -56,9 +56,9 @@ fms_lanfeng_protocol(); // lanfeng protocol
 #ifdef USE_RESTAR
     red_star_main();  // redstar protocol
 #endif
-#ifdef USE_MUX_PC817
-test_mux();
-#endif
+// #ifdef USE_MUX_PC817
+// test_mux();
+// #endif
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

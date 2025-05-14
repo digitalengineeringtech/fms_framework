@@ -47,7 +47,7 @@
  public:
    Redstar(HardwareSerial& serial);
    bool begin(unsigned long baudRate, bool debug = false, uint8_t rxPin = 0, uint8_t txPin = 1);
-   bool readState(uint8_t nozzleId);
+   uint8_t readState(uint8_t nozzleId);
    bool readPrice(uint8_t nozzleId);
    bool readTotal(uint8_t nozzleId);
    bool sendApproval(uint8_t nozzleId);
@@ -59,21 +59,23 @@
    RedstarResponse getLastResponse() const;
    void clearResponseBuffer();
    void setTimeout(unsigned long timeout);
-   bool waitForResponse();
+   uint8_t waitForResponse();
+   unsigned char* parseResponse(int& length);
  private:
    HardwareSerial& _serial;           // Serial interface
    uint8_t _rxPin;                   // RX pin
    uint8_t _txPin;                   // TX pin
    bool _debug;                        // Debug mode flag
+   int index = 0 ;
    unsigned long _timeout;             // Response timeout in milliseconds
-   uint8_t _buffer[REDSTAR_BUFFER_SIZE]; // Response buffer
-   uint8_t _bufferIndex;               // Current position in buffer
+   unsigned char _buffer[REDSTAR_BUFFER_SIZE]; // Response buffer
+   uint8_t _bufferIndex =0;               // Current position in buffer
    unsigned long _lastCommandTime;     // Time of last command sent
    RedstarResponse _lastResponse;      // Last parsed response
    uint8_t calculateChecksum(const uint8_t* bytes, size_t length);
-   bool sendFrame(const uint8_t* frame, size_t length);
+   uint8_t sendFrame(const uint8_t* frame, size_t length);
    void printFrame(const char* prefix, const uint8_t* frame, size_t length);
-   bool parseResponse();
+
    uint32_t hexArrayToDecimal(const uint8_t* hexArray, int startIndex, int endIndex);
    String hexArrayToString(const uint8_t* hexArray, int startIndex, int endIndex);
    int countBits(uint8_t byte);

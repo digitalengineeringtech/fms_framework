@@ -11,10 +11,11 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
+#include <src/Redstar.h>
 
 #define USE_RESTAR
 
-#define DISABLE_MQTT_DEBUG
+//#define DISABLE_MQTT_DEBUG
 #ifdef DISABLE_MQTT_DEBUG
 #undef FMS_MQTT_DEBUG
 #endif
@@ -28,6 +29,7 @@
 
 FMS_FileManager fileManager;
 fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);  // Use "admin" as the default password change your admin pass here
+Redstar redstar(fms_uart2_serial); // create redstar object
 fmsLanfeng lanfeng(22, 22);                     // set re de pin (DTR PIN)s
 
 /* Main function */

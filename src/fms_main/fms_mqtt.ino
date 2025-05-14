@@ -65,6 +65,9 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (!tp_match) {
     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
   }
+  #ifdef USE_REDSTAR
+  redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
+  #endif
 }
 
 
@@ -79,7 +82,7 @@ void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()) {
     FMS_MQTT_LOG_DEBUG("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
     String clientId = String(deviceName) + String(random(0xffff), HEX);
-    if (fms_mqtt_client.connect(clientId.c_str())) {
+    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password)) {
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
       fms_subsbribe_topics();
       // Uncomment the following lines to subscribe to additional topics

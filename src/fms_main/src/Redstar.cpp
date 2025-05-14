@@ -1,6 +1,19 @@
 
+/*
+  //send_read_state();  // Call the function to send read state command
+    // // Example usage of the Redstar class
+    // uint8_t nozzleId = 1;  // Example nozzle ID
+    // redstar.readState(nozzleId);  // Read the state of the specified nozzle
+    // redstar.readPrice(nozzleId);   // Read the price of the specified nozzle
+    // redstar.readTotal(nozzleId);   // Read the total amount for the specified nozzle
+    // redstar.sendApproval(nozzleId); // Send approval for the specified nozzle
+    // redstar.sendFuel(nozzleId);     // Send fuel command for the specified nozzle
+    // redstar.presetAmount(nozzleId, 1000); // Set a preset amount for the specified nozzle
+    // redstar.setPrice(nozzleId, 1500);     // Set a price for the specified nozzle
+*/
 
 #include "Redstar.h"
+
 
 Redstar::Redstar(HardwareSerial& serial) : 
   _serial(serial),
@@ -13,48 +26,47 @@ Redstar::Redstar(HardwareSerial& serial) :
   _lastResponse.valid = false;
 }
 
-bool Redstar::begin(unsigned long baudRate, bool debug,uint8_t rxPin, uint8_t txPin) {
+bool Redstar::begin(unsigned long baudRate, bool debug, uint8_t rxPin, uint8_t txPin) {
   _rxPin = rxPin;
   _txPin = txPin;
   // Initialize the serial port
   _serial.begin(baudRate, SERIAL_8N1, rxPin, txPin);
   _debug = debug;
-  // configure gpio for direct manipulation
-  //pinMode(txPin, OUTPUT);
   vTaskDelay(pdMS_TO_TICKS(100)); // Wait for serial to be ready
-
+  if (!_serial) {
+    if (_debug) {
+      Serial.println(F("Redstar: Serial not initialized"));
+    }
+    return false;
+  }
+//   _serial.onReceive([this]() {
+//     processInput();
+// });
 
   if (_debug) {
-    Serial.println(F("[DEBUG]Redstar: Initialized"));
+    // Print welcome message
+    Serial.println("\n\r+--------------------------------------+");
+    Serial.println("|       REDSTAR Firmware v1.0          |");
+    Serial.println("+--------------------------------------+");
   }
-  // // Set up interrupt handler
-  // _serial.onReceive([this]() {
-  //   this->processInput();
-  // });
-  // Print welcome message
-      // Print welcome message
-      Serial.println("\n\r+--------------------------------------+");
-      Serial.println("|       REDSTAR Firmware v1.0          |");
-      Serial.println("+--------------------------------------+");
-      
+  return true;
 }
 
 void Redstar::processInput() {
-  while (_serial.available()) {
+  if (_serial.available()) {
     uint8_t byte = _serial.read();
     if (_bufferIndex < REDSTAR_BUFFER_SIZE) {
       _buffer[_bufferIndex++] = byte;
     } else {
-      // Buffer overflow, reset index
       _bufferIndex = 0;
     }
   }
   if (_debug) {
-    printFrame("Received data:", _buffer, _bufferIndex);
+    printFrame("Received// data:", _buffer, _bufferIndex);
   }
 }
 
-bool Redstar::readState(uint8_t nozzleId) {
+uint8_t Redstar::readState(uint8_t nozzleId) {
   uint8_t frame[4];
   frame[0] = nozzleId;                   // Nozzle ID
   frame[1] = REDSTAR_CMD_READ;           // Read command
@@ -67,6 +79,8 @@ bool Redstar::readState(uint8_t nozzleId) {
   
   clearResponseBuffer();
   _lastCommandTime = millis();
+  //sendFrame(frame, 4);
+  //waitForResponse();
   return sendFrame(frame, 4);
 }
 
@@ -203,22 +217,30 @@ uint8_t Redstar::calculateChecksum(const uint8_t* bytes, size_t length) {
   return checksum;
 }
 
-bool Redstar::sendFrame(const uint8_t* frame, size_t length) {
+uint8_t Redstar::sendFrame(const uint8_t* frame, size_t length) {
   if (!_serial) {
     if (_debug) {
       Serial.println(F("Redstar: Serial not initialized"));
     }
     return false;
   }
-  uint8_t addressByte = frame[0];
-  sendByteMarkParity(addressByte);
-  delay(69);
-  for (size_t i = 1; i < length; i++) {
-    sendByteSpaceParity(frame[i]);
-    delay(5); // adjust the frame lenht , address and command frame delay is 5 
-  }
+  _serial.write(frame, length);
+  _serial.flush();
+  // _bufferIndex = 0;
+  // while (_serial.available() && _bufferIndex < REDSTAR_BUFFER_SIZE) {
+  //   uint8_t inByte = _serial.read();
+  //   _buffer[_bufferIndex++] = inByte;
+  // }
+ 
+  // uint8_t addressByte = frame[0];
+  // sendByteMarkParity(addressByte);
+  // delay(69);
+  // for (size_t i = 1; i < length; i++) {
+  //   sendByteSpaceParity(frame[i]);
+  //   delay(5); // adjust the frame lenht , address and command frame delay is 5 
+  // }
   
-  return true;
+  return 1;
 }
 
 void Redstar::printFrame(const char* prefix, const uint8_t* frame, size_t length) {
@@ -236,119 +258,47 @@ void Redstar::printFrame(const char* prefix, const uint8_t* frame, size_t length
 }
 
 bool Redstar::update() {
-  // Process any incoming data from the dispenser
-  while (_serial.available() && _bufferIndex < REDSTAR_BUFFER_SIZE) {
-    uint8_t inByte = _serial.read();
-    _buffer[_bufferIndex++] = inByte;
+  if(_serial.available()) return true;
+   else return false;
+  // // Process any incoming data from the dispenser
+  // if (_serial.available() && _bufferIndex < REDSTAR_BUFFER_SIZE) {
+  //   uint8_t inByte = _serial.read();
+  //   _buffer[_bufferIndex++] = inByte;
     
-    // Check if we have a complete response
-    // This is a simplified approach - you may need to adjust based on your protocol
-    if (_bufferIndex >= 4) {
-      // Check if we have a valid response by verifying the checksum
-      uint8_t calculatedChecksum = calculateChecksum(_buffer, _bufferIndex - 1);
-      if (calculatedChecksum == _buffer[_bufferIndex - 1]) {
-        if (_debug) {
-          printFrame("Received valid frame:", _buffer, _bufferIndex);
-        }
-        return parseResponse();
-      }
-    }
-  }
+  //   // Check if we have a complete response
+  //   // This is a simplified approach - you may need to adjust based on your protocol
+  //   if (_bufferIndex >= 4) {
+  //     // Check if we have a valid response by verifying the checksum
+  //     uint8_t calculatedChecksum = calculateChecksum(_buffer, _bufferIndex - 1);
+  //     if (calculatedChecksum == _buffer[_bufferIndex - 1]) {
+  //       if (_debug) {
+  //         printFrame("Received valid frame:", _buffer, _bufferIndex);
+  //       }
+  //       return parseResponse();
+  //     }
+  //   }
+  // }
   
-  return false;
+  // return false;
 }
 
-bool Redstar::parseResponse() {
-  // Reset the last response
-  _lastResponse.valid = false;
-  _lastResponse.rawResponse = "";
+unsigned char* Redstar::parseResponse(int& length) {
+
+ unsigned long start = millis();
+ if (_serial.available()) {
+  unsigned char byte = _serial.read();
+   //if (index < REDSTAR_BUFFER_SIZE) {
+    _buffer[length++] = byte;
   
-  // Convert buffer to hex string for raw response
-  for (uint8_t i = 0; i < _bufferIndex; i++) {
-    if (_buffer[i] < 0x10) {
-      _lastResponse.rawResponse += "0";
-    }
-    _lastResponse.rawResponse += String(_buffer[i], HEX);
-    _lastResponse.rawResponse += " ";
-  }
-  
-  // Basic validation - check minimum length
-  if (_bufferIndex < 4) {
-    if (_debug) {
-      Serial.println(F("Redstar: Response too short"));
-    }
-    return false;
-  }
-  
-  // Extract nozzle ID
-  _lastResponse.nozzleId = _buffer[0];
-  
-  // Determine response type based on command byte
-  uint8_t command = _buffer[1];
-  uint8_t subCommand = _buffer[2];
-  
-  if (command == REDSTAR_CMD_READ) {
-    if (subCommand == REDSTAR_SUBCMD_STATE) {
-      // State response
-      if (_bufferIndex >= 5) {
-        uint8_t stateValue = _buffer[3];
-        
-        // Map state value to enum
-        switch (stateValue) {
-          case 0x01:
-            _lastResponse.state = REDSTAR_STATE_IDLE;
-            break;
-          case 0x02:
-            _lastResponse.state = REDSTAR_STATE_NOZZLE_LIFTED;
-            break;
-          case 0x03:
-            _lastResponse.state = REDSTAR_STATE_FUELING;
-            break;
-          case 0x04:
-            _lastResponse.state = REDSTAR_STATE_FUELING_COMPLETE;
-            break;
-          default:
-            _lastResponse.state = REDSTAR_STATE_UNKNOWN;
-        }
-        
-        _lastResponse.valid = true;
-      }
-    } else if (subCommand == REDSTAR_SUBCMD_PRICE) {
-      // Price response
-      if (_bufferIndex >= 6) {
-        _lastResponse.price = (_buffer[3] << 8) | _buffer[4];
-        _lastResponse.valid = true;
-      }
-    } else if (subCommand == REDSTAR_SUBCMD_TOTAL) {
-      // Total response
-      if (_bufferIndex >= 16) {
-        // Extract total volume (bytes 4-9)
-        _lastResponse.totalVolume = hexArrayToDecimal(_buffer, 4, 9);
-        
-        // Extract total amount (bytes 10-15)
-        _lastResponse.totalAmount = hexArrayToDecimal(_buffer, 10, 15);
-        
-        _lastResponse.valid = true;
-      }
-    }
-  }
-  
-  if (_debug && _lastResponse.valid) {
-    Serial.println(F("Redstar: Response parsed successfully"));
-    Serial.print(F("Nozzle ID: "));
-    Serial.println(_lastResponse.nozzleId);
-    Serial.print(F("State: "));
-    Serial.println(_lastResponse.state);
-    Serial.print(F("Total Volume: "));
-    Serial.println(_lastResponse.totalVolume);
-    Serial.print(F("Total Amount: "));
-    Serial.println(_lastResponse.totalAmount);
-    Serial.print(F("Price: "));
-    Serial.println(_lastResponse.price);
-  }
-  
-  return _lastResponse.valid;
+  //  } else {
+  //   length = 0;
+  //  }
 }
+
+    return _buffer;
+  }
+ 
+
 
 uint32_t Redstar::hexArrayToDecimal(const uint8_t* hexArray, int startIndex, int endIndex) {
   uint32_t result = 0;
@@ -406,21 +356,33 @@ void Redstar::setTimeout(unsigned long timeout) {
   _timeout = timeout;
 }
 
-bool Redstar::waitForResponse() {
+uint8_t Redstar::waitForResponse() {
   unsigned long startTime = millis();
   
   while ((millis() - startTime) < _timeout) {
-    if (update()) {
-      return true;
+    if (_serial.available()) {
+      uint8_t byte = _serial.read();
+      if (_bufferIndex < REDSTAR_BUFFER_SIZE) {
+        _buffer[_bufferIndex++] = byte;
+      } else {
+        _bufferIndex = 0;
+      }
     }
+    // if (_debug) {
+    //   printFrame("Received data:", _buffer, _bufferIndex);
+    // }
+    // if (update()) {
+    //   return true;
+    // }
     yield(); // Allow other processes to run
+    return _buffer[4];
   }
   
   if (_debug) {
     Serial.println(F("Redstar: Response timeout"));
   }
   
-  return false;
+  return _buffer[4];
 }
 
 void Redstar::sendByteMarkParity(uint8_t byte) {

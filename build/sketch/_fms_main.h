@@ -52,8 +52,8 @@ String deviceName                     = "ultramarine-v0.1-";  // device ID (for)
 #define WIFI_PASSWORD sysCfg.wifi_password      // wifi password
 #define MQTT_SERVER sysCfg.mqtt_server_host     // mqtt server address
 #define MQTT_PORT 1883                          // mqtt port
-#define MQTT_USER " "                           // mqtt user
-#define MQTT_PASSWORD " "                       // mqtt password
+#define MQTT_USER "detpos"                           // mqtt user
+#define MQTT_PASSWORD "asdffdsa"                       // mqtt password
 
 #define MQTT_LWT_OFFLINE "offline"              // mqtt last will topic offline
 #define MQTT_LWT_ONLINE "online"                // mqtt last will topic online
@@ -185,10 +185,10 @@ const uint8_t  NOZ_ID            = 01;
 // end modbus address
 
 // from old 
-// char pumpapprobuf[22]               = "detpos/local_server/1";
-// char pumppresetbuf[28]              = "detpos/local_server/preset";  // return from local server
+ char approv_topic[22]                 = "detpos/local_server/1";
+ char preset_topic[28]                 = "detpos/local_server/preset";  // return from local server
 // char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
-// char pricechange[26]                = "detpos/local_server/price";  // return from local server
+ char price_change_topic[26]           = "detpos/local_server/price";  // return from local server
 // 
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
 char pplive[25]                     = "detpos/device/livedata/";
@@ -209,7 +209,7 @@ struct SYSCFG {
   unsigned long version;
   char          wifi_ssid[32]         = "";
   char          wifi_password[64]     = " ";
-  char          mqtt_server_host[32]  = "192.168.1.134";
+  char          mqtt_server_host[32]  = "192.168.1.124";
   char*         mqtt_user             = MQTT_USER;
   char*         mqtt_password         = MQTT_PASSWORD;
   uint32_t      mqtt_port             = MQTT_PORT;
