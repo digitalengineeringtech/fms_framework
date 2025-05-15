@@ -299,8 +299,6 @@ unsigned char* Redstar::parseResponse(int& length) {
     return _buffer;
   }
  
-
-
 uint32_t Redstar::hexArrayToDecimal(const uint8_t* hexArray, int startIndex, int endIndex) {
   uint32_t result = 0;
   uint32_t multiplier = 1;

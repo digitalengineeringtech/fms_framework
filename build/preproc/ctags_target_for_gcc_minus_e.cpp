@@ -22,9 +22,18 @@
 # 15 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 
 
+// //#define DISABLE_MQTT_DEBUG
+// #ifdef DISABLE_MQTT_DEBUG
+// #undef FMS_MQTT_DEBUG
+// #endif
+// #define USE_MQTT_DEBUG
 
-//#define DISABLE_MQTT_DEBUG
-# 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+
+//#define DISABLE_LANFENG
+
+
+
+
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial0 /* cli serial port*/, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
 Redstar redstar(Serial1 /* uart2 serial port*/); // create redstar object
@@ -43,21 +52,17 @@ void setup() {
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
 
-
   //fms_initialize_uart2();                   // uart 2
   fms_pin_mode(2, 0x03);
-
 
   fms_pin_mode(25, 0x03); // Multiplexer
   fms_pin_mode(26, 0x03);
   fms_pin_mode(27 /* enable input (active LOW) */, 0x03);
   enable_mux(27 /* enable input (active LOW) */); // enable multiplexer (active low)
 
-
   fms_run_sd_test(); // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(false); // show serial logging data on Serial Monitor
+  fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
   fms_boot_count(true); // boot count
-
 
 
 
@@ -552,80 +557,83 @@ void init_staus_leds() {
 char fms_nmf_tp_prefix[64];
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  Serial0.print("Message arrived [");
+  Serial0.print(topic);
+  Serial0.print("] ");
   String incommingMessage = "";
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-  ;
-  bool tp_match = false;
+//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
+//   bool tp_match = false;
 
-  String topic_ = String(topic);
- // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
-  int last = topic_.lastIndexOf('/');
-  String topic_value = topic_.substring(last+1);
-  // some return topic contain noz id detpos/local_server/1 , check noz id or other 
-  int nozzle_num = topic_value.toInt();
-  ;
-  // check if the topic is approved message or not
-  if(nozzle_num >=1 && nozzle_num <= 2 /* change your noz count*/){
-    snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
-    ;
-    if (incommingMessage == String(approvmsg)){
-      pump_approve[nozzle_num-1] = true;
-      tp_match = true;
-      ;
-    }
-  }
-
-
-  for (int i = 0 ; i < fms_sub_topics_value_count; i++){
-      const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
-    if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
-    {
-      tp_match = true;
-      switch (i){
-        case 0: {
-          ;
-          int pumpID = fms_decodePumpId(incommingMessage);
-          int presetAmount = fms_decodePresetAmount(incommingMessage);
-          presetMessageGet = true; // for preset message get from mqtt broker
-          // pump_approve[pumpID-1] = true;
-          ;
-          break;
-        }
-        case 1: {
-          ;
-          break;
-        }
-      }
-      ;
-      break;
-    }
-    else {
-        ;
-    }
-  }
-
-  if (!tp_match) {
-    ;
-  }
+//   String topic_ = String(topic);
+//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
+//   int last = topic_.lastIndexOf('/');
+//   String topic_value = topic_.substring(last+1);
+//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
+//   int nozzle_num = topic_value.toInt();
+//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+//   // check if the topic is approved message or not
+//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
+//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
+//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
+//     if (incommingMessage == String(approvmsg)){
+//       pump_approve[nozzle_num-1] = true;
+//       tp_match = true;
+//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
+//     }
+//   }
 
 
+//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+//     {
+//       tp_match = true;
+//       switch (i){
+//         case 0: {
+//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
+//           int pumpID = fms_decodePumpId(incommingMessage);
+//           int presetAmount = fms_decodePresetAmount(incommingMessage);
+//           presetMessageGet = true; // for preset message get from mqtt broker
+//           // pump_approve[pumpID-1] = true;
+//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
+//           break;
+//         }
+//         case 1: {
+//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
+//           break;
+//         }
+//       }
+//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
+//       break;
+//     } 
+//     else {
+//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
+//     }
+//   }
 
+//   if (!tp_match) {
+//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
+//   }
+//   #ifdef USE_REDSTAR
+   redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
+//   #endif
 }
 
 
 void fms_subsbribe_topics() {
   for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
-    ;
+    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Subscribing to topic: %s", fms_sub_topics[i]); Serial0.println();
     fms_mqtt_client.subscribe(fms_sub_topics[i]);
   }
 }
 
 void fms_mqtt_reconnect() {
   while (!fms_mqtt_client.connected()) {
-    ;
+    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("MQTT initialized, connecting to %s:%d...", sysCfg.mqtt_server_host /* mqtt server address*/, 1883); Serial0.println();
     String clientId = String(deviceName) + String(random(0xffff), 16);
     if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password)) {
-      ;
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
       fms_subsbribe_topics();
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
@@ -634,15 +642,19 @@ void fms_mqtt_reconnect() {
       // fms_mqtt_client.subscribe("detpos/local_server/preset");
       // Add additional topic subscriptions if necessary
     } else {
-      ;
+      Serial0.print("[MQTT][ERROR] "); Serial0.printf("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state()); Serial0.println();
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 96 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 99 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 96 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 99 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
 }
+
+unsigned long previousMillis = 0;
+const long interval = 1000; // Interval for sending messages
+bool ledState_ = false;
 
 static void mqtt_task(void* arg) {
   BaseType_t rc;
@@ -650,16 +662,23 @@ static void mqtt_task(void* arg) {
   fms_mqtt_client.setCallback(fms_mqtt_callback);
 
   while (true) {
+    unsigned long currentMillis = millis();
+
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
+      if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+        ledState_ = !ledState_;
+        gpio_set_level(GPIO_NUM_14, ledState_);
+      }
     } else {
-      ;
+      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 113 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 113 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -1001,7 +1020,7 @@ uint8_t pump5id;// Nozzle ID for pump 5
 uint8_t pump6id;// Nozzle ID for pump 6
 uint8_t pump7id;// Nozzle ID for pump 7
 uint8_t pump8id;// Nozzle ID for pump 8
-
+char presetArray[13];
   // Create an instance of the Redstar class
 void red_star_init() {
   redstar.begin(9600, true, 16, 17); // Initialize the Redstar object with the specified baud rate and pins
@@ -1194,14 +1213,26 @@ if(String(topic) == String(approv_topic)) {
   }
  // preset message reply (eg: 01preset,02preset) reply
 if(String(topic) == String(preset_topic)) {
-  char presetArray[13]; // pump appro array
   payload.toCharArray(presetArray, payload.length() + 1); // String to char convert
     Serial0.print("Preset is ");
     Serial0.println(presetArray);
     charArray[0] = presetArray[0]; // to check nozzle id
     charArray[1] = presetArray[1]; // to check nozzle id
     charArray[3] = presetArray[2]; // to check preset Units ( pricce or amount)
+/* debug section
 
+for (int i = 0; i < sizeof(presetArray); i++) {
+
+  Serial.print("0x");
+
+  Serial.print(presetArray[i], HEX);  // Print the buffer contents in hexadecimal format
+
+  Serial.print(" ");
+
+}
+
+*/
+# 237 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
  if (charArray[0] == 0x30 && charArray[1] == 0x31) { // checks message ID is 01 and define id is 1
   server_response_nozzle_id = 1;
 } else if (charArray[0] == 0x30 && charArray[1] == 0x32) { // checks message ID is 02 and define id is 2
@@ -1279,7 +1310,6 @@ if(presetcount){
   generate_preset_data(); // Call the function to generate preset data
   presetcount = false; // Reset preset count flag
 }
-
 }
 }
 
@@ -1290,12 +1320,19 @@ void generate_preset_data() {
   if(charArray[2] == 0x32) pump1id = 2; // check price or amount
   if(charArray[3] == 'P') {
     for (int i = 0; i < 6; i++) {
-      price[i] = charArray[i + 4]; // Store the price in the price array
+      price[i] = presetArray[4+i]; // Store the price in the price array
     }
     int preset_price = atoi(price); // Convert price string to integer
     Serial0.print("Preset price is ");
     Serial0.println(preset_price);
     // Publish the preset price to the MQTT broker
+  } else if (charArray[3] == 'L') {
+    for(int i = 0; i < 3; i++) {
+      liter[i] = presetArray[4+i]; // Store the liter in the liter array
+    }
+    int preset_liter = atoi(liter); // Convert liter string to integer
+    Serial0.print("Preset liter is ");
+    Serial0.println(preset_liter);
   }
 
   }

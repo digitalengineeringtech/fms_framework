@@ -16,15 +16,14 @@
 #include <src/Redstar.h>
 
 #define USE_RESTAR
-
-//#define DISABLE_MQTT_DEBUG
-#ifdef DISABLE_MQTT_DEBUG
-#undef FMS_MQTT_DEBUG
-#endif
-
+// //#define DISABLE_MQTT_DEBUG
+// #ifdef DISABLE_MQTT_DEBUG
+// #undef FMS_MQTT_DEBUG
+// #endif
+// #define USE_MQTT_DEBUG
 #define USE_CLI
 #define DISABLE_LANFENG  // Uncomment this line to disable the library
-#define DISABLE_LANFENG
+//#define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
 #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
 #endif
@@ -35,9 +34,9 @@ Redstar redstar(fms_uart2_serial); // create redstar object
 fmsLanfeng lanfeng(22, 22);                     // set re de pin (DTR PIN)s
 
 /* Main function */
-#line 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 35 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup();
-#line 76 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 71 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void loop();
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_wifi_command(const std::vector<String>& args);
@@ -87,11 +86,11 @@ int fms_decodePumpId(String presetData);
 void init_staus_leds();
 #line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
-#line 74 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 77 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_subsbribe_topics();
-#line 81 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 84 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 101 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 3 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
 void selectMuxChannel(uint8_t channel);
@@ -125,7 +124,7 @@ void check_pump_state_interval();
 void responsne_buffer(unsigned char* buffer_in, int length,const char* logMessage);
 #line 133 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void redstar_pump_setting(char* topic, String payload);
-#line 312 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 317 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void generate_preset_data();
 #line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 bool fms_sd_init();
@@ -159,7 +158,7 @@ bool initialize_fms_wifi(bool flag);
 bool wifi_led_ticker();
 #line 44 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 static void wifi_task(void *arg);
-#line 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 35 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup() {
   init_staus_leds();  // initialize status LEDs
 #ifdef USE_CLI
@@ -172,25 +171,21 @@ void setup() {
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
 #endif
-
   //fms_initialize_uart2();                   // uart 2
   fms_pin_mode(BUILTIN_LED, OUTPUT);
-  
 #ifdef USE_MUX_PC817
-  fms_pin_mode(MUX_S0, OUTPUT);  // Multiplexer
+  fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
   fms_pin_mode(MUX_S1, OUTPUT);
   fms_pin_mode(MUX_E, OUTPUT);
-  enable_mux(MUX_E);  // enable multiplexer (active low)
+  enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
-
-  fms_run_sd_test();             // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(false);  // show serial logging data on Serial Monitor
-  fms_boot_count(true);          // boot count
-#ifdef USE_LANFENG               // lanfeng Protocol
+  fms_run_sd_test();                       // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(true);            // show serial logging data on Serial Monitor
+  fms_boot_count(true);                    // boot count
+#ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
   lanfeng.init(1, fms_uart2_serial);  // add slave id
 #endif
-
 #ifdef USE_RESTAR
   red_star_init();  // redstar init
 #endif
@@ -816,7 +811,7 @@ void init_staus_leds() {
 
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
-
+#define FMS_MQTT_DEBUG
 #ifdef FMS_MQTT_DEBUG
   #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[MQTT][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
   #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[MQTT][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
@@ -828,64 +823,67 @@ void init_staus_leds() {
 char fms_nmf_tp_prefix[64];
 
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
   String incommingMessage = "";
   for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-  FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
-  bool tp_match = false;
+//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
+//   bool tp_match = false;
 
-  String topic_ = String(topic);
- // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
-  int last = topic_.lastIndexOf('/');
-  String topic_value = topic_.substring(last+1);
-  // some return topic contain noz id detpos/local_server/1 , check noz id or other 
-  int nozzle_num = topic_value.toInt();
-  FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
-  // check if the topic is approved message or not
-  if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
-    snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
-    FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
-    if (incommingMessage == String(approvmsg)){
-      pump_approve[nozzle_num-1] = true;
-      tp_match = true;
-      FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
-    }
-  }
+//   String topic_ = String(topic);
+//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
+//   int last = topic_.lastIndexOf('/');
+//   String topic_value = topic_.substring(last+1);
+//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
+//   int nozzle_num = topic_value.toInt();
+//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+//   // check if the topic is approved message or not
+//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
+//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
+//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
+//     if (incommingMessage == String(approvmsg)){
+//       pump_approve[nozzle_num-1] = true;
+//       tp_match = true;
+//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
+//     }
+//   }
 
   
-  for (int i = 0 ; i < fms_sub_topics_value_count; i++){
-      const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
-    if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
-    {
-      tp_match = true;
-      switch (i){
-        case 0: {
-          FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
-          int pumpID = fms_decodePumpId(incommingMessage);
-          int presetAmount = fms_decodePresetAmount(incommingMessage);
-          presetMessageGet = true; // for preset message get from mqtt broker
-          // pump_approve[pumpID-1] = true;
-          FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
-          break;
-        }
-        case 1: {
-          FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
-          break;
-        }
-      }
-      FMS_MQTT_LOG_DEBUG("MATCH TRUE");
-      break;
-    } 
-    else {
-        FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
-    }
-  }
+//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+//     {
+//       tp_match = true;
+//       switch (i){
+//         case 0: {
+//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
+//           int pumpID = fms_decodePumpId(incommingMessage);
+//           int presetAmount = fms_decodePresetAmount(incommingMessage);
+//           presetMessageGet = true; // for preset message get from mqtt broker
+//           // pump_approve[pumpID-1] = true;
+//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
+//           break;
+//         }
+//         case 1: {
+//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
+//           break;
+//         }
+//       }
+//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
+//       break;
+//     } 
+//     else {
+//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
+//     }
+//   }
 
-  if (!tp_match) {
-    FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
-  }
-  #ifdef USE_REDSTAR
-  redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
-  #endif
+//   if (!tp_match) {
+//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
+//   }
+//   #ifdef USE_REDSTAR
+   redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
+//   #endif
 }
 
 
@@ -916,15 +914,26 @@ void fms_mqtt_reconnect() {
   }
 }
 
+unsigned long previousMillis = 0;
+const long interval = 1000; // Interval for sending messages
+bool ledState_ = false;
+
 static void mqtt_task(void* arg) {
   BaseType_t rc;
   fms_mqtt_client.setServer(MQTT_SERVER, 1883);
   fms_mqtt_client.setCallback(fms_mqtt_callback);
 
   while (mqttTask) {
+    unsigned long currentMillis = millis();
+
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
+      if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+        ledState_ = !ledState_;
+        gpio_set_level(LED_GREEN, ledState_);
+      }
     } else {
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
     }
@@ -1242,7 +1251,7 @@ uint8_t pump5id;// Nozzle ID for pump 5
 uint8_t pump6id;// Nozzle ID for pump 6
 uint8_t pump7id;// Nozzle ID for pump 7
 uint8_t pump8id;// Nozzle ID for pump 8
-
+char presetArray[13];     
   // Create an instance of the Redstar class
 void red_star_init() {
   redstar.begin(9600, true, RXD2, TXD2);  // Initialize the Redstar object with the specified baud rate and pins
@@ -1419,13 +1428,19 @@ if(String(topic) == String(approv_topic)) {
   }
  // preset message reply (eg: 01preset,02preset) reply
 if(String(topic) == String(preset_topic)) {
-  char presetArray[13];                                                      // pump appro array
   payload.toCharArray(presetArray, payload.length() + 1);  // String to char convert
     Serial.print("Preset is ");
     Serial.println(presetArray);
     charArray[0] = presetArray[0];  // to check nozzle id
     charArray[1] = presetArray[1];  // to check nozzle id
     charArray[3] = presetArray[2];  // to check preset Units ( pricce or amount)
+/* debug section
+for (int i = 0; i < sizeof(presetArray); i++) {
+  Serial.print("0x");
+  Serial.print(presetArray[i], HEX);  // Print the buffer contents in hexadecimal format
+  Serial.print(" ");
+}
+*/  
 
  if (charArray[0] == 0x30 && charArray[1] == 0x31) {  // checks message ID is 01 and define id is 1
   server_response_nozzle_id = 1;
@@ -1504,7 +1519,6 @@ if(presetcount){
   generate_preset_data();  // Call the function to generate preset data
   presetcount = false;  // Reset preset count flag
 }
-
 }
 }
 
@@ -1515,12 +1529,19 @@ void generate_preset_data() {
   if(charArray[2] == 0x32) pump1id = 2; // check price or amount
   if(charArray[3] == 'P') { 
     for (int i = 0; i < 6; i++) {
-      price[i] = charArray[i + 4];  // Store the price in the price array
+      price[i] = presetArray[4+i];  // Store the price in the price array
     }
     int preset_price = atoi(price);  // Convert price string to integer
     Serial.print("Preset price is ");
     Serial.println(preset_price);
     // Publish the preset price to the MQTT broker
+  } else if (charArray[3] == 'L') {
+    for(int i = 0; i < 3; i++) {
+      liter[i] = presetArray[4+i];  // Store the liter in the liter array
+    }
+    int preset_liter = atoi(liter);  // Convert liter string to integer
+    Serial.print("Preset liter is ");
+    Serial.println(preset_liter);
   }
 
   }

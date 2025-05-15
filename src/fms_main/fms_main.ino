@@ -14,15 +14,14 @@
 #include <src/Redstar.h>
 
 #define USE_RESTAR
-
-//#define DISABLE_MQTT_DEBUG
-#ifdef DISABLE_MQTT_DEBUG
-#undef FMS_MQTT_DEBUG
-#endif
-
+// //#define DISABLE_MQTT_DEBUG
+// #ifdef DISABLE_MQTT_DEBUG
+// #undef FMS_MQTT_DEBUG
+// #endif
+// #define USE_MQTT_DEBUG
 #define USE_CLI
 #define DISABLE_LANFENG  // Uncomment this line to disable the library
-#define DISABLE_LANFENG
+//#define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
 #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
 #endif
@@ -45,25 +44,21 @@ void setup() {
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
 #endif
-
   //fms_initialize_uart2();                   // uart 2
   fms_pin_mode(BUILTIN_LED, OUTPUT);
-  
 #ifdef USE_MUX_PC817
-  fms_pin_mode(MUX_S0, OUTPUT);  // Multiplexer
+  fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
   fms_pin_mode(MUX_S1, OUTPUT);
   fms_pin_mode(MUX_E, OUTPUT);
-  enable_mux(MUX_E);  // enable multiplexer (active low)
+  enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
-
-  fms_run_sd_test();             // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(false);  // show serial logging data on Serial Monitor
-  fms_boot_count(true);          // boot count
-#ifdef USE_LANFENG               // lanfeng Protocol
+  fms_run_sd_test();                       // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(true);            // show serial logging data on Serial Monitor
+  fms_boot_count(true);                    // boot count
+#ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
   lanfeng.init(1, fms_uart2_serial);  // add slave id
 #endif
-
 #ifdef USE_RESTAR
   red_star_init();  // redstar init
 #endif
