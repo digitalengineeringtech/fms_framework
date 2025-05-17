@@ -124,6 +124,6 @@ static void mqtt_task(void* arg) {
     } else {
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
     }
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

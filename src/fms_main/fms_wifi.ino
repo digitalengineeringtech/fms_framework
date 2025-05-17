@@ -19,6 +19,7 @@ bool initialize_fms_wifi(bool flag) {
       FMS_LOG_ERROR("[DEBUG WiFi] wifi .. credential .. value is empty");
       return false;
     }
+    
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);  // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
