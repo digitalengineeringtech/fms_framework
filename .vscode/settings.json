@@ -55,7 +55,8 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "format": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "text_encoding": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "C_Cpp.errorSquiggles": "disabled"

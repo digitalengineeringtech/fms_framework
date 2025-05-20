@@ -18,6 +18,7 @@
  #define REDSTAR_SUBCMD_TOTAL      0x8E
  #define REDSTAR_SUBCMD_FUEL       0x8F
  #define REDSTAR_SUBCMD_PRESET     0x89
+ #define REDSTAR_SUBCMD_PRESET_LITERS 0x8B
  
  // Response buffer size
  #define REDSTAR_BUFFER_SIZE       32
@@ -53,6 +54,7 @@
    bool sendApproval(uint8_t nozzleId);
    bool sendFuel(uint8_t nozzleId);
    bool presetAmount(uint8_t nozzleId, uint16_t amount);
+   bool presetLiters(uint8_t nozzleId, uint16_t liters);
    bool setPrice(uint8_t nozzleId, uint16_t price);
    bool getPrice(uint8_t nozzleId);
    bool update();

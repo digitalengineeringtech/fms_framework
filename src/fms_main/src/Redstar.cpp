@@ -168,6 +168,26 @@ bool Redstar::presetAmount(uint8_t nozzleId, uint16_t amount) {
   return sendFrame(frame, 8);
 }
 
+bool Redstar::presetLiters(uint8_t nozzleId, uint16_t liters) {
+  uint8_t frame[8];
+  frame[0] = nozzleId;                   // Nozzle ID
+  frame[1] = REDSTAR_CMD_WRITE;          // Command MSB
+  frame[2] = REDSTAR_SUBCMD_PRESET_LITERS; // Command LSB (preset liters)
+  frame[3] = 0x00;                       // Reserved
+  frame[4] = 0x00;                       // Reserved
+  frame[5] = (liters >> 8) & 0xFF;       // Liters MSB
+  frame[6] = liters & 0xFF;              // Liters LSB
+  frame[7] = calculateChecksum(frame, 7); // Checksum
+  
+  if (_debug) {
+    printFrame("Sent preset_liters frame:", frame, 8);
+  }
+  
+  clearResponseBuffer();
+  _lastCommandTime = millis();
+  return sendFrame(frame, 8);
+}
+
 bool Redstar::setPrice(uint8_t nozzleId, uint16_t price) {
   uint8_t frame[8];
   frame[0] = nozzleId;                   // Nozzle ID

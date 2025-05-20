@@ -188,7 +188,6 @@ const uint8_t  NOZ_ID            = 01;
  char preset_topic[28]                 = "detpos/local_server/preset";  // return from local server
 // char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
  char price_change_topic[26]           = "detpos/local_server/price";  // return from local server
-// 
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
 char pplive[25]                     = "detpos/device/livedata/";
 char ppfinal[22]                    = "detpos/device/Final/";
@@ -198,6 +197,7 @@ char activebuf[23]                  = "detpos/device/active/1";
 char devicebuf[2]                   = "1";
 char Reset_topic[17]                = "detpos/hmi/reset";
 const char permitTopic[23]          = "detpos/device/permit/";
+char pumpreqbuf[23]                 = "detpos/device/permit/1";   
 char pumprequest[23];
 char payload[10]; // for permit message                
 // old topic for old version
@@ -214,7 +214,7 @@ struct SYSCFG {
   uint32_t      mqtt_port             = MQTT_PORT;
   String        mqtt_device_id        = deviceName;
   char*         mqtt_lwt_status[20];
-  String         device_id             = deviceName;
+  String         device_id            = deviceName;
   uint32_t      station_id            = STATION_ID;
 } sysCfg;
 
