@@ -1,4 +1,4 @@
-#define FMS_MQTT_DEBUG
+//#define FMS_MQTT_DEBUG
 #ifdef FMS_MQTT_DEBUG
   #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[MQTT][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
   #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[MQTT][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
@@ -82,11 +82,19 @@ void fms_subsbribe_topics() {
 }
 
 void fms_mqtt_reconnect() {
+  // for check client connection online or offline
+  const char* willTopic = "device/status";
+  const char* willMessage = "offline";
+  bool willRetain = true;
+  uint8_t willQos = 1;
+
   while (!fms_mqtt_client.connected()) {
     FMS_MQTT_LOG_DEBUG("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
     String clientId = String(deviceName) + String(random(0xffff), HEX);
-    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password)) {
+    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password,willTopic,willQos,willRetain,willMessage)) {
+       
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
+      fms_mqtt_client.publish(willTopic, "online", true);
       fms_subsbribe_topics();
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");

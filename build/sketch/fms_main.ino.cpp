@@ -90,7 +90,7 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
 void fms_subsbribe_topics();
 #line 84 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 116 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 3 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
 void selectMuxChannel(uint8_t channel);
@@ -114,33 +114,35 @@ void fms_set_ota_server();
 static void web_server_task(void* arg);
 #line 84 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void red_star_init();
-#line 92 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void red_star_main();
-#line 181 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 185 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void send_read_price(unsigned char* buffer_in);
-#line 221 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 225 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void send_fuel_fun(unsigned char* buffer_in);
-#line 265 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 269 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void send_read_state();
-#line 275 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 278 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+void send_read_total();
+#line 297 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void send_preset_state(unsigned char* buffer_in);
-#line 299 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 321 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void send_approve_state();
-#line 309 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 331 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void pumpidchange();
-#line 320 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 342 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void mqtt_msg_pump_id_change(uint8_t pumpid);
-#line 421 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-void check_pump_state_interval();
-#line 431 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-void responsne_buffer(unsigned char* buffer_in, int length,const char* logMessage);
 #line 443 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+void check_pump_state_interval();
+#line 453 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+void responsne_buffer(unsigned char* buffer_in, int length,const char* logMessage);
+#line 466 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void redstar_pump_setting(char* topic, String payload);
-#line 577 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 600 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void generate_preset_data();
-#line 599 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 622 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void generate_price_change_data(String message);
-#line 649 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+#line 672 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 void check_server_response_nozzle_id(bool check);
 #line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 bool fms_sd_init();
@@ -827,7 +829,7 @@ void init_staus_leds() {
 
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
-#define FMS_MQTT_DEBUG
+//#define FMS_MQTT_DEBUG
 #ifdef FMS_MQTT_DEBUG
   #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[MQTT][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
   #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[MQTT][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
@@ -911,11 +913,19 @@ void fms_subsbribe_topics() {
 }
 
 void fms_mqtt_reconnect() {
+  // for check client connection online or offline
+  const char* willTopic = "device/status";
+  const char* willMessage = "offline";
+  bool willRetain = true;
+  uint8_t willQos = 1;
+
   while (!fms_mqtt_client.connected()) {
     FMS_MQTT_LOG_DEBUG("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
     String clientId = String(deviceName) + String(random(0xffff), HEX);
-    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password)) {
+    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password,willTopic,willQos,willRetain,willMessage)) {
+       
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
+      fms_mqtt_client.publish(willTopic, "online", true);
       fms_subsbribe_topics();
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
@@ -1311,14 +1321,16 @@ void red_star_init() {
 
 int length = 0;  // Length of the response buffer
 int data_count = 0;
+unsigned char* response;
 // red start main function (included , pump state, nozzle lifted, fueling)
 // check the response from dispenser
 void red_star_main() {
   vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
   if(redstar.update()){
-    unsigned char* response = redstar.parseResponse(length);  // Parse the response from the Redstar device
+    response = redstar.parseResponse(length);  // Parse the response from the Redstar device
     FMS_RED_LOG_DEBUG("+--------------------------------------+");
-    FMS_RED_LOG_DEBUG("Length: %d", data_count);
+    FMS_RED_LOG_DEBUG("Data Count: %d", data_count);
+    FMS_RED_LOG_DEBUG("Length: %d", length);
     FMS_RED_LOG_DEBUG("Data: ");
     FMS_RED_LOG_DEBUG("RESPONSE: 0x%02X ",response[data_count]);
     FMS_RED_LOG_DEBUG("+--------------------------------------+");
@@ -1340,12 +1352,13 @@ void red_star_main() {
     }
     FMS_RED_LOG_DEBUG("Fueling");
     data_count = 0;  // Reset length for the next response
+    length = 0;  // Reset length for the next response
     if (buffer[0] == 0x01 && pump1_status == "fuel" || reload_check_1) {
       addresscount = 1;  // Check if the first byte is 0x01
       send_fuel_fun(response);  // Request fuel data from the dispenser
       FMS_RED_LOG_DEBUG("------- FINAL-------     1");
       send_read_price(response);  // Request price data from the dispenser
-      //send_read_total();  // Request total data from the dispenser
+      send_read_total();  // Request total data from the dispenser
       FMS_RED_LOG_DEBUG("Nozzle %d is in use", addresscount);  // Log the nozzle in use
     } else {
       FMS_RED_LOG_DEBUG("Nozzle %d is not in use", addresscount);  // Log the nozzle not in use
@@ -1397,6 +1410,7 @@ void red_star_main() {
   } else { // no response from dispenser
     FMS_RED_LOG_ERROR("No data received");
     length = 0;
+    data_count = 0; // Reset length and data count for the next response
     check_pump_state_interval();                          // Check the pump state at regular intervals
   }
 
@@ -1495,6 +1509,24 @@ void send_read_state() {
   addresscount++;                                       // Increment address count
 }
 
+void send_read_total() {
+  while(!redstar.update()) { // Wait for the Redstar device to update
+    vTaskDelay(pdMS_TO_TICKS(5)); // Delay for 5 milliseconds
+  }
+
+  data_count = 0; // Reset data count
+  length = 0; // Reset length
+  while(redstar.update()){
+    response = redstar.parseResponse(length); // Parse the response from the Redstar device
+    vTaskDelay(pdMS_TO_TICKS(5)); // Delay for 5 milliseconds
+    Serial.print(length);
+    Serial.print("/");
+    Serial.print(response[data_count], HEX);
+    Serial.print(" ");
+    data_count++;
+  }
+  data_count = 0; // Reset data count
+}
 // send preset state
 void send_preset_state(unsigned char* buffer_in) { // similar send_preset_fun
  FMS_RED_LOG_DEBUG("Send preset state");
@@ -1661,6 +1693,7 @@ for (int i = 0; i < length; i++) {
   }
   FMS_RED_LOG_DEBUG("%s", logMessage);  // Log the message
   data_count = 0;  // Reset length for the next response
+  length = 0;  // Reset length for the next response
 }
 
 // mqtt server response buffer (for all control , preset,pricechange,approv)

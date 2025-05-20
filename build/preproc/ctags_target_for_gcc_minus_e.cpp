@@ -553,6 +553,7 @@ void init_staus_leds() {
     gpio_set_level(GPIO_NUM_33, 1);
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+//#define FMS_MQTT_DEBUG
 # 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 char fms_nmf_tp_prefix[64];
 
@@ -623,17 +624,25 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
 void fms_subsbribe_topics() {
   for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
-    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Subscribing to topic: %s", fms_sub_topics[i]); Serial0.println();
+    ;
     fms_mqtt_client.subscribe(fms_sub_topics[i]);
   }
 }
 
 void fms_mqtt_reconnect() {
+  // for check client connection online or offline
+  const char* willTopic = "device/status";
+  const char* willMessage = "offline";
+  bool willRetain = true;
+  uint8_t willQos = 1;
+
   while (!fms_mqtt_client.connected()) {
-    Serial0.print("[MQTT][DEBUG] "); Serial0.printf("MQTT initialized, connecting to %s:%d...", sysCfg.mqtt_server_host /* mqtt server address*/, 1883); Serial0.println();
+    ;
     String clientId = String(deviceName) + String(random(0xffff), 16);
-    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password)) {
-      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
+    if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password,willTopic,willQos,willRetain,willMessage)) {
+
+      ;
+      fms_mqtt_client.publish(willTopic, "online", true);
       fms_subsbribe_topics();
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
@@ -642,11 +651,11 @@ void fms_mqtt_reconnect() {
       // fms_mqtt_client.subscribe("detpos/local_server/preset");
       // Add additional topic subscriptions if necessary
     } else {
-      Serial0.print("[MQTT][ERROR] "); Serial0.printf("Failed to connect to MQTT server , rc = %d try again in 5 second", fms_mqtt_client.state()); Serial0.println();
+      ;
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 99 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 99 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -673,12 +682,12 @@ static void mqtt_task(void* arg) {
         gpio_set_level(GPIO_NUM_14, ledState_);
       }
     } else {
-      Serial0.print("[MQTT][DEBUG] "); Serial0.printf("Connected to MQTT server"); Serial0.println();
+      ;
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 135 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 135 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -1064,18 +1073,20 @@ void red_star_init() {
 
 int length = 0; // Length of the response buffer
 int data_count = 0;
+unsigned char* response;
 // red start main function (included , pump state, nozzle lifted, fueling)
 // check the response from dispenser
 void red_star_main() {
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 94 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
             1000 
-# 93 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 94 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
             ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
   if(redstar.update()){
-    unsigned char* response = redstar.parseResponse(length); // Parse the response from the Redstar device
+    response = redstar.parseResponse(length); // Parse the response from the Redstar device
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Length: %d", data_count); Serial0.println();
+    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Data Count: %d", data_count); Serial0.println();
+    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Length: %d", length); Serial0.println();
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Data: "); Serial0.println();
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("RESPONSE: 0x%02X ",response[data_count]); Serial0.println();
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
@@ -1089,9 +1100,9 @@ void red_star_main() {
     for (int i = 0; i < 8; i++) {
       buffer[i] = response[i]; // Store the response in the buffer
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
                 1000 
-# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
       Serial0.print(data_count);
       Serial0.print("/FE/");
@@ -1101,12 +1112,13 @@ void red_star_main() {
     }
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Fueling"); Serial0.println();
     data_count = 0; // Reset length for the next response
+    length = 0; // Reset length for the next response
     if (buffer[0] == 0x01 && pump1_status == "fuel" || reload_check_1) {
       addresscount = 1; // Check if the first byte is 0x01
       send_fuel_fun(response); // Request fuel data from the dispenser
       Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("------- FINAL-------     1"); Serial0.println();
       send_read_price(response); // Request price data from the dispenser
-      //send_read_total();  // Request total data from the dispenser
+      send_read_total(); // Request total data from the dispenser
       Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d is in use", addresscount); Serial0.println(); // Log the nozzle in use
     } else {
       Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d is not in use", addresscount); Serial0.println(); // Log the nozzle not in use
@@ -1158,6 +1170,7 @@ void red_star_main() {
   } else { // no response from dispenser
     Serial0.print("[REDSTAR][ERROR] "); Serial0.printf("No data received"); Serial0.println();
     length = 0;
+    data_count = 0; // Reset length and data count for the next response
     check_pump_state_interval(); // Check the pump state at regular intervals
   }
 
@@ -1166,9 +1179,9 @@ void red_star_main() {
 void send_read_price(unsigned char* buffer_in){
   while(!redstar.update()) { // Wait for the Redstar device to update
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 183 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 187 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
               1000 
-# 183 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 187 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
   }
   data_count = 0; // Reset data count
@@ -1188,16 +1201,16 @@ void send_read_price(unsigned char* buffer_in){
     redstar.readPrice(pump2id); // Set the price for pump 2
 }
 vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 10 ) * ( TickType_t ) 
-# 201 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 205 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
           1000 
-# 201 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 205 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
           ) / ( TickType_t ) 1000U ) )); // Delay for 10 milliseconds
 Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("SENDING READ PRICE FOR ADDRESS: %d", buffer_in[0]); Serial0.println(); // Log the address count
 while(!redstar.update()) { // Wait for the Redstar device to update
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 204 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 208 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
             1000 
-# 204 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 208 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
             ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds 
 }
 
@@ -1232,9 +1245,9 @@ void send_fuel_fun(unsigned char* buffer_in) { // similar send_fuel_fun
     Serial0.print(" ");
     data_count++;
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 237 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 241 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
               1000 
-# 237 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 241 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
   }
   data_count = 0; // Reset data count
@@ -1266,20 +1279,46 @@ void send_fuel_fun(unsigned char* buffer_in) { // similar send_fuel_fun
 void send_read_state() {
   if(addresscount > nozzlecount) addresscount = 1; // Reset address count if it exceeds 2
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 50 ) * ( TickType_t ) 
-# 267 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 271 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
             1000 
-# 267 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 271 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
             ) / ( TickType_t ) 1000U ) )); // Delay for 50 milliseconds
   Serial0.println(redstar.readState(addresscount),16); // Read state for address count
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 10 ) * ( TickType_t ) 
-# 269 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 273 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
             1000 
-# 269 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 273 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
             ) / ( TickType_t ) 1000U ) )); // Delay for 50 milliseconds
   Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("SENDING READ STATE FOR ADDRESS: %d", addresscount); Serial0.println();
   addresscount++; // Increment address count
 }
 
+void send_read_total() {
+  while(!redstar.update()) { // Wait for the Redstar device to update
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
+# 280 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+              1000 
+# 280 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+              ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
+  }
+
+  data_count = 0; // Reset data count
+  length = 0; // Reset length
+  while(redstar.update()){
+    response = redstar.parseResponse(length); // Parse the response from the Redstar device
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
+# 287 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+              1000 
+# 287 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+              ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
+    Serial0.print(length);
+    Serial0.print("/");
+    Serial0.print(response[data_count], 16);
+    Serial0.print(" ");
+    data_count++;
+  }
+  data_count = 0; // Reset data count
+}
 // send preset state
 void send_preset_state(unsigned char* buffer_in) { // similar send_preset_fun
  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Send preset state"); Serial0.println();
@@ -1290,9 +1329,9 @@ void send_preset_state(unsigned char* buffer_in) { // similar send_preset_fun
   redstar.presetLiters(preset_state[0], preset_liters); // Send preset amount
  }
  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 80 ) * ( TickType_t ) 
-# 283 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 305 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
            1000 
-# 283 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 305 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
            ) / ( TickType_t ) 1000U ) )); // Delay for 80 milliseconds
  responsne_buffer(buffer_in,5,"Preset  response");
  if (buffer[1] == 0x04 && buffer[2] == 0x89) { // Check response for expected values
@@ -1306,9 +1345,9 @@ void send_preset_state(unsigned char* buffer_in) { // similar send_preset_fun
     pump2_status = "fuel";
   }
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 295 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 317 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
             1000 
-# 295 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 317 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
             ) / ( TickType_t ) 1000U ) )); // Wait before the next operation
   send_read_state(); // request pump state
 }
@@ -1454,6 +1493,7 @@ for (int i = 0; i < length; i++) {
   }
   Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("%s", logMessage); Serial0.println(); // Log the message
   data_count = 0; // Reset length for the next response
+  length = 0; // Reset length for the next response
 }
 
 // mqtt server response buffer (for all control , preset,pricechange,approv)
@@ -1503,7 +1543,7 @@ void redstar_pump_setting(char* topic, String payload) {
     }
 
     */
-# 483 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 506 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
     check_server_response_nozzle_id(true);
     if (pump1id == server_response_nozzle_id) {
       presetcount = true; // Set preset count flag for pump 1
@@ -1566,9 +1606,9 @@ void redstar_pump_setting(char* topic, String payload) {
     ("Data Save Done For Dispenser Setting"); // Log the device ID
 
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 544 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 567 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
               1000 
-# 544 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 567 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Delay for 100 milliseconds
     ("Config Loading Testing..."); // Log the device ID
     fms_nvs_storage.begin("dis_config", true); // Open in read-only mode
@@ -1664,18 +1704,18 @@ void generate_price_change_data(String message) {
   if(price1) {
     redstar.setPrice(1, price_change); // Set price for pump 1
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 638 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 661 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
               1000 
-# 638 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 661 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Delay for 100 milliseconds
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price change for pump 1: %d", price_change); Serial0.println(); // Log the price change for pump 1
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
   } else if(price2) {
     redstar.setPrice(2, price_change); // Set price for pump 2
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 643 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
+# 666 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
               1000 
-# 643 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
+# 666 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Delay for 100 milliseconds
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price change for pump 2: %d", price_change); Serial0.println(); // Log the price change for pump 2
     Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();

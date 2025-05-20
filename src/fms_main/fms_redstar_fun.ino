@@ -87,14 +87,16 @@ void red_star_init() {
 
 int length = 0;  // Length of the response buffer
 int data_count = 0;
+unsigned char* response;
 // red start main function (included , pump state, nozzle lifted, fueling)
 // check the response from dispenser
 void red_star_main() {
   vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
   if(redstar.update()){
-    unsigned char* response = redstar.parseResponse(length);  // Parse the response from the Redstar device
+    response = redstar.parseResponse(length);  // Parse the response from the Redstar device
     FMS_RED_LOG_DEBUG("+--------------------------------------+");
-    FMS_RED_LOG_DEBUG("Length: %d", data_count);
+    FMS_RED_LOG_DEBUG("Data Count: %d", data_count);
+    FMS_RED_LOG_DEBUG("Length: %d", length);
     FMS_RED_LOG_DEBUG("Data: ");
     FMS_RED_LOG_DEBUG("RESPONSE: 0x%02X ",response[data_count]);
     FMS_RED_LOG_DEBUG("+--------------------------------------+");
@@ -116,12 +118,13 @@ void red_star_main() {
     }
     FMS_RED_LOG_DEBUG("Fueling");
     data_count = 0;  // Reset length for the next response
+    length = 0;  // Reset length for the next response
     if (buffer[0] == 0x01 && pump1_status == "fuel" || reload_check_1) {
       addresscount = 1;  // Check if the first byte is 0x01
       send_fuel_fun(response);  // Request fuel data from the dispenser
       FMS_RED_LOG_DEBUG("------- FINAL-------     1");
       send_read_price(response);  // Request price data from the dispenser
-      //send_read_total();  // Request total data from the dispenser
+      send_read_total();  // Request total data from the dispenser
       FMS_RED_LOG_DEBUG("Nozzle %d is in use", addresscount);  // Log the nozzle in use
     } else {
       FMS_RED_LOG_DEBUG("Nozzle %d is not in use", addresscount);  // Log the nozzle not in use
@@ -173,6 +176,7 @@ void red_star_main() {
   } else { // no response from dispenser
     FMS_RED_LOG_ERROR("No data received");
     length = 0;
+    data_count = 0; // Reset length and data count for the next response
     check_pump_state_interval();                          // Check the pump state at regular intervals
   }
 
@@ -271,6 +275,24 @@ void send_read_state() {
   addresscount++;                                       // Increment address count
 }
 
+void send_read_total() {
+  while(!redstar.update()) { // Wait for the Redstar device to update
+    vTaskDelay(pdMS_TO_TICKS(5)); // Delay for 5 milliseconds
+  }
+
+  data_count = 0; // Reset data count
+  length = 0; // Reset length
+  while(redstar.update()){
+    response = redstar.parseResponse(length); // Parse the response from the Redstar device
+    vTaskDelay(pdMS_TO_TICKS(5)); // Delay for 5 milliseconds
+    Serial.print(length);
+    Serial.print("/");
+    Serial.print(response[data_count], HEX);
+    Serial.print(" ");
+    data_count++;
+  }
+  data_count = 0; // Reset data count
+}
 // send preset state
 void send_preset_state(unsigned char* buffer_in) { // similar send_preset_fun
  FMS_RED_LOG_DEBUG("Send preset state");
@@ -437,6 +459,7 @@ for (int i = 0; i < length; i++) {
   }
   FMS_RED_LOG_DEBUG("%s", logMessage);  // Log the message
   data_count = 0;  // Reset length for the next response
+  length = 0;  // Reset length for the next response
 }
 
 // mqtt server response buffer (for all control , preset,pricechange,approv)
