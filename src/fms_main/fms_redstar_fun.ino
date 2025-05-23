@@ -18,121 +18,8 @@
     //     Serial.print(" ");
     //   }
     // }
-*/
 
-uint8_t addresscount                          = 1;  // Address for the Redstar device
-uint8_t nozzlecount                           = 2;  // Number of nozzles
-const unsigned long state_query_interval      = 2;
-unsigned long current_time_seconds            = 0;  // Current time in seconds
-unsigned long last_pump_query_interval  = 0;  // Interval for querying state
-unsigned char buffer[30];
-char charArray[4]; // check nozzle id form server response 
-bool nozzle1_approval = false;  // Approval status for nozzle 1
-bool nozzle2_approval = false;  // Approval status for nozzle 2
-uint8_t server_response_nozzle_id = 0; // Nozzle ID from server response
-bool presetcount = false; // Preset count flag
-bool lastpresetcount = false; // Last preset count flag
-bool preset_check = false; // Preset check flag
-bool lastpreset_send = false; // Last preset check flag
-int preset_price = 0; // Preset price
-int preset_liters = 0; // Preset liters
-char preset_state[2]; // check preset noz id and amount or liters (0x01,'P')
-
-String pump2_status = "ide";  // control for nozzle one request final data
-String pump1_status = "ide";  // control for nozzle two request final data
-
-String permit_msg = "permit"; // Permit message
-String cancel_msg = "cancel"; // Cancel message
-
-bool reload_check_1 = false;       // control reload function // pump reloading check 
-bool reload_check_2 = false;       // control reload function
-
-char volume_char[4];  // separate real-time buffer data to get volume (liter) data convert into Decimal data
-char amount_char[4];  // separate real-time buffer data to get amount (price) data convert into Decimal data
-
-bool pump1_cancel = false;  // nozzle one cancel count
-bool pump2_cancel = false;  // nozzle two cancel count
-
-
-String price_state;   // to store converted price request data
-String total_state;   // to store converted  totalizer liter data
-String total_amount;  // to store converted toatlizer ammount data
-
-
-String price;
-String liter;
-
-char mqttdatabuf[50]; // Buffer for MQTT data
-// eeprom data hard coding
-uint8_t pump1id = 1;// Nozzle ID for pump 1
-uint8_t pump2id = 2;// Nozzle ID for pump 2
-uint8_t pump3id;// Nozzle ID for pump 3
-uint8_t pump4id;// Nozzle ID for pump 4
-uint8_t pump5id;// Nozzle ID for pump 5
-uint8_t pump6id;// Nozzle ID for pump 6
-uint8_t pump7id;// Nozzle ID for pump 7
-uint8_t pump8id;// Nozzle ID for pump 8
-
-// device id 
-uint8_t device_id = 0; // Device ID
-uint8_t nozzle_count = 0; // Nozzle count
-
-
-char presetArray[13];
-char pricechangeArray[7];  // Price change array     
-  // Create an instance of the Redstar class
-void red_star_init() {
-  redstar.begin(9600, true, RXD2, TXD2);  // Initialize the Redstar object with the specified baud rate and pins
-}
-
-int length = 0;  // Length of the response buffer
-int data_count = 0;
-unsigned char* response;
-// red start main function (included , pump state, nozzle lifted, fueling)
-// check the response from dispenser
-void red_star_main() {
-  vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
-  if(redstar.update()){
-    response = redstar.parseResponse(length);  // Parse the response from the Redstar device
-    FMS_RED_LOG_DEBUG("+--------------------------------------+");
-    FMS_RED_LOG_DEBUG("Data Count: %d", data_count);
-    FMS_RED_LOG_DEBUG("Length: %d", length);
-    FMS_RED_LOG_DEBUG("Data: ");
-    FMS_RED_LOG_DEBUG("RESPONSE: 0x%02X ",response[data_count]);
-    FMS_RED_LOG_DEBUG("+--------------------------------------+");
-    // Serial.print("0x");
-    // Serial.print(response[data_count],HEX);
-    // Serial.print(" ");
-    data_count++;
-  if(addresscount > nozzlecount) addresscount = 1;  // Reset address count if it exceeds the number of nozzles
-  // normal state -> 0x12 0x57 
-  if (response[data_count - 2] == 0x12 && (response[data_count - 1] == 0x57 || response[data_count - 1] == 0x56 || response[data_count - 1] == 0x53 || response[data_count - 1] == 0x52)) { 
-    for (int i = 0; i < 8; i++) {
-      buffer[i] = response[i];  // Store the response in the buffer
-      vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
-      Serial.print(data_count);
-      Serial.print("/FE/");
-      Serial.print("0x");
-      Serial.print(buffer[i], HEX);  // Print the buffer contents in hexadecimal format
-      Serial.print(" ");
-    }
-    FMS_RED_LOG_DEBUG("Fueling");
-    data_count = 0;  // Reset length for the next response
-    length = 0;  // Reset length for the next response
-    if (buffer[0] == 0x01 && pump1_status == "fuel" || reload_check_1) {
-      addresscount = 1;  // Check if the first byte is 0x01
-      send_fuel_fun(response);  // Request fuel data from the dispenser
-      FMS_RED_LOG_DEBUG("------- FINAL-------     1");
-      send_read_price(response);  // Request price data from the dispenser
-      send_read_total();  // Request total data from the dispenser
-      FMS_RED_LOG_DEBUG("Nozzle %d is in use", addresscount);  // Log the nozzle in use
-    } else {
-      FMS_RED_LOG_DEBUG("Nozzle %d is not in use", addresscount);  // Log the nozzle not in use
-    }
-  }  
-  // nozel lifted state -> 0x12 0x77 or 0x76,0x72,0x73 response nozzle lifted condition
-  else if(response[data_count - 2] == 0x12 && (response[data_count - 1] == 0x77 || response[data_count - 1] == 0x76 || response[data_count - 1] == 0x72 || response[data_count - 1] == 0x73)) { 
-    // for (int i = 0; i < 8; i++) {
+        // for (int i = 0; i < 8; i++) {
     //   buffer[i] = response[i];  // Store the response in the buffer
     //   vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
     //   Serial.print(data_count);
@@ -143,32 +30,141 @@ void red_star_main() {
     // }
     // FMS_RED_LOG_DEBUG("nozzel lifted");
     // data_count = 0;  // Reset length for the next response
+*/
+
+uint8_t addresscount                          = 1;    // Address for the Redstar device
+uint8_t nozzlecount                           = 2;    // Number of nozzles
+const unsigned long state_query_interval      = 2;
+unsigned long current_time_seconds            = 0;    // Current time in seconds
+unsigned long last_pump_query_interval        = 0;    // Interval for querying state
+unsigned char buffer[30];
+
+uint8_t server_response_nozzle_id             = 0;      // Nozzle ID from server response
+int preset_price                              = 0;      // Preset price
+int preset_liters                             = 0;      // Preset liters
+
+char preset_state[2];                                   // check preset noz id and amount or liters (0x01,'P')
+char charArray[4];                                      // check nozzle id form server response 
+char volume_char[4];                                    // separate real-time buffer data to get volume (liter) data convert into Decimal data
+char amount_char[4];                                    // separate real-time buffer data to get amount (price) data convert into Decimal data
+char mqttdatabuf[50];                                   // Buffer for MQTT data
+char presetArray[13];
+char pricechangeArray[7];                              // Price change array  
+
+bool pump1_cancel = false;                                  // nozzle one cancel count
+bool pump2_cancel = false;                                  // nozzle two cancel count
+bool reload_check_1                           = false;       // control reload function // pump reloading check 
+bool reload_check_2                           = false;       // control reload function
+bool presetcount                              = false;  // Preset count flag
+bool lastpresetcount                          = false;  // Last preset count flag
+bool preset_check                             = false;  // Preset check flag
+bool lastpreset_send                          = false;  // Last preset check flag
+bool nozzle1_approval                         = false;  // Approval status for nozzle 1
+bool nozzle2_approval                         = false;  // Approval status for nozzle 2
+
+String price_state;                                         // to store converted price request data
+String total_state;                                         // to store converted  totalizer liter data
+String total_amount;                                        // to store converted toatlizer ammount data
+String pump2_status                           = "ide";  // control for nozzle one request final data
+String pump1_status                           = "ide";  // control for nozzle two request final data
+String permit_msg                             = "permit"; // Permit message
+String cancel_msg                             = "cancel"; // Cancel message
+String price;
+String liter;
+
+
+// eeprom data hard coding
+uint8_t pump1id = 1;                                      // Nozzle ID for pump 1
+uint8_t pump2id = 2;                                      // Nozzle ID for pump 2
+uint8_t pump3id;                                          // Nozzle ID for pump 3
+uint8_t pump4id;                                          // Nozzle ID for pump 4
+uint8_t pump5id;                                          // Nozzle ID for pump 5
+uint8_t pump6id;                                          // Nozzle ID for pump 6
+uint8_t pump7id;                                          // Nozzle ID for pump 7
+uint8_t pump8id;                                          // Nozzle ID for pump 8
+
+// device id 
+uint8_t device_id = 0;                                    // Device ID
+uint8_t nozzle_count = 0;                                 // Nozzle count
+
+unsigned char* response;
+int length = 0;   
+int data_count = 0;                                  // Length of the response
+// Create an instance of the Redstar class
+void red_star_init() {
+  redstar.begin(19200, true, RXD2, TXD2);  // Initialize the Redstar object with the specified baud rate and pins
+}
+
+
+// red start main function (included , pump state, nozzle lifted, fueling)
+// check the response from dispenser
+
+void red_star_main() {
+  vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
+  if(redstar.update()){
+    response = redstar.parseResponse(length);  // Parse the response from the Redstar device
+    FMS_RED_LOG_DEBUG("+--------------------------------------+");
+    FMS_RED_LOG_DEBUG("Data Count: %d", data_count);
+    FMS_RED_LOG_DEBUG("Length: %d", length);
+    FMS_RED_LOG_DEBUG("Data: ");
+    FMS_RED_LOG_DEBUG("RESPONSE: 0x%02X ",response[data_count]);
+    FMS_RED_LOG_DEBUG("+--------------------------------------+");
+
+    data_count++;
+  if(addresscount > nozzlecount) addresscount = 1;  // Reset address count if it exceeds the number of nozzles
+  // normal state -> 0x12 0x57 
+  if (response[length - 2] == 0x12 && (response[length - 1] == 0x57 || response[length - 1] == 0x56 || response[length - 1] == 0x53 || response[length - 1] == 0x52)) { 
+    for (int i = 0; i < 8; i++) {
+      buffer[i] = response[i];  // Store the response in the buffer
+      vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
+      Serial.print(length);
+      Serial.print("/FE/");
+      Serial.print("0x");
+      Serial.print(buffer[i], HEX);  // Print the buffer contents in hexadecimal format
+      Serial.print(" ");
+    }
+    FMS_RED_LOG_DEBUG("Fueling");
+    data_count = 0;                                               // Reset length for the next response
+    length = 0;                                                   // Reset length for the next response
+    if (buffer[0] == 0x01 && pump1_status == "fuel" || reload_check_1) {
+      addresscount = 1;                                           // Check if the first byte is 0x01
+      send_fuel_fun(response);                                    // Request fuel data from the dispenser
+      FMS_RED_LOG_DEBUG("------- FINAL-------     1");
+      send_read_price(response);                                  // Request price data from the dispenser
+      send_read_total();                                          // Request total data from the dispenser
+      FMS_RED_LOG_DEBUG("Nozzle %d is in use", addresscount);     // Log the nozzle in use
+    } else {
+      FMS_RED_LOG_DEBUG("Nozzle %d is not in use", addresscount);  // Log the nozzle not in use
+    }
+  }  
+  // nozel lifted state -> 0x12 0x77 or 0x76,0x72,0x73 response nozzle lifted condition
+  else if(response[data_count - 2] == 0x12 && (response[data_count - 1] == 0x77 || response[data_count - 1] == 0x76 || response[data_count - 1] == 0x72 || response[data_count - 1] == 0x73)) { 
     responsne_buffer(response,8,"Nozzle lifted");
     if(preset_check){
       if(lastpreset_send) {
         send_preset_state(response);
-        lastpreset_send = false; // Reset the last preset send flag
-        preset_check = false; // Reset the preset check flag
+        lastpreset_send = false;  // Reset the last preset send flag
+        preset_check = false;     // Reset the preset check flag
       } else {
-        send_read_state(); // Request pump state
-        preset_check = false; // Reset the preset check flag
+        send_read_state();        // Request pump state
+        preset_check = false;     // Reset the preset check flag
       }
     } else {
       if(nozzle1_approval == true && buffer[0] == 0x01) {
-        send_approve_state(); // Send approval for pump 1
-        nozzle1_approval = false; // Reset the approval status for pump 1
+        send_approve_state();       // Send approval for pump 1
+        nozzle1_approval = false;   // Reset the approval status for pump 1
       } else if (nozzle2_approval == true && buffer[0] == 0x02) {
-        send_approve_state(); // Send approval for pump 2
-        nozzle2_approval = false; // Reset the approval status for pump 2
+        send_approve_state();       // Send approval for pump 2
+        nozzle2_approval = false;   // Reset the approval status for pump 2
       } else {
-        memset(mqttdatabuf, '\0', 50); // Clean the MQTT data buffer
-        if (buffer[0] == 0x01) pump1_cancel = true; // Set pump 1 cancel flag
+        memset(mqttdatabuf, '\0', 50);                   // Clean the MQTT data buffer
+        if (buffer[0] == 0x01) pump1_cancel = true;      // Set pump 1 cancel flag
         else if (buffer[0] == 0x02) pump2_cancel = true; // Set pump 2 cancel flag
-        pumpidchange(); // Nozzle ID authentication for sending permit MQTT data
+        pumpidchange();                                  // Nozzle ID authentication for sending permit MQTT data
         permit_msg.toCharArray(&mqttdatabuf[2], permit_msg.length() + 1); // Add permit string to MQTT data buffer
         fms_mqtt_client.publish(pumpreqbuf, mqttdatabuf); // Send permit message from MQTT
-        preset_check = false; // Reset the preset check flag
-        send_read_state(); // Request pump state
+        preset_check = false;                             // Reset the preset check flag
+        send_read_state();                                // Request pump state
       }
     }
   }
@@ -439,6 +435,7 @@ void mqtt_msg_pump_id_change(uint8_t pumpid) {
   }
 
 }
+
 // change pump state idle or some other state (everty 2 seconds)
 void check_pump_state_interval() {                      // check state in every 2 seconds
   current_time_seconds = millis() / 1000;               // Get current time in seconds
@@ -618,6 +615,7 @@ void generate_preset_data() {
     FMS_RED_LOG_DEBUG("Preset liter is %d", preset_liters);  // Log the preset liter
   }
   }
+
 // generate price change data for mqtt server 
 void generate_price_change_data(String message) { 
   char change_price[4];
@@ -668,6 +666,7 @@ void generate_price_change_data(String message) {
     FMS_RED_LOG_DEBUG("+--------------------------------------+");
   }
 }
+
 // check server response nozzle id
 void check_server_response_nozzle_id(bool check) {
   if (check) {
