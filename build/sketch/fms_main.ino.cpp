@@ -1322,8 +1322,8 @@ uint8_t device_id = 0;                                    // Device ID
 uint8_t nozzle_count = 0;                                 // Nozzle count
 
 unsigned char* response;
-uint8_t length = 0;   
-uint8_t data_count = 0;                                  // Length of the response
+int length = 0;   
+int data_count = 0;                                  // Length of the response
 // Create an instance of the Redstar class
 void red_star_init() {
   redstar.begin(19200, true, RXD2, TXD2);  // Initialize the Redstar object with the specified baud rate and pins
