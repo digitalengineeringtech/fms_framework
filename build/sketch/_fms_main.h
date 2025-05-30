@@ -31,11 +31,12 @@
 
 #include <esp_task_wdt.h>
 #include <esp_ota_ops.h> 
+#include <EEPROM.h>
 
 
 Ticker ticker;
 String firmwareVersion                = "0.1.0";              // Current firmware version
-String deviceName                     = "ultramarine-v0.1-";  // device ID (for)  change here like this user can change with configpanel
+String deviceName                     = "utmv0.1_";           // device ID (for)  change here like this user can change with configpanel
 
 #define CLI_PASSWORD                    "admin"               // cli password     // change this password
 #define BUILTIN_LED                     2  
@@ -190,8 +191,8 @@ const uint8_t  NOZ_ID            = 01;
 // char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
  char price_change_topic[26]           = "detpos/local_server/price";  // return from local server
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
-char pplive[25]                     = "detpos/device/livedata/";
-char ppfinal[22]                    = "detpos/device/Final/";
+char pplive[25]                     = "detpos/device/livedata/1";
+char ppfinal[22]                    = "detpos/device/Final/1";
 char whreqbuf[20]                   = "detpos/device/whreq";
 char pricereqbuf[25]                = "detpos/device/pricereq/1";
 char activebuf[23]                  = "detpos/device/active/1";
@@ -202,14 +203,14 @@ char pumpreqbuf[23]                 = "detpos/device/permit/1";
 char pumprequest[23];
 char payload[10]; // for permit message                
 // old topic for old version
-
+char reload_topic[29] = "detpos/local_server/reload/1";
 
 struct SYSCFG {
   unsigned long bootcount;
   unsigned long version;
   char          wifi_ssid[32]         = "";
   char          wifi_password[64]     = " ";
-  char          mqtt_server_host[32]  = "192.168.1.124";
+  char          mqtt_server_host[32]  = "192.168.1.115";
   char*         mqtt_user             = MQTT_USER;
   char*         mqtt_password         = MQTT_PASSWORD;
   uint32_t      mqtt_port             = MQTT_PORT;
@@ -217,6 +218,7 @@ struct SYSCFG {
   char*         mqtt_lwt_status[20];
   String         device_id            = deviceName;
   uint32_t      station_id            = STATION_ID;
+  String         protocol              = "0";  // protocol type
 } sysCfg;
 
 // cli config

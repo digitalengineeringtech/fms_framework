@@ -286,6 +286,32 @@ void handle_device_id_change_command(const std::vector<String>& args) {
   fms_cli.respond("UUID", "UUID  updated. UUID: " + uuid);
 }
 
+void handle_protocol_command(const std::vector<String>& args) {
+  if (args.size() != 1) {
+    fms_cli.respond("protocol", "Usage: protocol <redstar|tatsuno>", false);
+    return;
+  }
+  String protocol = args[0];
+  if (protocol == "redstar") {
+    #define USE_RESTAR
+    fms_set_protocol_config("redstar");
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Allow time for changes to take effect
+    ESP.restart();
+    // Set Redstar protocol
+    fms_cli.respond("protocol", "Protocol set to Redstar");
+    // Add any additional setup for Redstar here
+  } else if (protocol == "tatsuno") {
+    #define USE_TATSUNO
+    fms_set_protocol_config("tatsuno");
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Allow time for changes to take effect
+    ESP.restart();
+    // Set Tatsuno protocol
+    fms_cli.respond("protocol", "Protocol set to Tatsuno");
+    // Add any additional setup for Tatsuno here
+  } else {
+    fms_cli.respond("protocol", "Unknown protocol: " + protocol, false);
+  }
+}
 // Custom print function that captures output for the web interface
 size_t custom_print(const uint8_t* buffer, size_t size) {
   if (testModeActive) {

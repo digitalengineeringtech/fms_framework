@@ -101,6 +101,11 @@
   },
   {
     "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
+    "Include": "EEPROM.h",
+    "Includepath": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\EEPROM\\src"
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\fms_main.ino.cpp",
     "Include": "",
     "Includepath": null
   },
@@ -351,6 +356,11 @@
   },
   {
     "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\ESPmDNS\\src\\ESPmDNS.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\EEPROM\\src\\EEPROM.cpp",
     "Include": "",
     "Includepath": null
   }

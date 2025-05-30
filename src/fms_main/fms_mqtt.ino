@@ -68,9 +68,14 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
 //   if (!tp_match) {
 //     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
 //   }
-//   #ifdef USE_REDSTAR
+  #ifdef USE_REDSTAR
+  // mqtt callback for redstar protocol
    redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
-//   #endif
+  #endif
+  #ifdef USE_TATSUNO
+  // mqtt callback for tatsuno protocol
+   tatsuno_pump_setting(topic,incommingMessage); // call tatsuno pump setting function
+  #endif
 }
 
 
@@ -109,7 +114,7 @@ void fms_mqtt_reconnect() {
   }
 }
 
-unsigned long previousMillis = 0;
+unsigned long previous_Millis = 0;
 const long interval = 1000; // Interval for sending messages
 bool ledState_ = false;
 
@@ -124,8 +129,8 @@ static void mqtt_task(void* arg) {
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
-      if (currentMillis - previousMillis >= interval) {
-        previousMillis = currentMillis;
+      if (currentMillis - previous_Millis >= interval) {
+        previous_Millis = currentMillis;
         ledState_ = !ledState_;
         gpio_set_level(LED_GREEN, ledState_);
       }

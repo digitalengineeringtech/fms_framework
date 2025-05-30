@@ -12,13 +12,17 @@
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
 #include <src/Redstar.h>
+#include <src/_fms_tatsuno.h>
 
-#define USE_RESTAR
-// //#define DISABLE_MQTT_DEBUG
+// #define USE_RESTAR
+#define USE_TATSUNO
+
+// #define DISABLE_MQTT_DEBUG
 // #ifdef DISABLE_MQTT_DEBUG
 // #undef FMS_MQTT_DEBUG
 // #endif
 // #define USE_MQTT_DEBUG
+
 #define USE_CLI
 #define DISABLE_LANFENG  // Uncomment this line to disable the library
 //#define DISABLE_LANFENG
@@ -29,7 +33,9 @@
 FMS_FileManager fileManager;
 fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);  // Use "admin" as the default password change your admin pass here
 Redstar redstar(fms_uart2_serial); // create redstar object
+TatsunoProtocol tatsuno(fms_uart2_serial);  // Create an instance of TatsunoProtocol with the HardwareSerial object
 fmsLanfeng lanfeng(22, 22);                     // set re de pin (DTR PIN)s
+
 
 /* Main function */
 void setup() {
@@ -43,29 +49,51 @@ void setup() {
   fms_cli.register_command("wifiread", "Read current WiFi status", handle_wifi_read_command);
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
+  fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
+  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
 #endif
-  //fms_initialize_uart2();                   // uart 2
+
   fms_pin_mode(BUILTIN_LED, OUTPUT);
+
+  // fms_load_protocol_config();  // load protocol config from nvs storage
+
+  // while (sysCfg.protocol == "0") {  // wait for protocol to be set
+  //   FMS_LOG_ERROR("Protocol not set, waiting...");
+  //   vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+  // }
+
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
   fms_pin_mode(MUX_S1, OUTPUT);
   fms_pin_mode(MUX_E, OUTPUT);
   enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
+
   fms_run_sd_test();                       // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true);            // show serial logging data on Serial Monitor
   fms_boot_count(true);                    // boot count
+
 #ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
   lanfeng.init(1, fms_uart2_serial);  // add slave id
 #endif
+
 #ifdef USE_RESTAR
   red_star_init();  // redstar init
 #endif
-  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
-  if (fms_initialize_wifi()) {  // wifi is connected create all task s
+
+#ifdef USE_TATSUNO
+  fms_tatsuno_init();  // tatsuno init
+#endif
+
+  // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
+  //   fms_task_create();
+  // }
+
+   if (fms_initialize_wifi()) {  // wifi is connected create all task s
     fms_task_create();
   }
+
 }
 
 void loop() {

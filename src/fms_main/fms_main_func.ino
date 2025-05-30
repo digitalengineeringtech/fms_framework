@@ -144,4 +144,44 @@ void init_staus_leds() {
     gpio_set_level(LED_YELLOW, 1);
 }
 
+ void fms_load_protocol_config() {
 
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
+    FMS_LOG_ERROR("Failed to initialize NVS storage");
+    return;
+  }
+
+  sysCfg.protocol = fms_nvs_storage.getString("protocol", "0");  // Default to "redstar" if not set
+  if (sysCfg.protocol != "redstar" && sysCfg.protocol != "tatsuno") {
+    FMS_LOG_ERROR("Invalid protocol configuration, defaulting to redstar");
+    sysCfg.protocol = "0";  // Default to "redstar" if invalid
+  }
+  FMS_LOG_INFO("Protocol: %s", sysCfg.protocol.c_str());
+
+  if (sysCfg.protocol == "redstar") {
+    #define USE_RESTAR
+    #undef USE_TATSUNO  // Ensure Tatsuno is not defined
+    FMS_LOG_INFO("Using Redstar protocol");
+  } else if (sysCfg.protocol == "tatsuno") {
+    #define USE_TATSUNO
+    #undef USE_RESTAR  // Ensure Redstar is not defined
+    FMS_LOG_INFO("Using Tatsuno protocol");
+  } else {
+    FMS_LOG_ERROR("Unknown protocol, defaulting to redstar");
+    sysCfg.protocol = "0";  // Default to "redstar"
+  }
+
+  fms_nvs_storage.end();  // Close NVS storage
+}
+
+void fms_set_protocol_config(const String& protocol) {
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
+    FMS_LOG_ERROR("Failed to initialize NVS storage");
+    return;
+  }
+
+  fms_nvs_storage.putString("protocol", protocol);
+  sysCfg.protocol = protocol;  // Update the global configuration
+  FMS_LOG_INFO("Protocol set to: %s", sysCfg.protocol.c_str());
+  fms_nvs_storage.end();  // Close NVS storage
+}

@@ -34,6 +34,7 @@ void fms_info_response() {            // mini version show in ota page
   //json.addLong("flashChipSize", ESP.getFlashChipSize());
   cachedInfoResponse = json.toString();
 }
+
 void handleDashboard() { // login auth
   if (!isAuthenticated) {
     // Redirect to login if not authenticated

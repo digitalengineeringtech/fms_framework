@@ -1,4 +1,9 @@
 #ifdef USE_MUX_PC817
+
+#define MUX_S0 25
+#define MUX_S1 26
+#define MUX_E 27 // enable input (active LOW)
+
 // reference from 74hc lib channel chooser
  void selectMuxChannel(uint8_t channel){
     digitalWrite(MUX_S0, channel & 0x01); // on 

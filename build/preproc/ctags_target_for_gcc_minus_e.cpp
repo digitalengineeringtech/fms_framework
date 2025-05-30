@@ -20,13 +20,17 @@
 # 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 15 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+
+// #define USE_RESTAR
 
 
-// //#define DISABLE_MQTT_DEBUG
+// #define DISABLE_MQTT_DEBUG
 // #ifdef DISABLE_MQTT_DEBUG
 // #undef FMS_MQTT_DEBUG
 // #endif
 // #define USE_MQTT_DEBUG
+
 
 
 //#define DISABLE_LANFENG
@@ -37,7 +41,9 @@
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial0 /* cli serial port*/, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
 Redstar redstar(Serial1 /* uart2 serial port*/); // create redstar object
+TatsunoProtocol tatsuno(Serial1 /* uart2 serial port*/); // Create an instance of TatsunoProtocol with the HardwareSerial object
 fmsLanfeng lanfeng(22, 22); // set re de pin (DTR PIN)s
+
 
 /* Main function */
 void setup() {
@@ -51,29 +57,41 @@ void setup() {
   fms_cli.register_command("wifiread", "Read current WiFi status", handle_wifi_read_command);
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
+  fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
+  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
 
-  //fms_initialize_uart2();                   // uart 2
+
   fms_pin_mode(2, 0x03);
+
+  // fms_load_protocol_config();  // load protocol config from nvs storage
+
+  // while (sysCfg.protocol == "0") {  // wait for protocol to be set
+  //   FMS_LOG_ERROR("Protocol not set, waiting...");
+  //   vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+  // }
+
 
   fms_pin_mode(25, 0x03); // Multiplexer
   fms_pin_mode(26, 0x03);
   fms_pin_mode(27 /* enable input (active LOW) */, 0x03);
   enable_mux(27 /* enable input (active LOW) */); // enable multiplexer (active low)
 
+
   fms_run_sd_test(); // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
   fms_boot_count(true); // boot count
+# 86 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+  fms_tatsuno_init(); // tatsuno init
 
 
+  // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
+  //   fms_task_create();
+  // }
 
-
-
-  red_star_init(); // redstar init
-
-  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
-  if (fms_initialize_wifi()) { // wifi is connected create all task s
+   if (fms_initialize_wifi()) { // wifi is connected create all task s
     fms_task_create();
   }
+
 }
 
 void loop() {
@@ -367,6 +385,40 @@ void handle_device_id_change_command(const std::vector<String>& args) {
   fms_cli.respond("UUID", "UUID  updated. UUID: " + uuid);
 }
 
+void handle_protocol_command(const std::vector<String>& args) {
+  if (args.size() != 1) {
+    fms_cli.respond("protocol", "Usage: protocol <redstar|tatsuno>", false);
+    return;
+  }
+  String protocol = args[0];
+  if (protocol == "redstar") {
+
+    fms_set_protocol_config("redstar");
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+              1000 
+# 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+              ) / ( TickType_t ) 1000U ) )); // Allow time for changes to take effect
+    ESP.restart();
+    // Set Redstar protocol
+    fms_cli.respond("protocol", "Protocol set to Redstar");
+    // Add any additional setup for Redstar here
+  } else if (protocol == "tatsuno") {
+
+    fms_set_protocol_config("tatsuno");
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+# 306 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+              1000 
+# 306 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+              ) / ( TickType_t ) 1000U ) )); // Allow time for changes to take effect
+    ESP.restart();
+    // Set Tatsuno protocol
+    fms_cli.respond("protocol", "Protocol set to Tatsuno");
+    // Add any additional setup for Tatsuno here
+  } else {
+    fms_cli.respond("protocol", "Unknown protocol: " + protocol, false);
+  }
+}
 // Custom print function that captures output for the web interface
 size_t custom_print(const uint8_t* buffer, size_t size) {
   if (testModeActive) {
@@ -388,9 +440,9 @@ static void cli_task(void* arg) {
   // cli command
   while (1) {
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 309 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 335 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 309 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 335 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -552,6 +604,48 @@ void init_staus_leds() {
     gpio_set_level(GPIO_NUM_13, 1);
     gpio_set_level(GPIO_NUM_33, 1);
 }
+
+ void fms_load_protocol_config() {
+
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
+    fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
+    return;
+  }
+
+  sysCfg.protocol = fms_nvs_storage.getString("protocol", "0"); // Default to "redstar" if not set
+  if (sysCfg.protocol != "redstar" && sysCfg.protocol != "tatsuno") {
+    fmsLog(FMS_LOG_ERROR, "Invalid protocol configuration, defaulting to redstar");
+    sysCfg.protocol = "0"; // Default to "redstar" if invalid
+  }
+  fmsLog(FMS_LOG_INFO, "Protocol: %s", sysCfg.protocol.c_str());
+
+  if (sysCfg.protocol == "redstar") {
+
+
+    fmsLog(FMS_LOG_INFO, "Using Redstar protocol");
+  } else if (sysCfg.protocol == "tatsuno") {
+
+
+    fmsLog(FMS_LOG_INFO, "Using Tatsuno protocol");
+  } else {
+    fmsLog(FMS_LOG_ERROR, "Unknown protocol, defaulting to redstar");
+    sysCfg.protocol = "0"; // Default to "redstar"
+  }
+
+  fms_nvs_storage.end(); // Close NVS storage
+}
+
+void fms_set_protocol_config(const String& protocol) {
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
+    fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
+    return;
+  }
+
+  fms_nvs_storage.putString("protocol", protocol);
+  sysCfg.protocol = protocol; // Update the global configuration
+  fmsLog(FMS_LOG_INFO, "Protocol set to: %s", sysCfg.protocol.c_str());
+  fms_nvs_storage.end(); // Close NVS storage
+}
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 //#define FMS_MQTT_DEBUG
 # 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
@@ -616,9 +710,14 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
 //   if (!tp_match) {
 //     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
 //   }
-//   #ifdef USE_REDSTAR
-   redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
-//   #endif
+
+
+
+
+
+  // mqtt callback for tatsuno protocol
+   tatsuno_pump_setting(topic,incommingMessage); // call tatsuno pump setting function
+
 }
 
 
@@ -653,15 +752,15 @@ void fms_mqtt_reconnect() {
     } else {
       ;
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
 }
 
-unsigned long previousMillis = 0;
+unsigned long previous_Millis = 0;
 const long interval = 1000; // Interval for sending messages
 bool ledState_ = false;
 
@@ -676,8 +775,8 @@ static void mqtt_task(void* arg) {
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
-      if (currentMillis - previousMillis >= interval) {
-        previousMillis = currentMillis;
+      if (currentMillis - previous_Millis >= interval) {
+        previous_Millis = currentMillis;
         ledState_ = !ledState_;
         gpio_set_level(GPIO_NUM_14, ledState_);
       }
@@ -685,22 +784,27 @@ static void mqtt_task(void* arg) {
       ;
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 135 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 140 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 135 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 140 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+
+
+
+
+
 
 // reference from 74hc lib channel chooser
  void selectMuxChannel(uint8_t channel){
     digitalWrite(25, channel & 0x01); // on 
     digitalWrite(26, (channel >> 1) & 0x01);// off
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1 ) * ( TickType_t ) 
-# 6 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino" 3
+# 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino" 3
               1000 
-# 6 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+# 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
               ) / ( TickType_t ) 1000U ) )); // switch time on off time
  }
 
@@ -717,9 +821,9 @@ static void mqtt_task(void* arg) {
         selectMuxChannel(device);
         Serial1 /* uart2 serial port*/.println("Hello device " + String(device));
         vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 21 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino" 3
+# 26 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino" 3
                   1000 
-# 21 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
+# 26 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
                   ) / ( TickType_t ) 1000U ) )); // switch time on off time
         if (Serial1 /* uart2 serial port*/.available()) {
           String reply = Serial1 /* uart2 serial port*/.readStringUntil('\n');
@@ -776,6 +880,7 @@ void fms_info_response() { // mini version show in ota page
   //json.addLong("flashChipSize", ESP.getFlashChipSize());
   cachedInfoResponse = json.toString();
 }
+
 void handleDashboard() { // login auth
   if (!isAuthenticated) {
     // Redirect to login if not authenticated
@@ -848,9 +953,9 @@ void fms_set_ota_server() {
       esp_task_wdt_init(&wdtConfig);
 
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+# 109 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                 1000 
-# 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 109 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                 ) / ( TickType_t ) 1000U ) ));
       ESP.restart();
     },
@@ -973,835 +1078,14 @@ static void web_server_task(void* arg) {
     // Serial.print("Stack Remaining: ");
     // Serial.println(stackRemaining);  // Prints remaining stack (in words)
     vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 229 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+# 230 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                      1000 
-# 229 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 230 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                      ));
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-/*
-
-    // if (length > 0) {
-
-    //   // Serial.print("Received data: ");
-
-    //   for (int i = 0; i < length; i++) {
-
-    //     Serial.print(length);
-
-    //     Serial.print(" ");
-
-    //     Serial.print("0x");
-
-    //     Serial.print(response[i], HEX);
-
-    //     Serial.print(" ");
-
-    //   }
-
-    // }
-
-
-
-        // for (int i = 0; i < 8; i++) {
-
-    //   buffer[i] = response[i];  // Store the response in the buffer
-
-    //   vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
-
-    //   Serial.print(data_count);
-
-    //   Serial.print("/FE/");
-
-    //   Serial.print("0x");
-
-    //   Serial.print(buffer[i], HEX);  // Print the buffer contents in hexadecimal format
-
-    //   Serial.print(" ");
-
-    // }
-
-    // FMS_RED_LOG_DEBUG("nozzel lifted");
-
-    // data_count = 0;  // Reset length for the next response
-
-*/
-# 35 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-uint8_t addresscount = 1; // Address for the Redstar device
-uint8_t nozzlecount = 2; // Number of nozzles
-const unsigned long state_query_interval = 2;
-unsigned long current_time_seconds = 0; // Current time in seconds
-unsigned long last_pump_query_interval = 0; // Interval for querying state
-unsigned char buffer[30];
-
-uint8_t server_response_nozzle_id = 0; // Nozzle ID from server response
-int preset_price = 0; // Preset price
-int preset_liters = 0; // Preset liters
-
-char preset_state[2]; // check preset noz id and amount or liters (0x01,'P')
-char charArray[4]; // check nozzle id form server response 
-char volume_char[4]; // separate real-time buffer data to get volume (liter) data convert into Decimal data
-char amount_char[4]; // separate real-time buffer data to get amount (price) data convert into Decimal data
-char mqttdatabuf[50]; // Buffer for MQTT data
-char presetArray[13];
-char pricechangeArray[7]; // Price change array  
-
-bool pump1_cancel = false; // nozzle one cancel count
-bool pump2_cancel = false; // nozzle two cancel count
-bool reload_check_1 = false; // control reload function // pump reloading check 
-bool reload_check_2 = false; // control reload function
-bool presetcount = false; // Preset count flag
-bool lastpresetcount = false; // Last preset count flag
-bool preset_check = false; // Preset check flag
-bool lastpreset_send = false; // Last preset check flag
-bool nozzle1_approval = false; // Approval status for nozzle 1
-bool nozzle2_approval = false; // Approval status for nozzle 2
-
-String price_state; // to store converted price request data
-String total_state; // to store converted  totalizer liter data
-String total_amount; // to store converted toatlizer ammount data
-String pump2_status = "ide"; // control for nozzle one request final data
-String pump1_status = "ide"; // control for nozzle two request final data
-String permit_msg = "permit"; // Permit message
-String cancel_msg = "cancel"; // Cancel message
-String price;
-String liter;
-
-
-// eeprom data hard coding
-uint8_t pump1id = 1; // Nozzle ID for pump 1
-uint8_t pump2id = 2; // Nozzle ID for pump 2
-uint8_t pump3id; // Nozzle ID for pump 3
-uint8_t pump4id; // Nozzle ID for pump 4
-uint8_t pump5id; // Nozzle ID for pump 5
-uint8_t pump6id; // Nozzle ID for pump 6
-uint8_t pump7id; // Nozzle ID for pump 7
-uint8_t pump8id; // Nozzle ID for pump 8
-
-// device id 
-uint8_t device_id = 0; // Device ID
-uint8_t nozzle_count = 0; // Nozzle count
-
-unsigned char* response;
-int length = 0;
-int data_count = 0; // Length of the response
-// Create an instance of the Redstar class
-void red_star_init() {
-  redstar.begin(19200, true, 16, 17); // Initialize the Redstar object with the specified baud rate and pins
-}
-
-
-// red start main function (included , pump state, nozzle lifted, fueling)
-// check the response from dispenser
-
-void red_star_main() {
-  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 103 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-            1000 
-# 103 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-            ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
-  if(redstar.update()){
-    response = redstar.parseResponse(length); // Parse the response from the Redstar device
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Data Count: %d", data_count); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Length: %d", length); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Data: "); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("RESPONSE: 0x%02X ",response[data_count]); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-
-    data_count++;
-  if(addresscount > nozzlecount) addresscount = 1; // Reset address count if it exceeds the number of nozzles
-  // normal state -> 0x12 0x57 
-  if (response[length - 2] == 0x12 && (response[length - 1] == 0x57 || response[length - 1] == 0x56 || response[length - 1] == 0x53 || response[length - 1] == 0x52)) {
-    for (int i = 0; i < 8; i++) {
-      buffer[i] = response[i]; // Store the response in the buffer
-      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 119 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-                1000 
-# 119 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-                ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
-      Serial0.print(length);
-      Serial0.print("/FE/");
-      Serial0.print("0x");
-      Serial0.print(buffer[i], 16); // Print the buffer contents in hexadecimal format
-      Serial0.print(" ");
-    }
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Fueling"); Serial0.println();
-    data_count = 0; // Reset length for the next response
-    length = 0; // Reset length for the next response
-    if (buffer[0] == 0x01 && pump1_status == "fuel" || reload_check_1) {
-      addresscount = 1; // Check if the first byte is 0x01
-      send_fuel_fun(response); // Request fuel data from the dispenser
-      Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("------- FINAL-------     1"); Serial0.println();
-      send_read_price(response); // Request price data from the dispenser
-      send_read_total(); // Request total data from the dispenser
-      Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d is in use", addresscount); Serial0.println(); // Log the nozzle in use
-    } else {
-      Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d is not in use", addresscount); Serial0.println(); // Log the nozzle not in use
-    }
-  }
-  // nozel lifted state -> 0x12 0x77 or 0x76,0x72,0x73 response nozzle lifted condition
-  else if(response[data_count - 2] == 0x12 && (response[data_count - 1] == 0x77 || response[data_count - 1] == 0x76 || response[data_count - 1] == 0x72 || response[data_count - 1] == 0x73)) {
-    responsne_buffer(response,8,"Nozzle lifted");
-    if(preset_check){
-      if(lastpreset_send) {
-        send_preset_state(response);
-        lastpreset_send = false; // Reset the last preset send flag
-        preset_check = false; // Reset the preset check flag
-      } else {
-        send_read_state(); // Request pump state
-        preset_check = false; // Reset the preset check flag
-      }
-    } else {
-      if(nozzle1_approval == true && buffer[0] == 0x01) {
-        send_approve_state(); // Send approval for pump 1
-        nozzle1_approval = false; // Reset the approval status for pump 1
-      } else if (nozzle2_approval == true && buffer[0] == 0x02) {
-        send_approve_state(); // Send approval for pump 2
-        nozzle2_approval = false; // Reset the approval status for pump 2
-      } else {
-        memset(mqttdatabuf, '\0', 50); // Clean the MQTT data buffer
-        if (buffer[0] == 0x01) pump1_cancel = true; // Set pump 1 cancel flag
-        else if (buffer[0] == 0x02) pump2_cancel = true; // Set pump 2 cancel flag
-        pumpidchange(); // Nozzle ID authentication for sending permit MQTT data
-        permit_msg.toCharArray(&mqttdatabuf[2], permit_msg.length() + 1); // Add permit string to MQTT data buffer
-        fms_mqtt_client.publish(pumpreqbuf, mqttdatabuf); // Send permit message from MQTT
-        preset_check = false; // Reset the preset check flag
-        send_read_state(); // Request pump state
-      }
-    }
-  }
-
-  } else { // no response from dispenser
-    Serial0.print("[REDSTAR][ERROR] "); Serial0.printf("No data received"); Serial0.println();
-    length = 0;
-    data_count = 0; // Reset length and data count for the next response
-    check_pump_state_interval(); // Check the pump state at regular intervals
-  }
-
-}
-
-void send_read_price(unsigned char* buffer_in){
-  while(!redstar.update()) { // Wait for the Redstar device to update
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 183 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 183 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
-  }
-  data_count = 0; // Reset data count
-  while(redstar.update()) { // Wait for the Redstar device to update
-    Serial0.print("0x");
-    Serial0.print(buffer_in[data_count],16); // Print the response in hexadecimal format
-    Serial0.print(" ");
-    data_count++;
-
-  }
-  data_count = 0; // Reset data count
-  if(buffer_in[0] == 0x01) { // Check if the first byte is 0x01
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("READING PRICE 1"); Serial0.println();
-  redstar.readPrice(pump1id); // Set the price for pump 1
-  } else if(buffer_in[0] == 0x02) { // Check if the first byte is 0x02
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("READING PRICE 2"); Serial0.println();
-    redstar.readPrice(pump2id); // Set the price for pump 2
-}
-vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 10 ) * ( TickType_t ) 
-# 201 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-          1000 
-# 201 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-          ) / ( TickType_t ) 1000U ) )); // Delay for 10 milliseconds
-Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("SENDING READ PRICE FOR ADDRESS: %d", buffer_in[0]); Serial0.println(); // Log the address count
-while(!redstar.update()) { // Wait for the Redstar device to update
-  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 204 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-            1000 
-# 204 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-            ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds 
-}
-
-data_count = 0; // Reset data count
-while(redstar.update()) { // Wait for the Redstar device to update
-  Serial0.print("0x");
-  Serial0.print(buffer_in[data_count],16); // Print the response in hexadecimal format
-  Serial0.print(" ");
-  data_count++;
-}
-data_count = 0; // Reset data count
-price_state = (buffer_in[4] << 24 | buffer_in[5] << 16) | (buffer_in[6] << 8) | buffer_in[7]; // convert hex to String
-Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price is => %s", price_state.c_str()); Serial0.println(); // Log the price
-
-send_read_state(); // Request pump state
-}
-
-void send_fuel_fun(unsigned char* buffer_in) { // similar send_fuel_fun
-  if(buffer[0] == 0x01) {
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("SENDING FULE 1"); Serial0.println();
-    redstar.sendFuel(pump1id); // Send fuel command for pump 1
-    pump1_cancel = false; // Reset pump 1 cancel flag
-  } else if(buffer[0] == 0x02) {
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("SENDING FUEL 2"); Serial0.println();
-    redstar.sendFuel(pump2id); // Send fuel command for pump 2
-    pump2_cancel = false; // Reset pump 2 cancel flag
-  }
-
-  while(redstar.update()) { // Wait for response
-    Serial0.print("0x");
-    Serial0.print(buffer_in[data_count],16);
-    Serial0.print(" ");
-    data_count++;
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 237 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 237 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
-  }
-  data_count = 0; // Reset data count
- for (int i = 0; i < 4; i++) {
-  amount_char[i] = buffer_in[4 + i]; // Extract amount data
- }
-
-  for (int i = 0; i < 4; i++) {
-    volume_char[i] = buffer_in[8 + i]; // Extract volume data
-  }
-
-  price = (amount_char[0] << 24 | amount_char[1] << 16) | (amount_char[2] << 8) | amount_char[3]; // Calculate price
-  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price is => %s", price.c_str()); Serial0.println(); // Log the price
-
-  liter = (volume_char[0] << 24 | volume_char[1] << 16) | (volume_char[2] << 8) | volume_char[3]; // Calculate volume
-  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Liter is => %s", liter.c_str()); Serial0.println(); // Log the volume
-
-  if (!reload_check_2 && !reload_check_1) { // Check reload flags
-    //mqttpplive(); // Send MQTT live update
-  }
-
-  send_read_state(); // Request pump state
-
-
-
-
-}
-// check the dispenser condition
-void send_read_state() {
-  if(addresscount > nozzlecount) addresscount = 1; // Reset address count if it exceeds 2
-  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 50 ) * ( TickType_t ) 
-# 267 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-            1000 
-# 267 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-            ) / ( TickType_t ) 1000U ) )); // Delay for 50 milliseconds
-  Serial0.println(redstar.readState(addresscount),16); // Read state for address count
-  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 10 ) * ( TickType_t ) 
-# 269 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-            1000 
-# 269 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-            ) / ( TickType_t ) 1000U ) )); // Delay for 50 milliseconds
-  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("SENDING READ STATE FOR ADDRESS: %d", addresscount); Serial0.println();
-  addresscount++; // Increment address count
-}
-
-void send_read_total() {
-  while(!redstar.update()) { // Wait for the Redstar device to update
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 276 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 276 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
-  }
-
-  data_count = 0; // Reset data count
-  length = 0; // Reset length
-  while(redstar.update()){
-    response = redstar.parseResponse(length); // Parse the response from the Redstar device
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5 ) * ( TickType_t ) 
-# 283 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 283 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 5 milliseconds
-    Serial0.print(length);
-    Serial0.print("/");
-    Serial0.print(response[data_count], 16);
-    Serial0.print(" ");
-    data_count++;
-  }
-  data_count = 0; // Reset data count
-}
-// send preset state
-void send_preset_state(unsigned char* buffer_in) { // similar send_preset_fun
- Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Send preset state"); Serial0.println();
-
- if(preset_state[1] == 'P') {
-  redstar.presetAmount(preset_state[0], preset_price); // Send preset liters
- } else if (preset_state[1] == 'L') {
-  redstar.presetLiters(preset_state[0], preset_liters); // Send preset amount
- }
- vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 80 ) * ( TickType_t ) 
-# 301 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-           1000 
-# 301 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-           ) / ( TickType_t ) 1000U ) )); // Delay for 80 milliseconds
- responsne_buffer(buffer_in,5,"Preset  response");
- if (buffer[1] == 0x04 && buffer[2] == 0x89) { // Check response for expected values
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Preset motor start"); Serial0.println();
-  } else {
-   send_preset_state(buffer_in); // Retry sending preset
-  }
-  if (buffer[0] == 0x01) { // Check Buffer for pump1 status
-    pump1_status = "fuel";
-  } else if (buffer[0] == 0x02) { // Check Buffer for pump2 status
-    pump2_status = "fuel";
-  }
-  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 313 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-            1000 
-# 313 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-            ) / ( TickType_t ) 1000U ) )); // Wait before the next operation
-  send_read_state(); // request pump state
-}
-
-void send_approve_state() {
-  if (nozzle1_approval) {
-    redstar.sendApproval(pump1id); // Send approval for pump 1
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Send approval for pump 1"); Serial0.println();
-  } else if (nozzle2_approval) {
-    redstar.sendApproval(pump2id); // Send approval for pump 2
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Send approval for pump 2"); Serial0.println();
-  }
-}
-
-void pumpidchange() {
-  if (buffer[0] == 0x01) mqtt_msg_pump_id_change(pump1id); // Change pump ID for pump 1
-  else if (buffer[0] == 0x02) mqtt_msg_pump_id_change(pump2id); // Change pump ID for pump 2
-  else if (buffer[0] == 0x03) mqtt_msg_pump_id_change(pump3id); // Change pump ID for pump 3
-  else if (buffer[0] == 0x04) mqtt_msg_pump_id_change(pump4id); // Change pump ID for pump 4
-  else if (buffer[0] == 0x05) mqtt_msg_pump_id_change(pump5id); // Change pump ID for pump 5
-  else if (buffer[0] == 0x06) mqtt_msg_pump_id_change(pump6id); // Change pump ID for pump 6
-  else if (buffer[0] == 0x07) mqtt_msg_pump_id_change(pump7id); // Change pump ID for pump 7
-  else if (buffer[0] == 0x08) mqtt_msg_pump_id_change(pump8id); // Change pump ID for pump 8
-}
-
-void mqtt_msg_pump_id_change(uint8_t pumpid) {
-  if (pumpid == 1) { // match Id with initial setup id and append ID from mqtt data arry
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x31;
-  } else if (pumpid == 2) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x32;
-  } else if (pumpid == 3) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x33;
-  } else if (pumpid == 4) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x34;
-  } else if (pumpid == 5) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x35;
-  } else if (pumpid == 6) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x36;
-  } else if (pumpid == 7) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x37;
-  } else if (pumpid == 8) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x38;
-  } else if (pumpid == 9) {
-    mqttdatabuf[0] = 0x30;
-    mqttdatabuf[1] = 0x39;
-  } else if (pumpid == 10) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x30;
-  } else if (pumpid == 11) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x31;
-  } else if (pumpid == 12) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x32;
-  } else if (pumpid == 13) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x33;
-  } else if (pumpid == 14) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x34;
-  } else if (pumpid == 15) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x35;
-  } else if (pumpid == 16) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x36;
-  } else if (pumpid == 17) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x37;
-  } else if (pumpid == 18) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x38;
-  } else if (pumpid == 19) {
-    mqttdatabuf[0] = 0x31;
-    mqttdatabuf[1] = 0x39;
-  } else if (pumpid == 20) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x30;
-  } else if (pumpid == 21) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x31;
-  } else if (pumpid == 22) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x32;
-  } else if (pumpid == 23) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x33;
-  } else if (pumpid == 24) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x34;
-  } else if (pumpid == 25) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x35;
-  } else if (pumpid == 26) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x36;
-  } else if (pumpid == 27) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x37;
-  } else if (pumpid == 28) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x38;
-  } else if (pumpid == 29) {
-    mqttdatabuf[0] = 0x32;
-    mqttdatabuf[1] = 0x39;
-  } else if (pumpid == 33) {
-    mqttdatabuf[0] = 0x33;
-    mqttdatabuf[1] = 0x30;
-  } else if (pumpid == 31) {
-    mqttdatabuf[0] = 0x33;
-    mqttdatabuf[1] = 0x31;
-  } else if (pumpid = 32) {
-    mqttdatabuf[0] = 0x33;
-    mqttdatabuf[1] = 0x32;
-  }
-
-}
-
-// change pump state idle or some other state (everty 2 seconds)
-void check_pump_state_interval() { // check state in every 2 seconds
-  current_time_seconds = millis() / 1000; // Get current time in seconds
-  if (current_time_seconds - last_pump_query_interval > state_query_interval) {
-    //addresscount = 1;                                 // Reset address count
-    send_read_state(); // Call the function to send read state command
-    last_pump_query_interval = current_time_seconds; // Update last pump query interval
-  }
-}
-
-// check the serail buffer return from dispenser
-void responsne_buffer(unsigned char* buffer_in, int length,const char* logMessage){
-for (int i = 0; i < length; i++) {
-  buffer[i] = buffer_in[i]; // Store the response in the buffer
-    Serial0.print("0x");
-    Serial0.print(buffer[i], 16); // Print the buffer contents in hexadecimal format
-    Serial0.print(" ");
-  }
-  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("%s", logMessage); Serial0.println(); // Log the message
-  data_count = 0; // Reset length for the next response
-  length = 0; // Reset length for the next response
-}
-
-// mqtt server response buffer (for all control , preset,pricechange,approv)
-void redstar_pump_setting(char* topic, String payload) {
-  // Permit message reply (e.g., 01permit, 02permit) reply
-  if (String(topic) == String(approv_topic)) {
-    char pumpapproArray[13]; // Pump approval array
-    payload.toCharArray(pumpapproArray, payload.length() + 1); // String to char conversion
-    Serial0.print("Approval is ");
-    Serial0.println(pumpapproArray);
-
-    // Response is 01approv from MQTT server, hex form is 0x30, 0x31 (01)
-    charArray[0] = pumpapproArray[0]; // To check nozzle ID
-    charArray[1] = pumpapproArray[1]; // To check nozzle ID
-
-    // Check approval message ID, server response is 01approv, 02approv, 03approv
-    check_server_response_nozzle_id(true);
-
-    if (pump1id == server_response_nozzle_id) { // Check if the server response nozzle ID matches pump 1 ID
-      nozzle1_approval = true; // Set approval status for nozzle 1
-      Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d approved", server_response_nozzle_id); Serial0.println(); // Log approval status
-    } else if (pump2id == server_response_nozzle_id) { // Check if the server response nozzle ID matches pump 2 ID
-      nozzle2_approval = true; // Set approval status for nozzle 2
-      Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d approved", server_response_nozzle_id); Serial0.println(); // Log approval status
-    }
-  }
-
-  if (String(topic) == String(preset_topic)) {
-    payload.toCharArray(presetArray, payload.length() + 1); // String to char conversion
-    Serial0.print("Preset is ");
-    Serial0.println(presetArray);
-
-    charArray[0] = presetArray[0]; // To check nozzle ID
-    charArray[1] = presetArray[1]; // To check nozzle ID
-    charArray[3] = presetArray[2]; // To check preset units (price or amount)
-
-    /* Debug section
-
-    for (int i = 0; i < sizeof(presetArray); i++) {
-
-      Serial.print("0x");
-
-      Serial.print(presetArray[i], HEX); // Print the buffer contents in hexadecimal format
-
-      Serial.print(" ");
-
-    }
-
-    */
-# 503 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-    check_server_response_nozzle_id(true);
-    if (pump1id == server_response_nozzle_id) {
-      presetcount = true; // Set preset count flag for pump 1
-    } else if (pump2id == server_response_nozzle_id) {
-      presetcount = true; // Set preset count flag for pump 2
-    }
-    if (presetcount) {
-      preset_check = true;
-      lastpreset_send = true;
-      generate_preset_data(); // Call the function to generate preset data
-      presetcount = false; // Reset preset count flag
-    }
-  }
-
-  if (String(topic) == String(price_change_topic)) {
-    // Get price change data from server and send to dispenser
-    generate_price_change_data(payload); // Call the function to generate price change data
-  }
-
-  if (String(topic) == String(device_Id_topic)) {
-    // from old function 
-    // we change eeprom data to preference data
-    DynamicJsonDocument doc(4096); // Adjust the size based on your JSON data size
-    DeserializationError error = deserializeJson(doc, payload); // check error
-
-    if (error) {
-      Serial0.print(((reinterpret_cast<const __FlashStringHelper *>(("JSON parsing failed: ")))));
-      Serial0.println(error.c_str());
-      return;
-    }
-
-    device_id = doc["devicenum"].as<const int>(); // assign device id and nozzle id from JSON data
-    nozzle_count = doc["nozzlenum"].as<const int>();
-    pump1id = doc["pumpid1"].as<const int>();
-    pump2id = doc["pumpid2"].as<const int>();
-    pump3id = doc["pumpid3"].as<const int>();
-    pump4id = doc["pumpid4"].as<const int>();
-    pump5id = doc["pumpid5"].as<const int>();
-    pump6id = doc["pumpid6"].as<const int>();
-    pump7id = doc["pumpid7"].as<const int>();
-    pump8id = doc["pumpid8"].as<const int>();
-
-    if(!fms_nvs_storage.begin("dis_config", false)) { // Open the preferences storage
-       ("Failed to open dis config storage");
-    } else {
-      ("Dis config storage opened");
-    }
-
-    fms_nvs_storage.putInt("pumpid1", pump1id);
-    fms_nvs_storage.putInt("pumpid2", pump2id);
-    fms_nvs_storage.putInt("pumpid3", pump3id);
-    fms_nvs_storage.putInt("pumpid4", pump4id);
-    fms_nvs_storage.putInt("pumpid5", pump5id);
-    fms_nvs_storage.putInt("pumpid6", pump6id);
-    fms_nvs_storage.putInt("pumpid7", pump7id);
-    fms_nvs_storage.putInt("pumpid8", pump8id);
-    fms_nvs_storage.putInt("devnum", device_id);
-    fms_nvs_storage.putInt("noznum", nozzle_count);
-    fms_nvs_storage.end();
-    ("Data Save Done For Dispenser Setting"); // Log the device ID
-
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 564 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 564 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 100 milliseconds
-    ("Config Loading Testing..."); // Log the device ID
-    fms_nvs_storage.begin("dis_config", true); // Open in read-only mode
-
-  int pumpid1 = fms_nvs_storage.getInt("pumpid1", 0);
-  int pumpid2 = fms_nvs_storage.getInt("pumpid2", 0);
-  int pumpid3 = fms_nvs_storage.getInt("pumpid3", 0);
-  int pumpid4 = fms_nvs_storage.getInt("pumpid4", 0);
-  int pumpid5 = fms_nvs_storage.getInt("pumpid5", 0);
-  int pumpid6 = fms_nvs_storage.getInt("pumpid6", 0);
-  int pumpid7 = fms_nvs_storage.getInt("pumpid7", 0);
-  int pumpid8 = fms_nvs_storage.getInt("pumpid8", 0);
-  int devicenum = fms_nvs_storage.getInt("devnum", 0);
-  int nozzlenum = fms_nvs_storage.getInt("noznum", 0);
-
-  fms_nvs_storage.end();
-
-  Serial0.println("Loaded config:");
-  Serial0.println(devicenum);
-  Serial0.println(nozzlenum);
-  Serial0.println(pumpid1);
-  Serial0.println(pumpid2);
-  Serial0.println(pumpid3);
-  Serial0.println(pumpid4);
-  Serial0.println(pumpid5);
-  Serial0.println(pumpid6);
-  Serial0.println(pumpid7);
-  Serial0.println(pumpid8);
-  }
-}
-
-// helper function (modified : nck)
-// generate preset price and liter data form server reponse 01P0001000, 01L0001000
-void generate_preset_data() {
-  char price[6];
-  char liter[3];
-  if(charArray[2] == 0x31) preset_state[0] = 0x01; // check price or amount
-  if(charArray[2] == 0x32) preset_state[0] = 0x02; // check price or amount
-  if(charArray[3] == 'P') {
-    preset_state[1] = 'P'; // Set preset state to price
-    for (int i = 0; i < 6; i++) {
-      price[i] = presetArray[4+i]; // Store the price in the price array
-    }
-     preset_price = atoi(price); // Convert price string to integer
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Preset price is %d", preset_price); Serial0.println(); // Log the preset price
-  } else if (charArray[3] == 'L') {
-    preset_state[1] = 'L'; // Set preset state to liter
-    for(int i = 0; i < 3; i++) {
-      liter[i] = presetArray[4+i]; // Store the liter in the liter array
-    }
-     preset_liters = atoi(liter); // Convert liter string to integer
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Preset liter is %d", preset_liters); Serial0.println(); // Log the preset liter
-  }
-  }
-
-// generate price change data for mqtt server 
-void generate_price_change_data(String message) {
-  char change_price[4];
-  message.toCharArray(pricechangeArray, message.length() + 1); // String to char convert
-  Serial0.print("Price change is ");
-  Serial0.println(pricechangeArray);
-
-  charArray[0] = pricechangeArray[0]; // to check nozzle id
-  charArray[1] = pricechangeArray[1]; // to check nozzle id
-   // start check nozzle id form server response 
-   check_server_response_nozzle_id(true); // Call the function to check server response nozzle ID
-   // end check nozzle id form server response
-   bool price1 = false;
-   bool price2 = false;
-   bool price3 = false;
-   bool price4 = false;
-
-  if(pump1id == server_response_nozzle_id) { // Check if the server response nozzle ID matches pump 1 ID
-    price1 = true; // Set price flag for pump 1
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d price change", server_response_nozzle_id); Serial0.println();
-
-     // Log approval status
-  } else if(pump2id == server_response_nozzle_id) { // Check if the server response nozzle ID matches pump 2 ID
-    price2 = true; // Set price flag for pump 2
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Nozzle %d pirce change", server_response_nozzle_id); Serial0.println(); // Log approval status
-  }
- // get price change data fom server response 
-  for(int i = 0; i < 4; i++) {
-    change_price[i] = pricechangeArray[2+i]; // Store the price in the price array
-  }
-
-  int price_change = atoi(change_price); // Convert price string to integer
-  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price change is %d", price_change); Serial0.println(); // Log the preset price
-  Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-  // price change mean 92 : 3400 MMK , 95 : 3700 MMK
-  // send change price to dispenser
-  if(price1) {
-    redstar.setPrice(1, price_change); // Set price for pump 1
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 659 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 659 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 100 milliseconds
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price change for pump 1: %d", price_change); Serial0.println(); // Log the price change for pump 1
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-  } else if(price2) {
-    redstar.setPrice(2, price_change); // Set price for pump 2
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 664 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino" 3
-              1000 
-# 664 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
-              ) / ( TickType_t ) 1000U ) )); // Delay for 100 milliseconds
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("Price change for pump 2: %d", price_change); Serial0.println(); // Log the price change for pump 2
-    Serial0.print("[REDSTAR][DEBUG] "); Serial0.printf("+--------------------------------------+"); Serial0.println();
-  }
-}
-
-// check server response nozzle id
-void check_server_response_nozzle_id(bool check) {
-  if (check) {
-  if (charArray[0] == 0x30 && charArray[1] == 0x31) { // checks message ID is 01 and define id is 1
-    server_response_nozzle_id = 1;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x32) { // checks message ID is 02 and define id is 2
-    server_response_nozzle_id = 2;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x33) { // checks message ID is 03 and define id is 3
-    server_response_nozzle_id = 3;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x34) { // checks message ID is 04 and define id is 4
-    server_response_nozzle_id = 4;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x35) { // checks message ID is 05 and define id is 5
-    server_response_nozzle_id = 5;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x36) { // checks message ID is 06 and define id is 6
-    server_response_nozzle_id = 6;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x37) { // checks message ID is 07 and define id is 7
-    server_response_nozzle_id = 7;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x38) { // checks message ID is 08 and define id is 8
-    server_response_nozzle_id = 8;
-  } else if (charArray[0] == 0x30 && charArray[1] == 0x39) { // checks message ID is 09 and define id is 9
-    server_response_nozzle_id = 9;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x30) { // checks message ID is 10 and define id is 10
-    server_response_nozzle_id = 10;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x31) { // checks message ID is 11 and define id is 11
-    server_response_nozzle_id = 11;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x32) { // checks message ID is 12 and define id is 12
-    server_response_nozzle_id = 12;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x33) { // checks message ID is 13 and define id is 13
-    server_response_nozzle_id = 13;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x34) { // checks message ID is 14 and define id is 14
-    server_response_nozzle_id = 14;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x35) { // checks message ID is 15 and define id is 15
-    server_response_nozzle_id = 15;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x36) { // checks message ID is 16 and define id is 16
-    server_response_nozzle_id = 16;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x37) { // checks message ID is 17 and define id is 17
-    server_response_nozzle_id = 17;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x38) { // checks message ID is 18 and define id is 18
-    server_response_nozzle_id = 18;
-  } else if (charArray[0] == 0x31 && charArray[1] == 0x39) { // checks message ID is 19 and define id is 19
-    server_response_nozzle_id = 19;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x30) { // checks message ID is 20 and define id is 20
-    server_response_nozzle_id = 20;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x31) { // checks message ID is 21 and define id is 21
-    server_response_nozzle_id = 21;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x32) { // checks message ID is 22 and define id is 22
-    server_response_nozzle_id = 22;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x33) { // checks message ID is 23 and define id is 23
-    server_response_nozzle_id = 23;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x34) { // checks message ID is 24 and define id is 24
-    server_response_nozzle_id = 24;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x35) { // checks message ID is 25 and define id is 25
-    server_response_nozzle_id = 25;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x36) { // checks message ID is 26 and define id is 26
-    server_response_nozzle_id = 26;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x37) { // checks message ID is 27 and define id is 27
-    server_response_nozzle_id = 27;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x38) { // checks message ID is 28 and define id is 28
-    server_response_nozzle_id = 28;
-  } else if (charArray[0] == 0x32 && charArray[1] == 0x39) { // checks message ID is 29 and define id is 29
-    server_response_nozzle_id = 29;
-  } else if (charArray[0] == 0x33 && charArray[1] == 0x30) { // checks message ID is 30 and define id is 30
-    server_response_nozzle_id = 30;
-  } else if (charArray[0] == 0x33 && charArray[1] == 0x31) { // checks message ID is 31 and define id is 31
-    server_response_nozzle_id = 31;
-  } else if (charArray[0] == 0x33 && charArray[1] == 0x32) { // checks message ID is 32 and define id is 32
-    server_response_nozzle_id = 32;
-  }
-}
-}
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 /*
 
@@ -1960,6 +1244,2780 @@ bool fm_cli_task_create() {
   if (!create_task(cli_task, "cli", 3000, 1, &hcliTask, cli_rc)) return false;
   return true;
 }
+# 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+
+
+
+int length = 0;
+// char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
+
+
+
+
+
+
+// #define RXD2 16
+// #define TXD2 17
+
+String incommingMessage;
+String incommingmsg1;
+String sendMessage;
+char ssidtemp[50]; // for WiFi.begin (SSID,        )
+char passtemp[50];
+// for WiFi.begin (    , pass   )
+// const char* ssidtemp = "POS_Server";
+// const char* passtemp = "asdffdsa";
+
+char ssidBuf[50];
+char passBuf[50];
+unsigned char showSSID[6] = { 0X5A, 0XA5, 0X40, 0X82, 0X12, 0x00 };
+unsigned char showPASS[6] = { 0X5A, 0XA5, 0X40, 0X82, 0X13, 0x00 };
+unsigned char page[9] = { 0X5A, 0XA5, 0X07, 0X82, 0X00, 0X84, 0X5A, 0X01, 0X00 }; // Page change
+unsigned char deviceary[8] = { 0x5A, 0XA5, 0x05, 0X82, 0x31, 0x00, 0x00, 0x00 };
+
+int wifitrytime = 0;
+
+
+// to dispenser
+uint8_t enq1[4] = { 0x04, 0x40, 0x51, 0x05 };
+uint8_t enq2[4] = { 0x04, 0x41, 0x51, 0x05 };
+
+// unsigned char ACK1[2] = { 0x10, 0x31 };
+uint8_t ACK1[2] = { 0x10, 0x31 };
+
+// unsigned char select1[4] = { 0x04, 0x40, 0x41, 0x05 };
+// unsigned char select2[4] = { 0x04, 0x41, 0x41, 0x05 };
+
+uint8_t select1[4] = { 0x04, 0x40, 0x41, 0x05 };
+uint8_t select2[4] = { 0x04, 0x41, 0x41, 0x05 };
+
+unsigned char EOT[1] = { 0x04 };
+
+unsigned char totalizerstatus1[7] = { 0x02, 0x40, 0x41, 0x32, 0x30, 0x03, 0x00 };
+unsigned char totalizerstatus2[7] = { 0x02, 0x41, 0x41, 0x32, 0x30, 0x03, 0x01 };
+unsigned char pump1statusary[7] = { 0x02, 0x40, 0x41, 0x31, 0x35, 0x03, 0x06 };
+unsigned char pump2statusary[7] = { 0x02, 0x41, 0x41, 0x31, 0x35, 0x03, 0x07 };
+// unsigned char Buffer[50];
+uint8_t Buffer[50];
+int i = 0;
+// uint8_t CalculatedCRCdata[9] = { 0x02, 0x00, 0x51, 0x30, 0x30, 0x00, 0x00, 0x03, 0x00 };
+uint8_t CalculatedCRCdata[9] = { 0x02, 0x00, 0x51, 0x30, 0x30, 0x00, 0x00, 0x03, 0x00 };
+uint8_t CalculatedApprodata[20] = { 0x02, 0x41, 0x41, 0x31, 0x30, 0x30, 0x31, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x32, 0x30, 0x30, 0x30, 0x30, 0x03, 0x30 };
+uint8_t CalculatedPresetdata[20] = { 0x02, 0x41, 0x41, 0x31, 0x30, 0x30, 0x31, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x32, 0x30, 0x30, 0x30, 0x30, 0x03, 0x30 };
+
+// uint8_t unitpriceary1[4] = { 0x32, 0x35, 0x31, 0x30 };
+// uint8_t unitpriceary2[4] = { 0x32, 0x35, 0x31, 0x30 };
+
+uint8_t unitpriceary1[4] = { 0x30, 0x30, 0x30, 0x30 };
+uint8_t unitpriceary2[4] = { 0x30, 0x30, 0x30, 0x30 };
+//mqtt
+char pumpapprobuf[22] = "detpos/local_server/1";
+char pricechange[26] = "detpos/local_server/price";
+char pumppresetbuf[28] = "detpos/local_server/preset";
+char pumpfinalreloadbuf[23] = "detpos/device/Reload/1"; // reload add
+
+// int devicenum = 1;
+int pumpid1;
+int pumpid2;
+int pumpid3;
+int pumpid4;
+int pumpid5;
+int pumpid6;
+int pumpid7;
+int pumpid8;
+int nozzlenum;
+int devicenum;
+int pumpmqttnum;
+char presetmqttary[11];
+char pricechangeary[7];
+char pumpapproArray[13];
+char ppbuffer[50];
+bool pumpapprocount = false;
+bool zerocount = true;
+bool myfirst = true;
+int mqtttcount = 0;
+bool pump1live = false;
+bool pump2live = false;
+int addresscount = 1; // for pump address in looping
+int pumpnum;
+bool pumppresetcount = false;
+char charArray[3];
+char tempcharArray[1];
+bool count04 = true;
+
+bool hmivalue = false;
+int crcPumpaddress = 1;
+bool pumpapprocount2 = false;
+char reqcancelbuf[18] = "detpos/device/req";
+char reqcancelvalue[9] = "01cancel";
+bool reqcancelcount1 = false;
+bool reqcancelcount2 = false;
+bool activecount = true;
+long activetime;
+long activetime1;
+bool enqactivecount = true;
+long enqactivetime;
+long enqactivetime1;
+bool pumplivefor1 = false; // for select count
+bool pumplivecountfor1 = false; // for select count
+bool pumplivefor2 = false; // for select count
+bool pumplivecountfor2 = false; // for select count
+//ak add
+char reloadArry[3];
+bool reloadcount = false;
+bool reloadcheck = false;
+char server_rpy[20] = "detpos/local_server";
+char server_err[25] = "detpos/local_server/err";
+char err_buffer[9];
+String final_str;
+unsigned long previousMillis = 0;
+char server_rpy_ary[7];
+int waitcount;
+
+
+
+void fms_tatsuno_init() {
+  tatsuno.begin(19200, true, 16, 17); // Initialize TatsunoProtocol with baud rate 19200 and debug mode enabled
+  EEPROM.begin(512); // Initialize EEPROM with size 512 bytes
+  initEEPROMdatashow();
+  EEPROMinit();
+  enqactivetime1 = millis() / 1000;
+
+}
+
+
+void EEPROMWrite() {
+  EEPROM.write(109, 1); //devicenum
+  EEPROM.commit();
+  EEPROM.write(110, 2); // nozzlenum
+  EEPROM.commit();
+  EEPROM.write(101, 1);
+  EEPROM.commit();
+  EEPROM.write(102, 2);
+  EEPROM.commit();
+  EEPROM.write(103, 0);
+  EEPROM.commit();
+  EEPROM.write(104, 0);
+  EEPROM.commit();
+  EEPROM.write(105, 0);
+  EEPROM.commit();
+  EEPROM.write(106, 0);
+  EEPROM.commit();
+  EEPROM.write(107, 0);
+  EEPROM.commit();
+  EEPROM.write(108, 0);
+  EEPROM.commit();
+
+  Serial0.println("Yepp Save#############################################################");
+}
+
+
+void fms_tatsuno_protocol_main() {
+  ;
+  digitalWrite(32, 0x1);
+
+
+  // if (!digitalRead(hmi)) hmivalue = true;
+ hmivalue = false; // Set to false for testing, change as needed
+  if (hmivalue) {
+    Serial0.println("HMI ");
+    hmisetup();
+  } else {
+
+
+    if (WiFi.status() == WL_CONNECTED) {
+      // digitalWrite(wifiled, HIGH);
+      if (!fms_mqtt_client.connected()) {
+        //  serverConnectionIcon("disconnected");
+        Serial0.println("Cloud disconnect");
+        myfirst = true;
+        digitalWrite(33, 0x0);
+      } else {
+        // Serial.println("Connected to the Cloud");
+        digitalWrite(33, 0x1);
+
+        if (myfirst) {
+          sendenq(1);
+          mainfun();
+          myfirst = false;
+          pricereqfun();
+
+        }
+        // pumpactive();
+      }
+
+    } else {
+      Serial0.println("Not Connected");
+     // initWiFi();
+    }
+
+    // if (!client.connected()) {
+    //   reconnect();
+    // }
+    // client.loop();
+
+    mainfun();
+  }
+
+}
+
+ void mainfun() {
+  delay(3);
+  if (tatsuno.update()) {
+    Buffer[i] = Serial1 /* uart2 serial port*/.read();
+    enqactivetime1 = millis() / 1000;
+    // delay(10);
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2 ) * ( TickType_t ) 
+# 223 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+              1000 
+# 223 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+              ) / ( TickType_t ) 1000U ) )); // Adjusted delay for speed
+    //delay(2); //speed change here
+   ;
+    i++;
+
+    if (Buffer[i - 1] == 0x00) i = 0; // might delete later
+
+    if (Buffer[i - 1] == 0x04) {
+      // Serial.print(addresscount);
+      // Serial.println("get04");
+      i = 0;
+
+      addresscount++; // enq for another pump
+      Serial0.print(addresscount);
+      Serial0.println("get04");
+
+      // add reload fun
+
+      if (reloadcount) {
+        reloadfun();
+
+        reloadcount = false;
+      }
+
+      // else
+      switch (pumppresetcount) {
+        case true:
+          Serial0.println("yep u got");
+          pumppresetfun();
+
+          pumppresetcount = false;
+
+          // pumplivefor1 = true;
+          break;
+        case false:
+          if (pumpapprocount) {
+            pumapprofun();
+            pumpapprocount2 = true;
+            pumpapprocount = false;
+
+            // pumplivefor1 = true;
+          }
+
+          else {
+
+            if (addresscount == 2 && pump2live) {
+              sendpumpstatus(2);
+              // Serial.println("i gety");
+            } else if (addresscount == 1 && pump1live) {
+              sendpumpstatus(1);
+              Serial0.println("i gety");
+            }
+
+
+            else {
+              Serial0.print("yep ");
+              sendenq(addresscount);
+
+              //loadoffadd
+              // delay(100);  //speed
+
+            }
+          }
+          break;
+
+        default:
+          // if nothing else matches, do the default
+          // default is optional
+          break;
+      }
+
+      if (addresscount >= 2) addresscount = 0;
+
+    }
+
+    else if (Buffer[i - 1] == 0x03) { // GetdataFrom dispenser
+      Buffer[i] = Serial2.read();
+      // delay(20); //speed
+      delay(2); //speed
+      // Serial.println("getCRCdata");
+      i = 0;
+
+      //loadoffadd
+      // delay(100);  //speed
+
+      messageClassified();
+
+    } else if (Buffer[i - 1] == 0x10) { // Get ACK From dispenser
+      Buffer[i] = Serial2.read();
+      if (Buffer[i] == 0x31) {
+        sendEOT();
+      }
+      i = 0;
+    }
+
+    // i++;
+  } else pumpenqactive();
+}
+
+
+void tatsuno_pump_setting(char* topic, String payload){
+String incommingMessage = payload;
+
+  if (String(topic) == device_Id_topic) {
+    DynamicJsonDocument doc(4096); // Adjust the size based on your JSON data size
+    DeserializationError error = deserializeJson(doc, incommingMessage);
+
+    if (error) {
+      Serial0.print(((reinterpret_cast<const __FlashStringHelper *>(("JSON parsing failed: ")))));
+      Serial0.println(error.c_str());
+      return;
+    }
+
+    int pumpid1 = 0;
+    int pumpid2 = 0;
+    int pumpid3 = 0;
+    int pumpid4 = 0;
+    int pumpid5 = 0;
+    int pumpid6 = 0;
+    int pumpid7 = 0;
+    int pumpid8 = 0;
+
+    devicenum = doc["devicenum"].as<const int>();
+    nozzlenum = doc["nozzlenum"].as<const int>();
+    pumpid1 = doc["pumpid1"].as<const int>();
+    pumpid2 = doc["pumpid2"].as<const int>();
+    pumpid3 = doc["pumpid3"].as<const int>();
+    pumpid4 = doc["pumpid4"].as<const int>();
+    pumpid5 = doc["pumpid5"].as<const int>();
+    pumpid6 = doc["pumpid6"].as<const int>();
+    pumpid7 = doc["pumpid7"].as<const int>();
+    pumpid8 = doc["pumpid8"].as<const int>();
+
+    Serial0.println(devicenum);
+    Serial0.println(nozzlenum);
+    Serial0.println(pumpid1);
+    Serial0.println(pumpid2);
+    Serial0.println(pumpid3);
+    Serial0.println(pumpid4);
+    Serial0.println(pumpid5);
+    Serial0.println(pumpid6);
+    Serial0.println(pumpid7);
+    Serial0.println(pumpid8);
+
+    EEPROM.write(101, pumpid1);
+    EEPROM.commit();
+    EEPROM.write(102, pumpid2);
+    EEPROM.commit();
+    EEPROM.write(103, pumpid3);
+    EEPROM.commit();
+    EEPROM.write(104, pumpid4);
+    EEPROM.commit();
+    EEPROM.write(105, pumpid5);
+    EEPROM.commit();
+    EEPROM.write(106, pumpid6);
+    EEPROM.commit();
+    EEPROM.write(107, pumpid7);
+    EEPROM.commit();
+    EEPROM.write(108, pumpid8);
+    EEPROM.commit();
+    EEPROM.write(109, devicenum);
+    EEPROM.commit();
+    EEPROM.write(110, nozzlenum);
+    EEPROM.commit();
+    Serial0.println("yep all save");
+  }
+
+
+  if (String(topic) == String(pumpapprobuf)) { // pump req appro
+    // pumapprofun();
+    rxledonoff();
+    pumpapprocount = true;
+    incommingmsg1 = incommingMessage;
+  }
+
+
+  if (String(topic) == "detpos/local_server/whreq") { // whole req
+    if (incommingMessage == String(devicenum)) {
+      rxledonoff();
+      // sendpermission = true;
+      fms_mqtt_client.publish(whreqbuf, devicebuf);
+      txledonoff();
+    }
+  }
+
+
+  if (String(topic) == String(pumppresetbuf)) { // preset change
+    rxledonoff();
+    incommingMessage.toCharArray(presetmqttary, incommingMessage.length() + 1);
+    Serial0.print("preset is ");
+    Serial0.println(presetmqttary);
+
+    Serial0.print(presetmqttary[0], 16);
+    Serial0.print(presetmqttary[1], 16);
+
+    charArray[0] = presetmqttary[0];
+    charArray[1] = presetmqttary[1];
+
+    pumpmqttnumchange();
+
+
+    if (charArray[2] == 0x40) pumppresetcount = true;
+    if (charArray[2] == 0x41) pumppresetcount = true;
+
+
+    tempcharArray[0] = charArray[2];
+
+
+    // if (presetmqttary[0] == 0x30 && presetmqttary[1] == 0x31) pumppresetcount = true;
+    // if (presetmqttary[0] == 0x30 && presetmqttary[1] == 0x32) pumppresetcount = true;
+  }
+
+  if (String(topic) == String(pricechange)) { // price change
+
+    pricechangefun();
+    rxledonoff();
+  }
+
+  if (String(topic) == String(reload_topic)) {
+    // reloadfun();
+    reloadcount = true;
+  }
+
+  if (String(topic) == String(server_rpy)) {
+    incommingMessage.toCharArray(server_rpy_ary, incommingMessage.length() + 1);
+    // Serial.println("hey i am working");
+    char temp_rp[4];
+
+    for (int i = 0; i < 5; i++) {
+      temp_rp[i] = server_rpy_ary[3 + i];
+    }
+
+    final_str = "";
+    final_str = String(temp_rp);
+  }
+
+  if (String(topic) == String(Reset_topic)) { // esp reset topic
+    char resetid[3];
+    incommingMessage.toCharArray(resetid, incommingMessage.length() + 1);
+    Serial0.println(resetid[1]);
+    // delay(4000);
+    if (atoi(resetid) == devicenum) {
+      Serial0.println("yep");
+      // ESP.restart();
+    }
+  }
+}
+
+void messageClassified() {
+  // if (Buffer[1] == 0x41 && Buffer[2] == 0x51 && Buffer[3] == 0x30 && Buffer[4] == 0x30) {  // Incoming
+  //   sendCalculatedCRC();
+  //   }
+
+  if (Buffer[1] == 0x41 && Buffer[2] == 0x51 && Buffer[3] == 0x30 && Buffer[4] == 0x30) { // Incoming
+    // sendCalculatedCRC();
+    sendcrcfun();
+  } else if (Buffer[1] == 0x40 && Buffer[2] == 0x51 && Buffer[3] == 0x30 && Buffer[4] == 0x30) { // Incoming
+    // sendCalculatedCRC();
+    sendcrcfun();
+  } else if (Buffer[3] == 0x36 && Buffer[4] == 0x30 && Buffer[5] == 0x31 && Buffer[6] == 0x30) { // power on incomming
+    sendACK1();
+  } else if (Buffer[3] == 0x36 && Buffer[4] == 0x30 && Buffer[5] == 0x32 && Buffer[6] == 0x30) { // power on incomming
+    sendACK1();
+  }
+
+  // else if (Buffer[1] == 0x40 && Buffer[2] == 0x51 && Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x31) {  // pump req 1
+  //   // pump req1
+  //   // sendenq(1);
+  //   pumpreqmqtt();
+  //   sendACK1();
+  // }
+
+  // else if (Buffer[1] == 0x41 && Buffer[2] == 0x51 && Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x31) {  // pump req 2
+  //   // pump req1
+  //   // sendenq(1);
+  //   pumpreqmqtt();
+  //   sendACK1();
+  // }
+
+  else if (Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x31) { // pump req 1
+    // if (!pumpapprocount2) pumpreqmqtt();
+    sendACK1();
+    pumpreqmqtt();
+
+
+    // if(pumplivefor1) pumplivecountfor1 = true;
+
+    if (Buffer[1] == 0x40) {
+      pump1live = true;
+      pumplivecountfor1 = true;
+      // if (pumplivefor1) pumplivecountfor1 = true;
+    } else if (Buffer[1] == 0x41) {
+      pump2live = true;
+      pumplivecountfor2 = true;
+      // if (pumplivefor2) pumplivecountfor2 = true;
+    }
+
+    //hmawbit edit
+    // if (Buffer[1] == 0x40) {
+    //   reqcancelcount1 = true;
+    // } else if (Buffer[1] == 0x41) {
+    //   reqcancelcount2 = true;
+    // }
+
+  }
+
+  else if (Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x30) { // pump req nozzle out
+    // if (!pumpapprocount2) pumpreqmqtt();
+    sendACK1();
+    if (Buffer[1] == 0x40) {
+
+      if (pumplivecountfor1) {
+
+        pump1live = false;
+        pumplivefor1 = true;
+        cancelfinalsend();
+      }
+      pumplivecountfor1 = false;
+    }
+
+
+    if (Buffer[1] == 0x41) {
+
+      if (pumplivecountfor2) {
+
+        pump2live = false;
+        pumplivefor2 = true;
+        cancelfinalsend();
+      }
+      pumplivecountfor2 = false;
+    }
+
+    // if(pumplivecountfor1) {
+
+    //   pump1live = false;
+    //   pumplivefor1 = true;
+    // }
+    // pumplivecountfor1 = false;
+
+
+    //hmawbiadd
+    // if (Buffer[1] == 0x40 && reqcancelcount1) {
+    //   reqcancelcount1 = false;
+
+    //   mqttpumpidchange(pumpid1);
+
+    //   reqcancelvalue[0] = ppbuffer[0];
+    //   reqcancelvalue[1] = ppbuffer[1];
+
+
+    //   client.publish(reqcancelbuf, reqcancelvalue);
+    //   txledonoff();
+
+    //   //extra add
+    //   if(pump1live){
+    //     finalsend();
+    //   }
+
+
+    // } else if (Buffer[1] == 0x41 && reqcancelcount2) {
+    //   reqcancelcount2 = false;
+
+    //   mqttpumpidchange(pumpid2);
+
+    //   reqcancelvalue[0] = ppbuffer[0];
+    //   reqcancelvalue[1] = ppbuffer[1];
+
+
+    //   client.publish(reqcancelbuf, reqcancelvalue);
+    //   txledonoff();
+
+    //   //extra add
+    //   if(pump2live){
+    //     finalsend();
+    //   }
+
+    // }
+
+
+
+    //nono
+
+    // if(Buffer[1] == 0x40) sendenq(1);
+    // else if(Buffer[1] == 0x41) sendenq(2);
+  }
+
+
+  // else if (Buffer[1] == 0x41 && Buffer[2] == 0x51 && Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x33) {
+  else if (Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x33) {
+    // sendenq(1);
+    pplivemqtt();
+    pumpapprocount2 = false;
+    sendACK1();
+  }
+
+  // else if (Buffer[1] == 0x41 && Buffer[2] == 0x51 && Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x34) {
+  else if (Buffer[3] == 0x36 && Buffer[4] == 0x31 && Buffer[5] == 0x34) {
+    if (Buffer[1] == 0x40) {
+      pumplivefor1 = false;
+      pumplivecountfor1 = false;
+    } else if (Buffer[1] == 0x41) {
+      pumplivefor2 = false;
+      pumplivecountfor2 = false;
+    }
+
+    // pumplivefor1 = false;
+    // pumplivecountfor1 = false;
+
+    // sendenq(1);
+    // finalmqtt();
+    finalsend();
+  }
+
+  else if (Buffer[3] == 0x36 && Buffer[4] == 0x30 && Buffer[5] == 0x33) {
+    if (Buffer[1] == 0x40) {
+      sendenq(1);
+    } else if (Buffer[1] == 0x41) {
+      sendenq(2);
+    }
+
+  }
+}
+
+void pumpreqmqtt() {
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  ppbuffer[2] = 0x70;
+  ppbuffer[3] = 0x65;
+  ppbuffer[4] = 0x72;
+  ppbuffer[5] = 0x6D;
+  ppbuffer[6] = 0x69;
+  ppbuffer[7] = 0x74;
+
+
+
+  // Pump ID Change
+  // if (Buffer[1] == 0x40) {
+  //   ppbuffer[0] = 0x30;
+  //   ppbuffer[1] = 0x31;
+  // } else if (Buffer[1] == 0x41) {
+  //   ppbuffer[0] = 0x30;
+  //   ppbuffer[1] = 0x32;
+  // }
+
+
+
+  pumpidchange();
+  fms_mqtt_client.publish(pumpreqbuf, ppbuffer);
+  txledonoff();
+}
+
+void pplivemqtt() {
+
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  pumpidchange();
+
+  // if (Buffer[1] == 0x40) pumpnum = 1;
+  // else if (Buffer[1] == 0x41) pumpnum = 2;
+
+  // if (pumpnum == 1) {
+  //   ppbuffer[0] = 0x30;
+  //   ppbuffer[1] = 0x31;
+  // } else if (pumpnum == 2) {
+  //   ppbuffer[0] = 0x30;
+  //   ppbuffer[1] = 0x32;
+  // }
+
+
+
+  ppbuffer[2] = 'L';
+
+  int y = 0;
+
+
+  for (int j = 6; j < 12; j++) {
+
+    if (j == 9) {
+      ppbuffer[y + 3] = '.';
+      y++;
+      zerocount = false; //add
+    }
+
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+
+    if (Buffer[j] == 0x03) break;
+
+    // if (j == 10) {
+    //   ppbuffer[y + 3] = '.';
+    //   y++;
+    //   zerocount = false;  //add
+    // }
+    ppbuffer[y + 3] = Buffer[j];
+    y++;
+  }
+
+  zerocount = true;
+  ppbuffer[y + 3] = 'P';
+  y++;
+  for (int j = 17; j < 23; j++) {
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+
+    if (Buffer[j] == 0x03) break;
+    ppbuffer[y + 3] = Buffer[j];
+    y++;
+  }
+
+
+  zerocount = true;
+  Serial0.println(ppbuffer);
+
+
+  fms_mqtt_client.publish(pplive, ppbuffer);
+  txledonoff();
+}
+
+void sendCalculatedCRC() {
+
+  uint8_t unCalculatedCRCdata[6];
+  for (int y = 0; y < 6; y++) {
+
+    unCalculatedCRCdata[y] = Buffer[y + 3];
+  }
+  uint16_t polynomial = 0x8408; // CRC-CCITT polynomial
+
+  // uint16_t crc_result = calculate_crc(Buffer, data_length, polynomial);
+  uint16_t crc_result = calculate_crc(unCalculatedCRCdata, 6, polynomial);
+  uint16_t crc_resultHighbyte = ((uint8_t)((crc_result) >> 8));
+  uint16_t crc_resultLowbyte = ((uint8_t)((crc_result) & 0xff));
+  uint16_t crc_plus = crc_resultHighbyte + crc_resultLowbyte;
+
+  Serial0.println("your crc final is ");
+  Serial0.print(crc_plus);
+
+  if (crc_plus > 255) {
+    crc_plus = crc_plus - 256;
+    Serial0.println("Warnning..................................................CRC is higher255");
+  }
+
+
+
+  Serial0.print("CRC without initial value: 0x");
+  Serial0.println(crc_result, 16);
+
+  String str;
+  str = String(crc_plus, 16);
+
+  int str_len = str.length() + 1;
+
+  char char_array[str_len];
+
+  str.toCharArray(char_array, str_len);
+
+  Serial0.println(char_array[0], 16);
+  Serial0.println(char_array[1], 16);
+
+  if(char_array[1] == 0x00){
+    char_array[1] = char_array[0];
+    char_array[0] = 0x30;
+  }
+
+
+  // CalculatedCRCdata[1] = Buffer[1];
+  if (pumpnum == 1) CalculatedCRCdata[1] = 0x40;
+  else if (pumpnum == 2) CalculatedCRCdata[1] = 0x41;
+
+  if (char_array[0] == 0x66) CalculatedCRCdata[5] = 0x46; // string A-F to byte A-F
+  else if (char_array[0] == 0x65) CalculatedCRCdata[5] = 0x45;
+  else if (char_array[0] == 0x64) CalculatedCRCdata[5] = 0x44;
+  else if (char_array[0] == 0x63) CalculatedCRCdata[5] = 0x43;
+  else if (char_array[0] == 0x62) CalculatedCRCdata[5] = 0x42;
+  else if (char_array[0] == 0x61) CalculatedCRCdata[5] = 0x41;
+  else CalculatedCRCdata[5] = char_array[0];
+
+  if (char_array[1] == 0x66) CalculatedCRCdata[6] = 0x46;
+  else if (char_array[1] == 0x65) CalculatedCRCdata[6] = 0x45;
+  else if (char_array[1] == 0x64) CalculatedCRCdata[6] = 0x44;
+  else if (char_array[1] == 0x63) CalculatedCRCdata[6] = 0x43;
+  else if (char_array[1] == 0x62) CalculatedCRCdata[6] = 0x42;
+  else if (char_array[1] == 0x61) CalculatedCRCdata[6] = 0x41;
+  else CalculatedCRCdata[6] = char_array[1];
+
+  // Serial.println(CalculatedCRCdata[0],HEX);
+  // Serial.println(CalculatedCRCdata[1],HEX);
+  // Serial.println(CalculatedCRCdata[2],HEX);
+  // Serial.println(CalculatedCRCdata[3],HEX);
+  // Serial.println(CalculatedCRCdata[4],HEX);
+  // Serial.println(CalculatedCRCdata[5],HEX);
+  // Serial.println(CalculatedCRCdata[6],HEX);
+  // Serial.println(CalculatedCRCdata[7],HEX);
+
+  CalculatedCRCdata[8] = BCCfun();
+
+  // Serial.println(CalculatedCRCdata[8],HEX);
+
+  // Final Sending to Dispenser
+  //latest add
+  // delay(100);  //speed
+
+  delay(50); //speed
+
+  digitalWrite(15, 0x1);
+  // delay(20);
+  Serial2.write(CalculatedCRCdata, 9);
+  delay(7);
+  digitalWrite(15, 0x0);
+  Serial0.println("sending CRC");
+  // delay(20);
+}
+
+unsigned char BCCfun() {
+  unsigned char bccData[7];
+
+  bccData[0] = CalculatedCRCdata[1];
+  bccData[1] = CalculatedCRCdata[2];
+  bccData[2] = CalculatedCRCdata[3];
+  bccData[3] = CalculatedCRCdata[4];
+  bccData[4] = CalculatedCRCdata[5];
+  bccData[5] = CalculatedCRCdata[6];
+  bccData[6] = CalculatedCRCdata[7];
+
+  unsigned char lrc = 0x00;
+
+  // Calculate LRC checksum
+  for (int j = 0; j < sizeof(bccData); j++) {
+    lrc ^= bccData[j];
+  }
+  // Print LRC checksum in hexadecimal and decimal format
+  Serial0.print("LRC Checksum (Hex): 0x");
+  if (lrc < 0x10) {
+    Serial0.print("0");
+  }
+  Serial0.println(lrc, 16);
+
+  Serial0.print("LRC Checksum (Decimal): ");
+  Serial0.println(lrc);
+
+  return lrc;
+}
+
+uint16_t calculate_crc(uint8_t* data, int length, uint16_t polynomial) {
+  uint16_t crc = 0; // Initial value (or seed) is 0
+
+  for (int i = 0; i < length; i++) {
+    crc ^= data[i]; // XOR the CRC with the next byte
+
+    for (int j = 0; j < 8; j++) {
+      if (crc & 0x01) {
+        crc = (crc >> 1) ^ polynomial;
+      } else {
+        crc >>= 1;
+      }
+    }
+  }
+
+  return crc;
+}
+
+void BufferClear() {
+  for (int j = 0; j < 50; j++) Buffer[j] = 0x00;
+}
+
+
+void pumpactive() {
+
+  activetime = millis() / 1000;
+
+  if ((activetime - activetime1) > 5) {
+    if (activecount) {
+      Serial0.println("active");
+      Serial0.println(activebuf);
+      fms_mqtt_client.publish(activebuf, "1");
+      txledonoff();
+      activecount = false;
+    }
+    activetime1 = millis() / 1000;
+  } else activecount = true;
+}
+
+void pumpenqactive() {
+
+  enqactivetime = millis() / 1000;
+
+  if ((enqactivetime - enqactivetime1) > 3) {
+    if (enqactivecount) {
+      Serial0.println("enqactive");
+      sendenq(1);
+      enqactivecount = false;
+    }
+    enqactivetime1 = millis() / 1000;
+  } else enqactivecount = true;
+}
+
+
+// void sendfun() {
+//   digitalWrite(15, HIGH);
+//   delay(20);
+//   Serial2.write(enq1, 4);
+//   Serial.println("sending ");
+//   delay(20);
+// }
+
+
+void initEEPROMdatashow() {
+  for (int j = 0; j < 50; j++) {
+    ssidBuf[j] = EEPROM.read(j);
+  }
+  for (int j = 50; j < 100; j++) {
+    passBuf[j - 50] = EEPROM.read(j);
+  }
+  Serial0.print(ssidBuf);
+  Serial0.print("  ");
+  Serial0.println(passBuf);
+
+  pumpid1 = EEPROM.read(101);
+  pumpid2 = EEPROM.read(102);
+  pumpid3 = EEPROM.read(103);
+  pumpid4 = EEPROM.read(104);
+  pumpid5 = EEPROM.read(105);
+  pumpid6 = EEPROM.read(106);
+  pumpid7 = EEPROM.read(107);
+  pumpid8 = EEPROM.read(108);
+
+  devicenum = EEPROM.read(109);
+  nozzlenum = EEPROM.read(110);
+
+  Serial0.print(devicenum);
+  Serial0.print("  ");
+  Serial0.print(nozzlenum);
+  Serial0.print("  ");
+  Serial0.print(pumpid1);
+  Serial0.print("  ");
+  Serial0.print(pumpid2);
+  Serial0.print("  ");
+  Serial0.print(pumpid3);
+  Serial0.print("  ");
+  Serial0.print(pumpid4);
+  Serial0.print("  ");
+  Serial0.print(pumpid5);
+  Serial0.print("  ");
+  Serial0.print(pumpid6);
+  Serial0.print("  ");
+  Serial0.print(pumpid7);
+  Serial0.print("  ");
+  Serial0.print(pumpid8);
+  Serial0.println("  ");
+}
+
+void EEPROMinit() {
+
+  if (devicenum == 1) {
+    //pumpreqbuf
+
+    pumpreqbuf[21] = '1';
+    pumpapprobuf[20] = '1';
+    ppfinal[20] = '1';
+    pplive[23] = '1';
+    devicebuf[0] = '1';
+    activebuf[21] = '1';
+    pricereqbuf[23] = '1';
+    reload_topic[27] = '1';
+    pumpfinalreloadbuf[21] = '1';
+    // rdybuf[20] = '1';
+    device_Id_topic[38] = '1';
+  } else if (devicenum == 2) {
+    pumpreqbuf[21] = '2';
+    pumpapprobuf[20] = '2';
+    ppfinal[20] = '2';
+    pplive[23] = '2';
+    devicebuf[0] = '2';
+    activebuf[21] = '2';
+    pricereqbuf[23] = '2';
+    reload_topic[27] = '2';
+    pumpfinalreloadbuf[21] = '2';
+    // rdybuf[20] = '2';
+    device_Id_topic[38] = '2';
+  } else if (devicenum == 3) {
+    pumpreqbuf[21] = '3';
+    pumpapprobuf[20] = '3';
+    ppfinal[20] = '3';
+    pplive[23] = '3';
+    devicebuf[0] = '3';
+    activebuf[21] = '3';
+    pricereqbuf[23] = '3';
+    reload_topic[27] = '3';
+    pumpfinalreloadbuf[21] = '3';
+    // rdybuf[20] = '3';
+    device_Id_topic[38] = '3';
+  } else if (devicenum == 4) {
+    pumpreqbuf[21] = '4';
+    pumpapprobuf[20] = '4';
+    ppfinal[20] = '4';
+    pplive[23] = '4';
+    devicebuf[0] = '4';
+    activebuf[21] = '4';
+    pricereqbuf[23] = '4';
+    reload_topic[27] = '4';
+    pumpfinalreloadbuf[21] = '4';
+    // rdybuf[20] = '4';
+    device_Id_topic[38] = '4';
+  } else if (devicenum == 5) {
+    pumpreqbuf[21] = '5';
+    pumpapprobuf[20] = '5';
+    ppfinal[20] = '5';
+    pplive[23] = '5';
+    devicebuf[0] = '5';
+    activebuf[21] = '5';
+    pricereqbuf[23] = '5';
+    reload_topic[27] = '5';
+    pumpfinalreloadbuf[21] = '5';
+    // rdybuf[20] = '5';
+    device_Id_topic[38] = '5';
+  } else if (devicenum == 6) {
+    pumpreqbuf[21] = '6';
+    pumpapprobuf[20] = '6';
+    ppfinal[20] = '6';
+    pplive[23] = '6';
+    devicebuf[0] = '6';
+    activebuf[21] = '6';
+    pricereqbuf[23] = '6';
+    reload_topic[27] = '6';
+    pumpfinalreloadbuf[21] = '6';
+    // rdybuf[20] = '6';
+    device_Id_topic[38] = '6';
+  } else if (devicenum == 7) {
+    pumpreqbuf[21] = '7';
+    pumpapprobuf[20] = '7';
+    ppfinal[20] = '7';
+    pplive[23] = '7';
+    devicebuf[0] = '7';
+    activebuf[21] = '7';
+    pricereqbuf[23] = '7';
+    reload_topic[27] = '7';
+    pumpfinalreloadbuf[21] = '7';
+    // rdybuf[20] = '7';
+    device_Id_topic[38] = '7';
+  } else if (devicenum == 8) {
+    pumpreqbuf[21] = '8';
+    pumpapprobuf[20] = '8';
+    ppfinal[20] = '8';
+    pplive[23] = '8';
+    devicebuf[0] = '8';
+    activebuf[21] = '8';
+    pricereqbuf[23] = '8';
+    reload_topic[27] = '8';
+    pumpfinalreloadbuf[21] = '8';
+    // rdybuf[20] = '8';
+    device_Id_topic[38] = '8';
+  }
+}
+
+
+void sendenq(int eq) {
+
+  // last add
+  // delay(50);   
+  delay(10); //speed
+  digitalWrite(15, 0x1);
+  // delay(20)
+  delay(10); //speed
+  if (eq == 1) Serial2.write(enq1, sizeof(enq1));
+  else if (eq == 2) Serial2.write(enq2, sizeof(enq2));
+  Serial0.print("SendEnq ");
+  Serial0.println(eq);
+
+  delay(3.5);
+  // delay(6.8);
+  // delay(4);
+  digitalWrite(15, 0x0);
+  //last add
+  // delay(20); //speed
+}
+
+
+
+
+void sendACK1() {
+  digitalWrite(15, 0x1);
+  Serial2.write(ACK1, sizeof(ACK1));
+  Serial0.println("sending ACK");
+
+  delay(2);
+  digitalWrite(15, 0x0);
+}
+
+void sendEOT() {
+  digitalWrite(15, 0x1);
+  Serial2.write(EOT, 1); //eot
+  Serial0.println("sending EOT ");
+  delay(4);
+  digitalWrite(15, 0x0);
+
+  // sendenq(1);
+}
+
+void txledonoff() {
+  digitalWrite(27, 0x1);
+
+  delay(10);
+  digitalWrite(27, 0x0);
+  // delay(10);
+  // delay(10);
+}
+
+void rxledonoff() {
+  digitalWrite(26, 0x1);
+  delay(10);
+  digitalWrite(26, 0x0);
+  // delay(10);
+  // delay(10);
+}
+
+///// cancel final add
+void cancelfinalsend() {
+
+  if (Buffer[1] == 0x40) pumpnum = 1;
+  else if (Buffer[1] == 0x41) pumpnum = 2;
+
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  pumpidchange();
+
+  ppbuffer[2] = 'c';
+  ppbuffer[3] = 'a';
+  ppbuffer[4] = 'n';
+  ppbuffer[5] = 'c';
+  ppbuffer[6] = 'e';
+  ppbuffer[7] = 'l';
+
+  Serial0.println(ppbuffer);
+  fms_mqtt_client.publish(reqcancelbuf, ppbuffer);
+  txledonoff();
+}
+
+void finalsend() {
+
+  if (Buffer[1] == 0x40) pumpnum = 1;
+  else if (Buffer[1] == 0x41) pumpnum = 2;
+
+
+  finalmqtt1();
+
+
+  sendACK1();
+
+  digitalWrite(15, 0x0);
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.print("U got");
+    Serial0.println(Serial2.read());
+    delay(10);
+  }
+
+  if (pumpnum == 1) pump1Select();
+  else if (pumpnum == 2) pump2Select();
+
+  int count1;
+  char charack0[2];
+
+  digitalWrite(15, 0x0);
+  // delay(500);
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.println("U got ");
+    charack0[0] = Serial2.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+
+    // if (charack0[0] == 0x10 && charack0[1] == 0x30) {  //
+    //   pump1Totalizerstatus();
+    // }
+  }
+
+  // if (charack0[0] == 0x10 && charack0[1] == 0x30) {  //
+  // pump1Totalizerstatus();
+  if (pumpnum == 1) pump1Totalizerstatus();
+  else if (pumpnum == 2) pump2Totalizerstatus();
+  // }
+
+  // delay(50);
+  digitalWrite(15, 0x0);
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.println("U got2 ");
+    charack0[0] = Serial2.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+  }
+  // if (charack0[0] == 0x10 && charack0[1] == 0x31) {  //
+  sendenq(pumpnum);
+  // }
+
+
+  char totalizerary[33];
+  int totalizercount = 0;
+  digitalWrite(15, 0x0);
+  delay(50);
+  while (Serial2.available()) {
+
+    totalizerary[totalizercount] = Serial2.read();
+    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    Serial0.print(totalizercount);
+    Serial0.print("// ");
+    Serial0.print(totalizerary[totalizercount], 16);
+    Serial0.print(" ");
+    delay(10);
+    if (totalizerary[totalizercount] == 0x03) {
+      totalizerary[totalizercount + 1] = Serial2.read();
+      delay(10);
+      Serial0.println();
+      break;
+    }
+    totalizercount++;
+  }
+
+  // finalmqtt2
+  while (totalizerary[4] != 0x35) { // wait for totalizer
+
+    sendACK1();
+    digitalWrite(15, 0x0);
+    delay(30);
+    if (Serial2.available()) {
+      Serial0.print("U got4 ");
+      Serial0.println(Serial2.read());
+    }
+    sendenq(pumpnum);
+
+    totalizercount = 0;
+
+    digitalWrite(15, 0x0);
+    delay(50);
+    while (Serial2.available()) {
+
+      totalizerary[totalizercount] = Serial2.read();
+      // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+      Serial0.print(totalizercount);
+      Serial0.print("// ");
+      Serial0.print(totalizerary[totalizercount], 16);
+      Serial0.print(" ");
+      delay(10);
+      if (totalizerary[totalizercount] == 0x03) {
+        totalizerary[totalizercount + 1] = Serial2.read();
+        delay(10);
+        Serial0.println();
+        break;
+      }
+      totalizercount++;
+    }
+  }
+
+
+  ppbuffer[mqtttcount] = 'T';
+
+  int y = mqtttcount + 1;
+
+  for (int j = 11; j < 21; j++) {
+
+    if (j == 18) {
+      ppbuffer[y] = '.';
+      y++;
+      zerocount = false;
+    }
+
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+    ppbuffer[y] = totalizerary[j];
+    y++;
+  }
+
+
+  zerocount = true;
+  ppbuffer[y] = 'A';
+  y++;
+  // Serial.println("my j is");
+
+  for (int j = 21; j < 31; j++) {
+    // Serial.println(j);
+    if (totalizerary[j] == 0x30 && zerocount) {
+      // Serial.print("zero");
+      continue;
+    }
+    if (totalizerary[j] != 0x30) {
+      zerocount = false;
+    }
+    ppbuffer[y] = totalizerary[j];
+    // Serial.println(j);
+    // Serial.print(ppbuffer[y]);
+    y++;
+  }
+
+  Serial0.println();
+  zerocount = true;
+  Serial0.println(ppbuffer);
+  fms_mqtt_client.publish(ppfinal, ppbuffer);
+  txledonoff();
+
+  for (int i = 0; i < 10; i++) {
+    err_buffer[i] = 0;
+  }
+
+  err_buffer[0] = ppbuffer[0];
+  err_buffer[1] = ppbuffer[1];
+  err_buffer[2] = '/';
+  err_buffer[3] = 'e';
+  err_buffer[4] = 'r';
+  err_buffer[5] = 'r';
+  err_buffer[6] = 'o';
+  err_buffer[7] = 'r';
+
+  waitcount = 0;
+  previousMillis = millis() / 1000;
+  while (waitcount < 2) {
+
+
+    if (ppbuffer[0] == server_rpy_ary[0] && ppbuffer[1] == server_rpy_ary[1] && final_str == "D1S1") {
+      Serial0.println("Bye ....................................");
+      final_str = "";
+      break;
+    }
+
+
+    if (millis() / 1000 - previousMillis >= 13) {
+
+      if (waitcount < 1) {
+        fms_mqtt_client.publish(ppfinal, ppbuffer);
+      }
+
+      // client.publish(pumpfinalbuf, ppbuffer);
+
+      previousMillis = millis() / 1000;
+      waitcount++;
+    }
+
+    //fms_mqtt_client.loop();
+  }
+
+  if (waitcount == 2) fms_mqtt_client.publish(server_err, err_buffer);
+
+  sendACK1();
+  if (pumpnum == 1) pump1live = false;
+  else if (pumpnum == 2) pump2live = false;
+
+  // sendenq(1);
+}
+
+void sendcrcfun() {
+
+  if (Buffer[1] == 0x40) pumpnum = 1;
+  else if (Buffer[1] == 0x41) pumpnum = 2;
+
+  // delay(100);  // speed
+  //last add
+
+  delay(20);
+
+  sendACK1();
+  Serial0.print("get");
+
+
+  // delay(4);
+  delay(20);
+  if (Serial2.available()) {
+    Serial0.print("U got ");
+    Serial0.println(Serial2.read(),16);
+  }
+
+  delay(50);
+
+  if (pumpnum == 1) pump1Select();
+  else if (pumpnum == 2) pump2Select();
+
+  // sendCalculatedCRC();
+  digitalWrite(15, 0x0);
+  // // delay(500);
+  delay(30);
+  // delay(4);
+  if (Serial2.available()) {
+
+    Buffer[0] = Serial2.read();
+    Buffer[1] = Serial2.read();
+    // delay(5);  // delay(20)
+    Serial0.print("your name is");
+    Serial0.println(Buffer[0], 16);
+    Serial0.println(Buffer[1], 16);
+    delay(2);
+  }
+
+  sendCalculatedCRC();
+
+  delay(4);
+  if (Serial2.available()) {
+
+    Buffer[0] = Serial2.read();
+    Buffer[1] = Serial2.read();
+    // delay(5);  // delay(20)
+    Serial0.print("your name1 is");
+    Serial0.println(Buffer[0], 16);
+    Serial0.println(Buffer[1], 16);
+    delay(2);
+  }
+
+  Serial0.println("i am waiting");
+  // delay(100);  //speed
+  delay(20);
+
+  sendenq(pumpnum);
+}
+
+void pricechangefun() {
+
+  incommingMessage.toCharArray(pricechangeary, incommingMessage.length() + 1);
+
+  Serial0.print("pc is ");
+  Serial0.println(pricechangeary);
+
+
+  charArray[0] = pricechangeary[0];
+  charArray[1] = pricechangeary[1];
+
+  pumpmqttnumchange();
+
+  // if (pricechangeary[0] == 0x30 && pricechangeary[1] == 0x31) {
+  if (charArray[2] == 0x40) {
+    unitpriceary1[0] = pricechangeary[2];
+    unitpriceary1[1] = pricechangeary[3];
+    unitpriceary1[2] = pricechangeary[4];
+    unitpriceary1[3] = pricechangeary[5];
+    //pricechangesuccess mqtt need
+    pricechangeapprove1fun();
+  }
+  //  else if (pricechangeary[0] == 0x30 && pricechangeary[1] == 0x32) {
+  else if (charArray[2] == 0x41) {
+    unitpriceary2[0] = pricechangeary[2];
+    unitpriceary2[1] = pricechangeary[3];
+    unitpriceary2[2] = pricechangeary[4];
+    unitpriceary2[3] = pricechangeary[5];
+    //pricechangesuccess mqtt need
+    pricechangeapprove2fun();
+  }
+  Serial0.print("ur noz1 price is");
+  Serial0.print(unitpriceary1[0], 16);
+  Serial0.print(unitpriceary1[1], 16);
+  Serial0.print(unitpriceary1[2], 16);
+  Serial0.println(unitpriceary1[3], 16);
+
+  Serial0.print("ur noz2 price is");
+  Serial0.print(unitpriceary2[0], 16);
+  Serial0.print(unitpriceary2[1], 16);
+  Serial0.print(unitpriceary2[2], 16);
+  Serial0.println(unitpriceary2[3], 16);
+}
+
+void pumpmqttnumchange() { //change incomming pumpid(0 - 32) from Mqtt to Device pumpid(0 - 2)
+  if (charArray[0] == 0x30 && charArray[1] == 0x31) {
+    pumpmqttnum = 1;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x32) {
+    pumpmqttnum = 2;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x33) {
+    pumpmqttnum = 3;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x34) {
+    pumpmqttnum = 4;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x35) {
+    pumpmqttnum = 5;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x36) {
+    pumpmqttnum = 6;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x37) {
+    pumpmqttnum = 7;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x38) {
+    pumpmqttnum = 8;
+  } else if (charArray[0] == 0x30 && charArray[1] == 0x39) {
+    pumpmqttnum = 9;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x30) {
+    pumpmqttnum = 10;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x31) {
+    pumpmqttnum = 11;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x32) {
+    pumpmqttnum = 12;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x33) {
+    pumpmqttnum = 13;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x34) {
+    pumpmqttnum = 14;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x35) {
+    pumpmqttnum = 15;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x36) {
+    pumpmqttnum = 16;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x37) {
+    pumpmqttnum = 17;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x38) {
+    pumpmqttnum = 18;
+  } else if (charArray[0] == 0x31 && charArray[1] == 0x39) {
+    pumpmqttnum = 19;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x30) {
+    pumpmqttnum = 20;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x31) {
+    pumpmqttnum = 21;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x32) {
+    pumpmqttnum = 22;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x33) {
+    pumpmqttnum = 23;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x34) {
+    pumpmqttnum = 24;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x35) {
+    pumpmqttnum = 25;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x36) {
+    pumpmqttnum = 26;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x37) {
+    pumpmqttnum = 27;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x38) {
+    pumpmqttnum = 28;
+  } else if (charArray[0] == 0x32 && charArray[1] == 0x39) {
+    pumpmqttnum = 29;
+  } else if (charArray[0] == 0x33 && charArray[1] == 0x30) {
+    pumpmqttnum = 30;
+  } else if (charArray[0] == 0x33 && charArray[1] == 0x31) {
+    pumpmqttnum = 31;
+  } else if (charArray[0] == 0x33 && charArray[1] == 0x32) {
+    pumpmqttnum = 32;
+  }
+
+  charArray[2] = 0x00;
+
+  if (pumpid1 == pumpmqttnum) {
+    charArray[2] = 0x40;
+
+  } else if (pumpid2 == pumpmqttnum) {
+    charArray[2] = 0x41;
+  }
+  //  else if (pumpid3 == pumpmqttnum) {
+  //   charArray[3] = 0x42;
+
+  // } else if (pumpid4 == pumpmqttnum) {
+  //   charArray[3] = 0x30;
+
+  // } else if (pumpid5 == pumpmqttnum) {
+  //   charArray[3] = 0x30;
+
+  // } else if (pumpid6 == pumpmqttnum) {
+  //   charArray[3] = 0x30;
+
+  // } else if (pumpid7 == pumpmqttnum) {
+  //   charArray[3] = 0x30;
+
+  // } else if (pumpid8 == pumpmqttnum) {
+  //   charArray[3] = 0x30;
+
+  // }
+}
+
+void sendpumpstatus(int pump) {
+
+  if (pump == 1) pump1Select();
+  else if (pump == 2) pump2Select();
+
+  int count1;
+  char charack0[2];
+
+  digitalWrite(15, 0x0);
+  // // delay(500);
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.println("U got ");
+    charack0[0] = Serial2.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+
+    if (charack0[0] == 0x10 && charack0[1] == 0x30) { //
+      // sendenq(2);
+      // pump2status();
+      if (pump == 1) pump1status();
+      else if (pump == 2) pump2status();
+    }
+  }
+  Serial0.println("shis shi");
+  // delay(50);
+  // digitalWrite(15, LOW);
+  // // delay(500);
+  delay(20);
+
+  if (Serial2.available()) {
+    Serial0.println("U got 1221");
+    charack0[0] = Serial2.read();
+    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+
+    // if (charack0[0] == 0x10 && charack0[1] == 0x31) {  //
+    sendenq(pump);
+    // }
+  }
+}
+
+void pumppresetfun() {
+
+
+  if (presetmqttary[2] == 0x4C) {
+    CalculatedPresetdata[5] = 0x31; // fueling with volume limitation
+    CalculatedPresetdata[6] = 0x31; // volume
+
+    // add volume (4+2)
+    // CalculatedPresetdata[7] = presetmqttary[3];
+    // CalculatedPresetdata[8] = presetmqttary[4];
+    // CalculatedPresetdata[9] = presetmqttary[5];
+    // CalculatedPresetdata[10] = presetmqttary[6];
+    // CalculatedPresetdata[11] = presetmqttary[7];
+    // CalculatedPresetdata[12] = presetmqttary[8];
+    CalculatedPresetdata[7] = presetmqttary[4];
+    CalculatedPresetdata[8] = presetmqttary[5];
+    CalculatedPresetdata[9] = presetmqttary[6];
+    CalculatedPresetdata[10] = presetmqttary[7];
+    CalculatedPresetdata[11] = presetmqttary[8];
+    CalculatedPresetdata[12] = presetmqttary[9];
+
+  } else if (presetmqttary[2] == 0x50) {
+    Serial0.println("yep u changed approved");
+    CalculatedPresetdata[5] = 0x33; // fueling with Prest fueling(Preset value cannot be changed at dispenser)
+    CalculatedPresetdata[6] = 0x32; // Amount
+
+    // add amount (6)
+    // CalculatedPresetdata[7] = presetmqttary[3];
+    // CalculatedPresetdata[8] = presetmqttary[4];
+    // CalculatedPresetdata[9] = presetmqttary[5];
+    // CalculatedPresetdata[10] = presetmqttary[6];
+    // CalculatedPresetdata[11] = presetmqttary[7];
+    // CalculatedPresetdata[12] = presetmqttary[8];
+    CalculatedPresetdata[7] = presetmqttary[4];
+    CalculatedPresetdata[8] = presetmqttary[5];
+    CalculatedPresetdata[9] = presetmqttary[6];
+    CalculatedPresetdata[10] = presetmqttary[7];
+    CalculatedPresetdata[11] = presetmqttary[8];
+    CalculatedPresetdata[12] = presetmqttary[9];
+  }
+
+  //add unit price
+  // CalculatedPresetdata[14] = unitpriceary1[0];
+  // CalculatedPresetdata[15] = unitpriceary1[1];
+  // CalculatedPresetdata[16] = unitpriceary1[2];
+  // CalculatedPresetdata[17] = unitpriceary1[3];
+
+
+  // if (presetmqttary[0] == 0x30 && presetmqttary[1] == 0x31) {
+  if (tempcharArray[0] == 0x40) {
+    CalculatedPresetdata[1] = 0x40; // add address
+    pump1Select();
+    pump1live = true;
+    CalculatedPresetdata[14] = unitpriceary1[0];
+    CalculatedPresetdata[15] = unitpriceary1[1];
+    CalculatedPresetdata[16] = unitpriceary1[2];
+    CalculatedPresetdata[17] = unitpriceary1[3];
+    pumpnum = 1;
+
+    pumplivefor1 = true; //select count
+  }
+  // else if (presetmqttary[0] == 0x30 && presetmqttary[1] == 0x32) {
+  else if (tempcharArray[0] == 0x41) {
+    CalculatedPresetdata[1] = 0x41; // add address
+    pump2Select();
+    pump2live = true;
+    CalculatedPresetdata[14] = unitpriceary2[0];
+    CalculatedPresetdata[15] = unitpriceary2[1];
+    CalculatedPresetdata[16] = unitpriceary2[2];
+    CalculatedPresetdata[17] = unitpriceary2[3];
+    pumpnum = 2;
+
+    pumplivefor2 = true; //select count
+  }
+
+
+  int count1;
+  char charack0[2];
+
+  digitalWrite(15, 0x0);
+  // delay(500);
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.println("U got ");
+    charack0[0] = Serial2.read();
+    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+
+    // if (charack0[0] == 0x10 && charack0[1] == 0x30) {  //
+    sendCalculatedPreset();
+    // }
+  }
+}
+
+void reloadfun() {
+
+  Serial0.println("reload fun start");
+
+  for (int i = 0; i < 50; i++) {
+    ppbuffer[i] = 0x00;
+  }
+
+  incommingMessage.toCharArray(reloadArry, incommingMessage.length() + 1);
+  charArray[0] = reloadArry[0];
+  charArray[1] = reloadArry[1];
+
+  // ADDSLP
+  ppbuffer[0] = charArray[0];
+  ppbuffer[1] = charArray[1];
+  ppbuffer[2] = 'S';
+  ppbuffer[3] = '0';
+  ppbuffer[4] = 'L';
+  ppbuffer[5] = '.';
+  ppbuffer[6] = '0';
+  ppbuffer[7] = 'P';
+  ppbuffer[8] = '0';
+
+  //mqttt to pump address
+  pumpmqttnumchange();
+
+  //pumpnum 1 or 2
+
+  if (charArray[2] == 0x40) pumpnum = 1;
+  else if (charArray[2] == 0x41) pumpnum = 2;
+
+
+  if (pumpnum == 1) pump1Select();
+  else if (pumpnum == 2) pump2Select();
+
+  int count1;
+  char charack0[2];
+
+  digitalWrite(15, 0x0);
+
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.println("U got ");
+    charack0[0] = Serial2.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+  }
+
+  if (pumpnum == 1) pump1Totalizerstatus();
+  else if (pumpnum == 2) pump2Totalizerstatus();
+
+  digitalWrite(15, 0x0);
+  delay(30); // to open
+
+  if (Serial2.available()) { // to change if
+    Serial0.println("U got2 ");
+    charack0[0] = Serial2.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+  }
+
+  sendenq(pumpnum);
+
+  char totalizerary[33];
+  int totalizercount = 0;
+  digitalWrite(15, 0x0);
+  delay(50);
+
+  while (Serial2.available()) {
+
+    totalizerary[totalizercount] = Serial2.read();
+    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    Serial0.print(totalizercount);
+    Serial0.print("//");
+    Serial0.print(totalizerary[totalizercount], 16);
+    Serial0.print(" ");
+    delay(10);
+    if (totalizerary[totalizercount] == 0x03) {
+      totalizerary[totalizercount + 1] = Serial2.read();
+      delay(10);
+      Serial0.println();
+      break;
+    }
+
+
+    totalizercount++;
+  }
+
+  // finalmqtt2
+  while (totalizerary[4] != 0x35) { // wait for totalizer
+    sendACK1();
+    digitalWrite(15, 0x0);
+    delay(30);
+    if (Serial2.available()) {
+      Serial0.print("U got4 ");
+      Serial0.println(Serial2.read());
+    }
+
+    sendenq(pumpnum);
+
+    totalizercount = 0;
+
+    digitalWrite(15, 0x0);
+    delay(50);
+
+    while (Serial2.available()) {
+
+      totalizerary[totalizercount] = Serial2.read();
+      // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+      Serial0.print(totalizercount);
+      Serial0.print("//");
+      Serial0.print(totalizerary[totalizercount], 16);
+      Serial0.print(" ");
+      delay(10);
+
+      if (totalizerary[totalizercount] == 0x03) {
+        totalizerary[totalizercount + 1] = Serial2.read();
+        delay(10);
+        Serial0.println();
+        break;
+      }
+
+      if (totalizerary[0] == 0x04) {
+
+        Serial0.println("first loop break");
+        reloadcheck = true;
+        break;
+      }
+
+      totalizercount++;
+    }
+
+    if (reloadcheck) {
+      Serial0.println("bye reload...................");
+      reloadcheck = false;
+      break;
+    }
+
+  }
+
+  mqtttcount = 0;
+
+  ppbuffer[mqtttcount + 9] = 'T';
+
+  int y = mqtttcount + 10;
+
+
+  // for (int i = 0; i < 6; i++) {
+  //   Serial.print(ppbuffer[i]);
+  // }
+
+  // Serial.println();
+  Serial0.printf("mqtt count is => %d\n", y);
+
+  for (int j = 11; j < 21; j++) {
+
+    if (j == 18) {
+      ppbuffer[y] = '.';
+      y++;
+      zerocount = false;
+    }
+
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+    ppbuffer[y] = totalizerary[j];
+    y++;
+  }
+
+
+  zerocount = true;
+  ppbuffer[y] = 'A';
+  y++;
+  // Serial.println("my j is");
+
+  for (int j = 21; j < 31; j++) {
+    // Serial.println(j);
+    if (totalizerary[j] == 0x30 && zerocount) {
+      // Serial.print("zero");
+      continue;
+    }
+    if (totalizerary[j] != 0x30) {
+      zerocount = false;
+    }
+    ppbuffer[y] = totalizerary[j];
+    // Serial.println(j);
+    // Serial.print(ppbuffer[y]);
+    y++;
+  }
+
+  Serial0.println();
+  zerocount = true;
+
+  Serial0.println(ppbuffer);
+
+  fms_mqtt_client.publish(pumpfinalreloadbuf, ppbuffer);
+
+  txledonoff();
+
+  // for (int i = 0; i < 10; i++) {
+  //   err_buffer[i] = 0;
+  // }
+
+  // err_buffer[0] = ppbuffer[0];
+  // err_buffer[1] = ppbuffer[1];
+  // err_buffer[2] = '/';
+  // err_buffer[3] = 'e';
+  // err_buffer[4] = 'r';
+  // err_buffer[5] = 'r';
+  // err_buffer[6] = 'o';
+  // err_buffer[7] = 'r';
+
+  // waitcount = 0;
+  // previousMillis = millis() / 1000;
+  // while (waitcount < 2) {
+
+  //   if (ppbuffer[0] == server_rpy_ary[0] && ppbuffer[1] == server_rpy_ary[1] && final_str == "D1S1") {
+  //     Serial.println("Bye ....................................");
+  //     final_str = "";
+  //     break;
+  //   }
+
+  //   if (millis() / 1000 - previousMillis >= 13) {
+
+  //     if (waitcount < 1) {
+  //       client.publish(pumpfinalreloadbuf, ppbuffer);
+  //     }
+
+  //     // client.publish(pumpfinalbuf, ppbuffer);
+
+  //     previousMillis = millis() / 1000;
+  //     waitcount++;
+  //   }
+
+  //   client.loop();
+  // }
+
+  // if (waitcount == 2) client.publish(server_err, err_buffer);
+
+  reloadcount = false;
+
+  sendACK1();
+
+  if (pumpnum == 1) pump1live = false;
+  else if (pumpnum == 2) pump2live = false;
+}
+
+void pricereqfun() {
+
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  mqttpumpidchange(pumpid1);
+  fms_mqtt_client.publish(pricereqbuf, ppbuffer);
+  mqttpumpidchange(pumpid2);
+  fms_mqtt_client.publish(pricereqbuf, ppbuffer);
+  txledonoff();
+}
+
+void pump1Totalizerstatus() {
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(totalizerstatus1, 7);
+  Serial0.println("sending 1totalizerstatus");
+  delay(5);
+  digitalWrite(15, 0x0);
+}
+
+void pump2Totalizerstatus() {
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(totalizerstatus2, 7);
+  Serial0.println("sending 2totalizerstatus");
+  delay(5);
+  digitalWrite(15, 0x0);
+}
+
+
+void pump2status() {
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(pump2statusary, 7);
+  Serial0.println("sending pump2status");
+  // delay(4.5);
+  delay(5);
+  digitalWrite(15, 0x0);
+}
+
+
+void pump1status() {
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(pump1statusary, 7);
+  Serial0.println("sending pump1status");
+  delay(5);
+  digitalWrite(15, 0x0);
+}
+
+void pump1Select() {
+  digitalWrite(15, 0x1);
+  Serial2.write(select1, sizeof(select1));
+  Serial0.println("sending select1");
+  delay(4);
+  digitalWrite(15, 0x0);
+}
+
+void pump2Select() {
+  digitalWrite(15, 0x1);
+  Serial2.write(select2, sizeof(select2));
+  Serial0.println("sending select2");
+  delay(4);
+  digitalWrite(15, 0x0);
+}
+
+void pricechangeapprove2fun() {
+
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  mqttpumpidchange(pumpid2);
+  fms_mqtt_client.publish("detpos/device/price", ppbuffer);
+  txledonoff();
+}
+
+void pricechangeapprove1fun() {
+
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  mqttpumpidchange(pumpid1);
+  fms_mqtt_client.publish("detpos/device/price", ppbuffer);
+  txledonoff();
+}
+
+
+void finalmqtt1() {
+
+  for (int y = 0; y < 50; y++) {
+    ppbuffer[y] = 0;
+  }
+
+  pumpidchange();
+
+  // if (Buffer[1] == 0x40) {
+  //   ppbuffer[0] = 0x30;
+  //   ppbuffer[1] = 0x31;
+  // } else if (Buffer[1] == 0x41) {
+  //   ppbuffer[0] = 0x30;
+  //   ppbuffer[1] = 0x32;
+  // }
+
+  ppbuffer[2] = 'S';
+
+  int y = 3;
+
+  for (int j = 13; j <= 16; j++) {
+
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+    ppbuffer[y] = Buffer[j];
+    y++;
+  }
+
+
+  zerocount = true;
+  ppbuffer[y] = 'L';
+  y++;
+
+  for (int j = 6; j < 12; j++) {
+
+    if (j == 9) {
+      ppbuffer[y] = '.';
+      y++;
+      zerocount = false; //add
+    }
+
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+    ppbuffer[y] = Buffer[j];
+    y++;
+  }
+
+  zerocount = true;
+  ppbuffer[y] = 'P';
+  y++;
+
+  for (int j = 17; j < 23; j++) {
+    if (Buffer[j] == 0x30 && zerocount) {
+      continue;
+    }
+
+    if (Buffer[j] != 0x30) {
+      zerocount = false;
+    }
+
+    ppbuffer[y] = Buffer[j];
+    y++;
+  }
+  zerocount = true;
+  mqtttcount = y;
+}
+
+void pumpidchange() { //change incomming pumpid(0 - 8) from device to mqtt pumpid(0 - 32)
+  if (Buffer[1] == 0x40) mqttpumpidchange(pumpid1);
+  else if (Buffer[1] == 0x41) mqttpumpidchange(pumpid2);
+}
+
+
+void pumapprofun() {
+  // char pumpapproArray[13];
+  incommingmsg1.toCharArray(pumpapproArray, incommingmsg1.length() + 1);
+  Serial0.print("Appro  is ");
+
+  Serial0.println(pumpapproArray);
+
+  charArray[0] = pumpapproArray[0];
+  charArray[1] = pumpapproArray[1];
+
+  pumpmqttnumchange();
+
+
+  pumappproSend();
+}
+
+void hmisetup() {
+
+  if (Serial0.available()) {
+    for (int j = 0; j <= 50; j++) //this loop will store whole frame in buffer array.
+    {
+      Buffer[j] = Serial0.read();
+      Serial0.print(Buffer[j], 16);
+      Serial0.print(" ");
+    }
+    Serial0.println();
+
+    if (Buffer[4] == 0x10 && Buffer[8] == 0x01) {
+      ESP.restart();
+      Serial0.println("restart");
+    } else if (Buffer[4] == 0x13) { // wifi ssid
+      for (int j = 0; j < 50; j++) ssidBuf[j] = 0;
+
+      for (int j = 0; j < 50; j++) {
+        if (Buffer[j + 9] == 0xFF) break;
+        ssidBuf[j] = Buffer[j + 9];
+      }
+      Serial0.println(ssidBuf);
+
+      Serial0.write(showSSID, 6);
+      Serial0.write(ssidBuf, 30);
+      Serial0.write(showSSID, 6);
+      Serial0.write(ssidBuf, 30);
+
+    } else if (Buffer[4] == 0x14) { // wifi password
+      for (int j = 0; j < 50; j++) passBuf[j] = 0;
+
+      for (int j = 0; j < 50; j++) {
+        if (Buffer[j + 9] == 0xFF) break;
+        passBuf[j] = Buffer[j + 9];
+      }
+      Serial0.println(passBuf);
+      Serial0.write(showPASS, 6);
+      Serial0.write(passBuf, 50);
+      Serial0.write(showPASS, 6);
+      Serial0.write(passBuf, 50);
+    } else if (Buffer[4] == 0x11) { // wifi connect
+      WiFi.hostname("device1");
+      WiFi.begin(ssidBuf, passBuf);
+      wifitrytime = 0;
+      while (WiFi.status() != WL_CONNECTED && wifitrytime != 15) {
+        Serial0.print('.');
+        digitalWrite(33, 0x1);
+        delay(500);
+        digitalWrite(33, 0x0);
+        delay(500);
+        wifitrytime++;
+      }
+      if (WiFi.status() == WL_CONNECTED) {
+        Serial0.print("You are connected in ");
+        Serial0.println(WiFi.localIP());
+        writeString(0, ssidBuf);
+        writeString(50, passBuf);
+
+
+        // digitalWrite(wifiled, HIGH);
+
+        Serial0.write(page, 9);
+        Serial0.write(0x00);
+        Serial0.println("home page");
+        delay(1000);
+      }
+    } else if (Buffer[4] == 0x31) { // devnumber
+      devicenum = Buffer[8];
+      Serial0.println(devicenum);
+    } else if (Buffer[4] == 0x41) { // pumpid 1
+      pumpid1 = Buffer[8];
+      Serial0.println(pumpid1);
+    } else if (Buffer[4] == 0x42) { // pumpid 2
+      pumpid2 = Buffer[8];
+      Serial0.println(pumpid2);
+    } else if (Buffer[4] == 0x43) { // pumpid 3
+      pumpid3 = Buffer[8];
+      Serial0.println(pumpid3);
+    } else if (Buffer[4] == 0x44) { // pumpid 4
+      pumpid4 = Buffer[8];
+      Serial0.println(pumpid4);
+    } else if (Buffer[4] == 0x45) { // pumpid 5
+      pumpid5 = Buffer[8];
+      Serial0.println(pumpid5);
+    } else if (Buffer[4] == 0x46) { // pumpid 6
+      pumpid6 = Buffer[8];
+      Serial0.println(pumpid6);
+    } else if (Buffer[4] == 0x47) { // pumpid 7
+      pumpid7 = Buffer[8];
+      Serial0.println(pumpid7);
+    } else if (Buffer[4] == 0x48) { // pumpid 8
+      pumpid8 = Buffer[8];
+      Serial0.println(pumpid8);
+    } else if (Buffer[4] == 0x40 && Buffer[8] == 0x00) { // 2noz
+      nozzlenum = 2;
+    } else if (Buffer[4] == 0x40 && Buffer[8] == 0x01) { // 4noz
+      nozzlenum = 4;
+    } else if (Buffer[4] == 0x40 && Buffer[8] == 0x02) { // 8noz
+      nozzlenum = 8;
+    } else if (Buffer[4] == 0x40 && Buffer[8] == 0x03) { // save
+      saveall();
+    }
+  }
+}
+
+void saveall() {
+  EEPROM.write(101, pumpid1);
+  EEPROM.commit();
+  EEPROM.write(102, pumpid2);
+  EEPROM.commit();
+  EEPROM.write(103, pumpid3);
+  EEPROM.commit();
+  EEPROM.write(104, pumpid4);
+  EEPROM.commit();
+  EEPROM.write(105, pumpid5);
+  EEPROM.commit();
+  EEPROM.write(106, pumpid6);
+  EEPROM.commit();
+  EEPROM.write(107, pumpid7);
+  EEPROM.commit();
+  EEPROM.write(108, pumpid8);
+  EEPROM.commit();
+
+  EEPROM.write(109, devicenum);
+  EEPROM.commit();
+  EEPROM.write(110, nozzlenum);
+  EEPROM.commit();
+
+  Serial0.println("yep all save");
+}
+
+
+void writeString(char add, String data) {
+  int _size = data.length();
+  int j;
+  for (j = 0; j < _size; j++) {
+    EEPROM.write(add + j, data[j]);
+    EEPROM.commit();
+  }
+  EEPROM.write(add + _size, '\0'); //Add termination null character for String Data
+  EEPROM.commit();
+  Serial0.println("Wrtiting ssid and pass to eeprom");
+}
+
+void mqttpumpidchange(int pumpid) {
+  if (pumpid == 1) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x31;
+  } else if (pumpid == 2) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x32;
+  } else if (pumpid == 3) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x33;
+  } else if (pumpid == 4) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x34;
+  } else if (pumpid == 5) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x35;
+  } else if (pumpid == 6) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x36;
+  } else if (pumpid == 7) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x37;
+  } else if (pumpid == 8) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x38;
+  } else if (pumpid == 9) {
+    ppbuffer[0] = 0x30;
+    ppbuffer[1] = 0x39;
+  } else if (pumpid == 10) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x30;
+  } else if (pumpid == 11) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x31;
+  } else if (pumpid == 12) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x32;
+  } else if (pumpid == 13) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x33;
+  } else if (pumpid == 14) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x34;
+  } else if (pumpid == 15) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x35;
+  } else if (pumpid == 16) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x36;
+  } else if (pumpid == 17) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x37;
+  } else if (pumpid == 18) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x38;
+  } else if (pumpid == 19) {
+    ppbuffer[0] = 0x31;
+    ppbuffer[1] = 0x39;
+  } else if (pumpid == 20) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x30;
+  } else if (pumpid == 21) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x31;
+  } else if (pumpid == 22) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x32;
+  } else if (pumpid == 23) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x33;
+  } else if (pumpid == 24) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x34;
+  } else if (pumpid == 25) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x35;
+  } else if (pumpid == 26) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x36;
+  } else if (pumpid == 27) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x37;
+  } else if (pumpid == 28) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x38;
+  } else if (pumpid == 29) {
+    ppbuffer[0] = 0x32;
+    ppbuffer[1] = 0x39;
+  } else if (pumpid == 33) {
+    ppbuffer[0] = 0x33;
+    ppbuffer[1] = 0x30;
+  } else if (pumpid == 31) {
+    ppbuffer[0] = 0x33;
+    ppbuffer[1] = 0x31;
+  } else if (pumpid = 32) {
+    ppbuffer[0] = 0x33;
+    ppbuffer[1] = 0x32;
+  }
+}
+
+void pumappproSend() {
+
+  // if (pumpapproArray[0] == 0x30 && pumpapproArray[1] == 0x31) {
+  if (charArray[2] == 0x40) {
+    pump1Select();
+    CalculatedApprodata[1] = 0x40; // add address
+    pump1live = true;
+    CalculatedApprodata[14] = unitpriceary1[0];
+    CalculatedApprodata[15] = unitpriceary1[1];
+    CalculatedApprodata[16] = unitpriceary1[2];
+    CalculatedApprodata[17] = unitpriceary1[3];
+
+    pumplivefor1 = true; //select count
+  }
+  // else if (pumpapproArray[0] == 0x30 && pumpapproArray[1] == 0x32) {
+  else if (charArray[2] == 0x41) {
+    pump2Select();
+    CalculatedApprodata[1] = 0x41; // add address
+    pump2live = true;
+    CalculatedApprodata[14] = unitpriceary2[0];
+    CalculatedApprodata[15] = unitpriceary2[1];
+    CalculatedApprodata[16] = unitpriceary2[2];
+    CalculatedApprodata[17] = unitpriceary2[3];
+
+    pumplivefor2 = true; //select count
+  }
+
+  // pump1Select();
+  int count1;
+  char charack0[2];
+
+  digitalWrite(15, 0x0);
+  // delay(500);
+  delay(30);
+  if (Serial2.available()) {
+    Serial0.println("U got ");
+    charack0[0] = Serial2.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+    delay(10);
+    charack0[1] = Serial2.read();
+    delay(10);
+    Serial0.println(charack0[0], 16);
+    Serial0.println(charack0[1], 16);
+
+    if (charack0[0] == 0x10 && charack0[1] == 0x30) { //
+      sendCalculatedAppro();
+    }
+  }
+}
+
+void sendCalculatedPreset() {
+
+  CalculatedPresetdata[19] = BCCfun2();
+  for (int y = 0; y < 20; y++) {
+    Serial0.print(CalculatedPresetdata[y], 16);
+    Serial0.print(" ");
+  }
+
+  Serial0.println("");
+
+  // delay(100); //speed
+
+  delay(20); //speed
+
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(CalculatedPresetdata, 20);
+  delay(2);
+  Serial2.write(CalculatedPresetdata, 20);
+  // delay(2);
+  Serial0.println("sending preset");
+  // delay(12.5);
+  // delay(50);
+  // delay(34);
+  delay(20);
+  digitalWrite(15, 0x0);
+
+  //tgi add
+  // if (Buffer[1] == 0x40) pumpnum = 1;
+  // else if (Buffer[1] == 0x41) pumpnum = 2;
+
+  // delay(10);
+  delay(4);
+  if (Serial2.available()) {
+
+    Buffer[0] = Serial2.read();
+    delay(20);
+    Buffer[1] = Serial2.read();
+    delay(20);
+    // latest pumppreset again
+
+    Serial0.print("your name1 is");
+    Serial0.println(Buffer[0], 16);
+    Serial0.println(Buffer[1], 16);
+    delay(2);
+    //Frist time
+    if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
+      // resend
+      Serial0.println("motor start");
+    } else {
+      resendpreset();
+    }
+  }
+
+  // Second time
+  if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
+    // resend
+    Serial0.println("motor start");
+  } else {
+    resendpreset();
+  }
+  // Third time
+  if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
+    // resend
+    Serial0.println("motor start");
+  } else {
+    resendpreset();
+  }
+
+  sendenq(pumpnum);
+
+
+  Serial0.println("Uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
+}
+
+unsigned char BCCfun1() {
+
+  unsigned char bccData[18];
+
+  bccData[14] = pumpapproArray[8];
+  bccData[15] = pumpapproArray[9];
+  bccData[16] = pumpapproArray[10];
+  bccData[17] = pumpapproArray[11];
+
+
+  for (int y = 0; y < 18; y++) {
+    bccData[y] = CalculatedApprodata[y + 1];
+  }
+
+
+  unsigned char lrc = 0x00;
+
+  // Calculate LRC checksum
+  for (int j = 0; j < sizeof(bccData); j++) {
+    lrc ^= bccData[j];
+  }
+  // Print LRC checksum in hexadecimal and decimal format
+  Serial0.print("LRC Checksum (Hex): 0x");
+  if (lrc < 0x10) {
+    Serial0.print("0");
+  }
+  Serial0.println(lrc, 16);
+
+  Serial0.print("LRC Checksum (Decimal): ");
+  Serial0.println(lrc);
+
+  return lrc;
+}
+
+
+unsigned char BCCfun2() {
+
+  unsigned char bccData[18];
+
+  for (int y = 0; y < 18; y++) {
+    bccData[y] = CalculatedPresetdata[y + 1];
+  }
+
+
+  unsigned char lrc = 0x00;
+
+  // Calculate LRC checksum
+  for (int j = 0; j < sizeof(bccData); j++) {
+    lrc ^= bccData[j];
+  }
+  // Print LRC checksum in hexadecimal and decimal format
+  Serial0.print("LRC Checksum (Hex): 0x");
+  if (lrc < 0x10) {
+    Serial0.print("0");
+  }
+  Serial0.println(lrc, 16);
+
+  Serial0.print("LRC Checksum (Decimal): ");
+  Serial0.println(lrc);
+
+  return lrc;
+}
+
+void resendpreset() {
+  // delay(100);//speed
+  delay(20);
+
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(CalculatedPresetdata, 20);
+  Serial0.println("sending preset again");
+  // delay(12.5);
+  // delay(50);
+  // delay(34);d
+  delay(20);
+  digitalWrite(15, 0x0);
+
+
+  delay(4);
+  if (Serial2.available()) {
+
+    Buffer[0] = Serial2.read();
+    delay(10);
+    Buffer[1] = Serial2.read();
+    delay(10);
+    Serial0.print("your resend again is");
+    Serial0.println(Buffer[0], 16);
+    Serial0.println(Buffer[1], 16);
+    delay(2);
+  }
+}
+
+
+void sendCalculatedAppro() {
+
+  //add unit price
+  // CalculatedApprodata[14] = unitpriceary[0];
+  // CalculatedApprodata[15] = unitpriceary[1];
+  // CalculatedApprodata[16] = unitpriceary[2];
+  // CalculatedApprodata[17] = unitpriceary[3];
+
+  CalculatedApprodata[19] = BCCfun1();
+  for (int y = 0; y < 20; y++) {
+    Serial0.print(CalculatedApprodata[y], 16);
+    Serial0.print(" ");
+  }
+  Serial0.println("");
+
+
+  // delay(100); //speed
+
+  delay(20); //speed
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(CalculatedApprodata, 20);
+  delay(2);
+  Serial2.write(CalculatedApprodata, 20);
+  // delay(2);
+  Serial0.println("sending Appro1");
+  // delay(13);
+  // delay(50);
+  // delay(34);
+  delay(20);
+  digitalWrite(15, 0x0);
+
+  //tgi add
+  if (Buffer[1] == 0x40) pumpnum = 1;
+  else if (Buffer[1] == 0x41) pumpnum = 2;
+
+  // delay(10);
+  delay(4);
+  if (Serial2.available()) {
+
+    Buffer[0] = Serial2.read();
+    delay(20);
+    Buffer[1] = Serial2.read();
+    delay(20);
+    // latest pumppreset again
+
+    Serial0.print("your name1 is");
+    Serial0.println(Buffer[0], 16);
+    Serial0.println(Buffer[1], 16);
+    delay(2);
+    //Frist time
+    if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
+
+      Serial0.println("app motor start");
+    } else {
+      resendappro();
+    }
+  }
+
+  // Second time
+  if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
+    // resend
+    Serial0.println("app motor start");
+  } else {
+    resendappro();
+  }
+  // Third time
+  if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
+    // resend
+    Serial0.println("app motor start");
+  } else {
+    resendappro();
+  }
+
+  sendenq(pumpnum);
+}
+
+
+void resendappro() {
+  // delay(100); //speed
+
+  delay(20); //speed
+  digitalWrite(15, 0x1);
+  delay(20);
+  Serial2.write(CalculatedApprodata, 20);
+  Serial0.println("sending resend appro");
+  // delay(13);
+  // delay(50);
+  // delay(34);
+  delay(20);
+  digitalWrite(15, 0x0);
+
+  //tgi add
+  if (Buffer[1] == 0x40) pumpnum = 1;
+  else if (Buffer[1] == 0x41) pumpnum = 2;
+
+  // delay(10);
+  delay(4);
+  if (Serial2.available()) {
+
+    Buffer[0] = Serial2.read();
+    delay(20);
+    Buffer[1] = Serial2.read();
+    delay(20);
+    Serial0.print("your resend again is");
+    Serial0.println(Buffer[0], 16);
+    Serial0.println(Buffer[1], 16);
+    delay(2);
+  }
+}
+
+
+// end tatsuno protocol 
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {
@@ -2014,23 +4072,23 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 
 }
 
+
+
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-
-
-
-
-    red_star_main(); // redstar protocol
+# 66 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+       // FMS_LOG_INFO("[RESTAR] Starting tatsuno Protocol");
+            fms_tatsuno_protocol_main(); // tatsuno protocol
 
 // #ifdef USE_MUX_PC817
 // test_mux();
 // #endif
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 62 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
-              1000 
-# 62 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-              ) / ( TickType_t ) 1000U ) ));
+   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
+# 72 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+             1000 
+# 72 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+             ) / ( TickType_t ) 1000U ) ));
   }
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
@@ -2125,4 +4183,3 @@ static void wifi_task(void *arg) {
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }
-# 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\test_fms_redstar_fun.ino"

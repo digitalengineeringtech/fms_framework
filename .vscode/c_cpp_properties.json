@@ -34,6 +34,7 @@
                 "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\SD\\src",
                 "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\SPI\\src",
                 "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\ESPmDNS\\src",
+                "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\EEPROM\\src",
                 "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2411\\xtensa-esp-elf\\include\\c++\\14.2.0",
                 "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2411\\xtensa-esp-elf\\include\\c++\\14.2.0\\xtensa-esp-elf\\esp32",
                 "C:\\Users\\trion\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2411\\xtensa-esp-elf\\include\\c++\\14.2.0\\backward",

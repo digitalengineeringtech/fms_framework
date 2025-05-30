@@ -1,4 +1,6 @@
 
+#ifdef USE_RESTAR
+
 #define FMS_RED_DEBUG_OPEN
 #ifdef FMS_RED_DEBUG_OPEN
   #define FMS_RED_LOG_DEBUG(format, ...) Serial.print("[REDSTAR][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
@@ -98,8 +100,8 @@ void red_star_init() {
 
 // red start main function (included , pump state, nozzle lifted, fueling)
 // check the response from dispenser
-
-void red_star_main() {
+// red star main file
+void fms_red_star_protocol_main() {
   vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
   if(redstar.update()){
     response = redstar.parseResponse(length);  // Parse the response from the Redstar device
@@ -738,3 +740,4 @@ void check_server_response_nozzle_id(bool check) {
 }
 }
   
+#endif
