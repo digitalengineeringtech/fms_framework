@@ -1,10 +1,22 @@
 
 #ifdef USE_TATSUNO
+
+
+/* tatsuno parameter */
 #define RESPONSE_BUFFER_SIZE 50
 int length = 0;
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
 
 
+/* 
+
+#define LED_RED                     GPIO_NUM_32
+#define LED_GREEN                   GPIO_NUM_14 
+#define LED_BLUE                    GPIO_NUM_13
+#define LED_YELLOW                  GPIO_NUM_33
+
+
+*/
 #define wifiled 33
 #define powerled 32
 #define TXled 27
@@ -115,6 +127,7 @@ bool pumplivefor1 = false;       // for select count
 bool pumplivecountfor1 = false;  // for select count
 bool pumplivefor2 = false;       // for select count
 bool pumplivecountfor2 = false;  // for select count
+
 //ak add
 char reloadArry[3];
 bool reloadcount = false;
@@ -126,6 +139,7 @@ String final_str;
 unsigned long previousMillis = 0;
 char server_rpy_ary[7];
 int waitcount;
+/* end tatsuno parameter */
 
 
 
@@ -137,7 +151,6 @@ void fms_tatsuno_init() {
   enqactivetime1 = millis() / 1000;
 
 }
-
 
 void EEPROMWrite() {
   EEPROM.write(109, 1);  //devicenum
@@ -163,7 +176,6 @@ void EEPROMWrite() {
 
   Serial.println("Yepp Save#############################################################");
 }
-
 
 void fms_tatsuno_protocol_main() {
   FMS_TATSUNO_LOG_DEBUG("Running Tatsuno protocol main function");
@@ -319,9 +331,8 @@ void fms_tatsuno_protocol_main() {
   } else pumpenqactive();
 }
 
-
 void tatsuno_pump_setting(char* topic, String payload){
-String incommingMessage = payload;
+ incommingMessage = payload;
 
   if (String(topic) == device_Id_topic) {
     DynamicJsonDocument doc(4096);  // Adjust the size based on your JSON data size
@@ -897,7 +908,6 @@ void BufferClear() {
   for (int j = 0; j < 50; j++) Buffer[j] = 0x00;
 }
 
-
 void pumpactive() {
 
   activetime = millis() / 1000;
@@ -928,7 +938,6 @@ void pumpenqactive() {
   } else enqactivecount = true;
 }
 
-
 // void sendfun() {
 //   digitalWrite(15, HIGH);
 //   delay(20);
@@ -936,7 +945,6 @@ void pumpenqactive() {
 //   Serial.println("sending ");
 //   delay(20);
 // }
-
 
 void initEEPROMdatashow() {
   for (int j = 0; j < 50; j++) {
@@ -1086,7 +1094,6 @@ void EEPROMinit() {
   }
 }
 
-
 void sendenq(int eq) {
 
   // last add
@@ -1107,9 +1114,6 @@ void sendenq(int eq) {
   //last add
   // delay(20); //speed
 }
-
-
-
 
 void sendACK1() {
   digitalWrite(15, HIGH);
@@ -2035,7 +2039,6 @@ void pump2Totalizerstatus() {
   digitalWrite(15, LOW);
 }
 
-
 void pump2status() {
   digitalWrite(15, HIGH);
   delay(20);
@@ -2045,7 +2048,6 @@ void pump2status() {
   delay(5);
   digitalWrite(15, LOW);
 }
-
 
 void pump1status() {
   digitalWrite(15, HIGH);
@@ -2093,7 +2095,6 @@ void pricechangeapprove1fun() {
   fms_mqtt_client.publish("detpos/device/price", ppbuffer);
   txledonoff();
 }
-
 
 void finalmqtt1() {
 
@@ -2174,7 +2175,6 @@ void pumpidchange() {  //change incomming pumpid(0 - 8) from device to mqtt pump
   if (Buffer[1] == 0x40) mqttpumpidchange(pumpid1);
   else if (Buffer[1] == 0x41) mqttpumpidchange(pumpid2);
 }
-
 
 void pumapprofun() {
   // char pumpapproArray[13];
@@ -2322,7 +2322,6 @@ void saveall() {
 
   Serial.println("yep all save");
 }
-
 
 void writeString(char add, String data) {
   int _size = data.length();
@@ -2595,7 +2594,6 @@ unsigned char BCCfun1() {
   return lrc;
 }
 
-
 unsigned char BCCfun2() {
 
   unsigned char bccData[18];
@@ -2652,7 +2650,6 @@ void resendpreset() {
     delay(2);
   }
 }
-
 
 void sendCalculatedAppro() {
 
@@ -2730,7 +2727,6 @@ void sendCalculatedAppro() {
 
   sendenq(pumpnum);
 }
-
 
 void resendappro() {
   // delay(100); //speed

@@ -11,8 +11,15 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
-#include <src/Redstar.h>
+#include <src/Redstar.h> /* test features */
 #include <src/_fms_tatsuno.h>
+/* change note */
+/*
+ use restar 
+ uncomment #define USE_RESTAR
+ use tatsuno
+  uncomment #define USE_TATSUNO
+*/
 
 // #define USE_RESTAR
 #define USE_TATSUNO
@@ -55,12 +62,14 @@ void setup() {
 
   fms_pin_mode(BUILTIN_LED, OUTPUT);
 
-  // fms_load_protocol_config();  // load protocol config from nvs storage
+  /* test features protocol selection 
+  fms_load_protocol_config();  // load protocol config from nvs storage
 
-  // while (sysCfg.protocol == "0") {  // wait for protocol to be set
-  //   FMS_LOG_ERROR("Protocol not set, waiting...");
-  //   vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
-  // }
+  while (sysCfg.protocol == "0") {  // wait for protocol to be set
+    FMS_LOG_ERROR("Protocol not set, waiting...");
+    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+  }
+  */
 
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
@@ -78,6 +87,7 @@ void setup() {
   lanfeng.init(1, fms_uart2_serial);  // add slave id
 #endif
 
+
 #ifdef USE_RESTAR
   red_star_init();  // redstar init
 #endif
@@ -86,15 +96,18 @@ void setup() {
   fms_tatsuno_init();  // tatsuno init
 #endif
 
-  // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
-  //   fms_task_create();
-  // }
+/* test features
+  if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
+    fms_task_create();
+  }
+  */
 
    if (fms_initialize_wifi()) {  // wifi is connected create all task s
     fms_task_create();
   }
 
 }
+
 
 void loop() {
 }

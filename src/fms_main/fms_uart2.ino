@@ -47,24 +47,21 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 
 }
 
-
-
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
 
-        #ifdef USE_LANFENG // development features 
-            fms_lanfeng_protocol(); // lanfeng protocol 
+        #ifdef USE_LANFENG /* developemnt features */
+            fms_lanfeng_protocol(); /* lanfeng protocol */
         #endif
 
-        #ifdef USE_RESTAR
+        #ifdef USE_RESTAR /* development features */
          FMS_LOG_INFO("[RESTAR] Starting Redstar Protocol");
-            fms_red_star_protocol_main();  // redstar protocol
+            fms_red_star_protocol_main();  /* red star protocol */
         #endif
 
-        #ifdef USE_TATSUNO
-       // FMS_LOG_INFO("[RESTAR] Starting tatsuno Protocol");
-            fms_tatsuno_protocol_main();     // tatsuno protocol
+        #ifdef USE_TATSUNO /* pprd report development features */
+            fms_tatsuno_protocol_main();     /* tatsuno protocol */
         #endif
 // #ifdef USE_MUX_PC817
 // test_mux();

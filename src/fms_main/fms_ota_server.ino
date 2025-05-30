@@ -227,7 +227,7 @@ static void web_server_task(void* arg) {
     // UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
     // Serial.print("Stack Remaining: ");
     // Serial.println(stackRemaining);  // Prints remaining stack (in words)
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

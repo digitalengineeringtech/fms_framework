@@ -4,6 +4,7 @@ bool initialize_fms_wifi(bool flag) {
     fms_nvs_storage.begin("fms_config", false);
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
+    
     if(ssid_str.length() == 0 || pass_str.length() == 0) {
       gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(500));
@@ -11,6 +12,7 @@ bool initialize_fms_wifi(bool flag) {
       fms_nvs_storage.end();
       return false;
     }
+
     fms_nvs_storage.end();
     FMS_LOG_DEBUG("SSID : %s , PASS : %s", ssid_str, pass_str);
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
@@ -23,11 +25,13 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);  // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
+
     while (WiFi.status() != WL_CONNECTED) {
       gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(500));
       gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(500));
+
       FMS_LOG_INFO("WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
     }

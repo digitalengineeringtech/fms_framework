@@ -21,7 +21,19 @@
 # 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 15 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+/* change note */
+/*
 
+ use restar 
+
+ uncomment #define USE_RESTAR
+
+ use tatsuno
+
+  uncomment #define USE_TATSUNO
+
+*/
+# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 // #define USE_RESTAR
 
 
@@ -63,14 +75,22 @@ void setup() {
 
   fms_pin_mode(2, 0x03);
 
-  // fms_load_protocol_config();  // load protocol config from nvs storage
+  /* test features protocol selection 
 
-  // while (sysCfg.protocol == "0") {  // wait for protocol to be set
-  //   FMS_LOG_ERROR("Protocol not set, waiting...");
-  //   vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
-  // }
+  fms_load_protocol_config();  // load protocol config from nvs storage
 
 
+
+  while (sysCfg.protocol == "0") {  // wait for protocol to be set
+
+    FMS_LOG_ERROR("Protocol not set, waiting...");
+
+    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+
+  }
+
+  */
+# 75 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
   fms_pin_mode(25, 0x03); // Multiplexer
   fms_pin_mode(26, 0x03);
   fms_pin_mode(27 /* enable input (active LOW) */, 0x03);
@@ -80,19 +100,26 @@ void setup() {
   fms_run_sd_test(); // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
   fms_boot_count(true); // boot count
-# 86 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+# 96 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
   fms_tatsuno_init(); // tatsuno init
 
 
-  // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
-  //   fms_task_create();
-  // }
+/* test features
 
+  if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
+
+    fms_task_create();
+
+  }
+
+  */
+# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
    if (fms_initialize_wifi()) { // wifi is connected create all task s
     fms_task_create();
   }
 
 }
+
 
 void loop() {
 }
@@ -447,6 +474,122 @@ static void cli_task(void* arg) {
   }
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_lanfeng_fun.ino"
+# 146 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_lanfeng_fun.ino"
+/* change note lanfeng mqtt */
+
+/* 
+
+//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
+
+//   bool tp_match = false;
+
+
+
+//   String topic_ = String(topic);
+
+//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
+
+//   int last = topic_.lastIndexOf('/');
+
+//   String topic_value = topic_.substring(last+1);
+
+//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
+
+//   int nozzle_num = topic_value.toInt();
+
+//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+
+//   // check if the topic is approved message or not
+
+//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
+
+//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
+
+//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
+
+//     if (incommingMessage == String(approvmsg)){
+
+//       pump_approve[nozzle_num-1] = true;
+
+//       tp_match = true;
+
+//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
+
+//     }
+
+//   }
+
+
+
+  
+
+//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+
+//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+
+//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+
+//     {
+
+//       tp_match = true;
+
+//       switch (i){
+
+//         case 0: {
+
+//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
+
+//           int pumpID = fms_decodePumpId(incommingMessage);
+
+//           int presetAmount = fms_decodePresetAmount(incommingMessage);
+
+//           presetMessageGet = true; // for preset message get from mqtt broker
+
+//           // pump_approve[pumpID-1] = true;
+
+//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
+
+//           break;
+
+//         }
+
+//         case 1: {
+
+//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
+
+//           break;
+
+//         }
+
+//       }
+
+//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
+
+//       break;
+
+//     } 
+
+//     else {
+
+//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
+
+//     }
+
+//   }
+
+
+
+//   if (!tp_match) {
+
+//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
+
+//   }
+
+
+
+
+
+*/
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 /*
 
@@ -648,75 +791,22 @@ void fms_set_protocol_config(const String& protocol) {
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 //#define FMS_MQTT_DEBUG
-# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 char fms_nmf_tp_prefix[64];
-
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
-  Serial0.print("Message arrived [");
+  Serial0.print("fms_mqtt.ino:13:Message arrived [");
   Serial0.print(topic);
   Serial0.print("] ");
-  String incommingMessage = "";
-  for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
-//   bool tp_match = false;
+  String message = "";
+  for (int j = 0; j < length; j++) message += (char)payload[j];
 
-//   String topic_ = String(topic);
-//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
-//   int last = topic_.lastIndexOf('/');
-//   String topic_value = topic_.substring(last+1);
-//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
-//   int nozzle_num = topic_value.toInt();
-//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
-//   // check if the topic is approved message or not
-//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
-//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
-//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
-//     if (incommingMessage == String(approvmsg)){
-//       pump_approve[nozzle_num-1] = true;
-//       tp_match = true;
-//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
-//     }
-//   }
-
-
-//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
-//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
-//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
-//     {
-//       tp_match = true;
-//       switch (i){
-//         case 0: {
-//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
-//           int pumpID = fms_decodePumpId(incommingMessage);
-//           int presetAmount = fms_decodePresetAmount(incommingMessage);
-//           presetMessageGet = true; // for preset message get from mqtt broker
-//           // pump_approve[pumpID-1] = true;
-//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
-//           break;
-//         }
-//         case 1: {
-//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
-//           break;
-//         }
-//       }
-//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
-//       break;
-//     } 
-//     else {
-//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
-//     }
-//   }
-
-//   if (!tp_match) {
-//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
-//   }
 
 
 
 
 
   // mqtt callback for tatsuno protocol
-   tatsuno_pump_setting(topic,incommingMessage); // call tatsuno pump setting function
+   tatsuno_pump_setting(topic,message); // call tatsuno pump setting function
 
 }
 
@@ -743,6 +833,7 @@ void fms_mqtt_reconnect() {
       ;
       fms_mqtt_client.publish(willTopic, "online", true);
       fms_subsbribe_topics();
+      /* old feature use below style */
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
       // fms_mqtt_client.subscribe("detpos/local_server/#");
@@ -752,9 +843,9 @@ void fms_mqtt_reconnect() {
     } else {
       ;
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -771,7 +862,6 @@ static void mqtt_task(void* arg) {
 
   while (true) {
     unsigned long currentMillis = millis();
-
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
@@ -784,9 +874,9 @@ static void mqtt_task(void* arg) {
       ;
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 140 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 140 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -1248,14 +1338,31 @@ bool fm_cli_task_create() {
 
 
 
+
+/* tatsuno parameter */
+
 int length = 0;
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
 
 
+/* 
+
+
+
+#define LED_RED                     GPIO_NUM_32
+
+#define LED_GREEN                   GPIO_NUM_14 
+
+#define LED_BLUE                    GPIO_NUM_13
+
+#define LED_YELLOW                  GPIO_NUM_33
 
 
 
 
+
+*/
+# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 // #define RXD2 16
 // #define TXD2 17
 
@@ -1362,6 +1469,7 @@ bool pumplivefor1 = false; // for select count
 bool pumplivecountfor1 = false; // for select count
 bool pumplivefor2 = false; // for select count
 bool pumplivecountfor2 = false; // for select count
+
 //ak add
 char reloadArry[3];
 bool reloadcount = false;
@@ -1373,6 +1481,7 @@ String final_str;
 unsigned long previousMillis = 0;
 char server_rpy_ary[7];
 int waitcount;
+/* end tatsuno parameter */
 
 
 
@@ -1384,7 +1493,6 @@ void fms_tatsuno_init() {
   enqactivetime1 = millis() / 1000;
 
 }
-
 
 void EEPROMWrite() {
   EEPROM.write(109, 1); //devicenum
@@ -1410,7 +1518,6 @@ void EEPROMWrite() {
 
   Serial0.println("Yepp Save#############################################################");
 }
-
 
 void fms_tatsuno_protocol_main() {
   ;
@@ -1468,9 +1575,9 @@ void fms_tatsuno_protocol_main() {
     enqactivetime1 = millis() / 1000;
     // delay(10);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2 ) * ( TickType_t ) 
-# 223 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 235 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
               1000 
-# 223 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 235 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Adjusted delay for speed
     //delay(2); //speed change here
    ;
@@ -1570,9 +1677,8 @@ void fms_tatsuno_protocol_main() {
   } else pumpenqactive();
 }
 
-
 void tatsuno_pump_setting(char* topic, String payload){
-String incommingMessage = payload;
+ incommingMessage = payload;
 
   if (String(topic) == device_Id_topic) {
     DynamicJsonDocument doc(4096); // Adjust the size based on your JSON data size
@@ -2148,7 +2254,6 @@ void BufferClear() {
   for (int j = 0; j < 50; j++) Buffer[j] = 0x00;
 }
 
-
 void pumpactive() {
 
   activetime = millis() / 1000;
@@ -2179,7 +2284,6 @@ void pumpenqactive() {
   } else enqactivecount = true;
 }
 
-
 // void sendfun() {
 //   digitalWrite(15, HIGH);
 //   delay(20);
@@ -2187,7 +2291,6 @@ void pumpenqactive() {
 //   Serial.println("sending ");
 //   delay(20);
 // }
-
 
 void initEEPROMdatashow() {
   for (int j = 0; j < 50; j++) {
@@ -2337,7 +2440,6 @@ void EEPROMinit() {
   }
 }
 
-
 void sendenq(int eq) {
 
   // last add
@@ -2358,9 +2460,6 @@ void sendenq(int eq) {
   //last add
   // delay(20); //speed
 }
-
-
-
 
 void sendACK1() {
   digitalWrite(15, 0x1);
@@ -3286,7 +3385,6 @@ void pump2Totalizerstatus() {
   digitalWrite(15, 0x0);
 }
 
-
 void pump2status() {
   digitalWrite(15, 0x1);
   delay(20);
@@ -3296,7 +3394,6 @@ void pump2status() {
   delay(5);
   digitalWrite(15, 0x0);
 }
-
 
 void pump1status() {
   digitalWrite(15, 0x1);
@@ -3344,7 +3441,6 @@ void pricechangeapprove1fun() {
   fms_mqtt_client.publish("detpos/device/price", ppbuffer);
   txledonoff();
 }
-
 
 void finalmqtt1() {
 
@@ -3425,7 +3521,6 @@ void pumpidchange() { //change incomming pumpid(0 - 8) from device to mqtt pumpi
   if (Buffer[1] == 0x40) mqttpumpidchange(pumpid1);
   else if (Buffer[1] == 0x41) mqttpumpidchange(pumpid2);
 }
-
 
 void pumapprofun() {
   // char pumpapproArray[13];
@@ -3573,7 +3668,6 @@ void saveall() {
 
   Serial0.println("yep all save");
 }
-
 
 void writeString(char add, String data) {
   int _size = data.length();
@@ -3846,7 +3940,6 @@ unsigned char BCCfun1() {
   return lrc;
 }
 
-
 unsigned char BCCfun2() {
 
   unsigned char bccData[18];
@@ -3903,7 +3996,6 @@ void resendpreset() {
     delay(2);
   }
 }
-
 
 void sendCalculatedAppro() {
 
@@ -3981,7 +4073,6 @@ void sendCalculatedAppro() {
 
   sendenq(pumpnum);
 }
-
 
 void resendappro() {
   // delay(100); //speed
@@ -4072,22 +4163,19 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 
 }
 
-
-
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
-# 66 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
-       // FMS_LOG_INFO("[RESTAR] Starting tatsuno Protocol");
-            fms_tatsuno_protocol_main(); // tatsuno protocol
+# 64 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+            fms_tatsuno_protocol_main(); /* tatsuno protocol */
 
 // #ifdef USE_MUX_PC817
 // test_mux();
 // #endif
    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 72 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
+# 69 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino" 3
              1000 
-# 72 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+# 69 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
              ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -4098,17 +4186,19 @@ bool initialize_fms_wifi(bool flag) {
     fms_nvs_storage.begin("fms_config", false);
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
+
     if(ssid_str.length() == 0 || pass_str.length() == 0) {
       gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
       fmsLog(FMS_LOG_ERROR, "[DEBUG WiFi] wifi .. credential .. value is empty");
       fms_nvs_storage.end();
       return false;
     }
+
     fms_nvs_storage.end();
     Serial0.print("[DEBUG] "); Serial0.printf("SSID : %s , PASS : %s", ssid_str, pass_str); Serial0.println();
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
@@ -4121,24 +4211,26 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.mode(WIFI_MODE_STA);
     WiFi.setAutoReconnect(true); // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
+
     while (WiFi.status() != WL_CONNECTED) {
       gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
       gpio_set_level(GPIO_NUM_33, 0x1);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
+
       fmsLog(FMS_LOG_INFO, "WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 32 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 32 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
     }
     return true;
@@ -4159,15 +4251,15 @@ static void wifi_task(void *arg) {
       fmsLog(FMS_LOG_WARNING, "Failed to connect to WiFi");
       gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 55 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 55 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
       gpio_set_level(GPIO_NUM_33, 0x1);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 53 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
-# 53 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
     } else {
       fmsLog(FMS_LOG_INFO, "Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
@@ -4177,9 +4269,9 @@ static void wifi_task(void *arg) {
       gpio_set_level(GPIO_NUM_14, 0x0);
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
+# 65 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
               1000 
-# 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+# 65 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
               ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
   }
 }

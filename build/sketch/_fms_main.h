@@ -8,7 +8,6 @@
 #include <LittleFS.h>
 #include "chip-debug-report.h"
 #include "esp32-hal-uart.h"
-
 #include <Preferences.h>
 #include <nvs.h>
 #include <nvs_flash.h>
@@ -33,10 +32,10 @@
 #include <esp_ota_ops.h> 
 #include <EEPROM.h>
 
-
 Ticker ticker;
 String firmwareVersion                = "0.1.0";              // Current firmware version
-String deviceName                     = "utmv0.1_";           // device ID (for)  change here like this user can change with configpanel
+String deviceName                     = "ultm_25505v01_";     // device ID (for)  change here like this user can change with configpanel
+
 
 #define CLI_PASSWORD                    "admin"               // cli password     // change this password
 #define BUILTIN_LED                     2  
@@ -53,8 +52,8 @@ String deviceName                     = "utmv0.1_";           // device ID (for)
 #define WIFI_PASSWORD sysCfg.wifi_password      // wifi password
 #define MQTT_SERVER sysCfg.mqtt_server_host     // mqtt server address
 #define MQTT_PORT 1883                          // mqtt port
-#define MQTT_USER "detpos"                           // mqtt user
-#define MQTT_PASSWORD "asdffdsa"                       // mqtt password
+#define MQTT_USER "detpos"                      // mqtt user
+#define MQTT_PASSWORD "asdffdsa"                // mqtt password
 
 #define MQTT_LWT_OFFLINE "offline"              // mqtt last will topic offline
 #define MQTT_LWT_ONLINE "online"                // mqtt last will topic online
@@ -186,11 +185,12 @@ const uint8_t  NOZ_ID            = 01;
 // end modbus address
 
 // from old 
- char approv_topic[22]                 = "detpos/local_server/1";
- char preset_topic[28]                 = "detpos/local_server/preset";  // return from local server
+char approv_topic[22]                 = "detpos/local_server/1";
+char preset_topic[28]                 = "detpos/local_server/preset";  // return from local server
 // char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
- char price_change_topic[26]           = "detpos/local_server/price";  // return from local server
+char price_change_topic[26]           = "detpos/local_server/price";  // return from local server
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
+
 char pplive[25]                     = "detpos/device/livedata/1";
 char ppfinal[22]                    = "detpos/device/Final/1";
 char whreqbuf[20]                   = "detpos/device/whreq";

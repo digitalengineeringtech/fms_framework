@@ -13,8 +13,15 @@
 #include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
-#include <src/Redstar.h>
+#include <src/Redstar.h> /* test features */
 #include <src/_fms_tatsuno.h>
+/* change note */
+/*
+ use restar 
+ uncomment #define USE_RESTAR
+ use tatsuno
+  uncomment #define USE_TATSUNO
+*/
 
 // #define USE_RESTAR
 #define USE_TATSUNO
@@ -40,9 +47,9 @@ fmsLanfeng lanfeng(22, 22);                     // set re de pin (DTR PIN)s
 
 
 /* Main function */
-#line 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 48 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup();
-#line 99 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 112 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void loop();
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_wifi_command(const std::vector<String>& args);
@@ -98,11 +105,11 @@ void fms_load_protocol_config();
 void fms_set_protocol_config(const String& protocol);
 #line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
-#line 82 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_subsbribe_topics();
-#line 89 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 37 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 121 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 70 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 8 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
 void selectMuxChannel(uint8_t channel);
@@ -142,85 +149,85 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
 bool fm_cli_task_create();
-#line 132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 146 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_init();
-#line 142 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 155 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void EEPROMWrite();
-#line 168 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 180 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_protocol_main();
-#line 217 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 229 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void mainfun();
-#line 323 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 334 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void tatsuno_pump_setting(char* topic, String payload);
-#line 471 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 482 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void messageClassified();
-#line 646 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 657 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpreqmqtt();
-#line 676 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 687 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pplivemqtt();
-#line 754 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 765 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedCRC();
-#line 848 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 859 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun();
-#line 878 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 889 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 uint16_t calculate_crc(uint8_t* data, int length, uint16_t polynomial);
-#line 896 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 907 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void BufferClear();
-#line 901 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 911 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpactive();
-#line 917 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 927 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpenqactive();
-#line 941 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 949 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void initEEPROMdatashow();
-#line 986 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 994 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void EEPROMinit();
-#line 1090 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1097 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendenq(int eq);
-#line 1114 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1118 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendACK1();
-#line 1123 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendEOT();
-#line 1133 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1137 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void txledonoff();
-#line 1142 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1146 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void rxledonoff();
-#line 1151 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1155 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void cancelfinalsend();
-#line 1174 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1178 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void finalsend();
-#line 1397 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1401 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendcrcfun();
-#line 1460 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1464 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangefun();
-#line 1504 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1508 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpmqttnumchange();
-#line 1600 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1604 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendpumpstatus(int pump);
-#line 1651 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1655 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumppresetfun();
-#line 1749 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1753 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void reloadfun();
-#line 2007 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2011 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricereqfun();
-#line 2020 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2024 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1Totalizerstatus();
-#line 2029 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2033 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2Totalizerstatus();
-#line 2039 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2042 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2status();
-#line 2050 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2052 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1status();
-#line 2059 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2061 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1Select();
-#line 2067 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2069 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2Select();
-#line 2075 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2077 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangeapprove2fun();
-#line 2086 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2088 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangeapprove1fun();
-#line 2098 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2099 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void finalmqtt1();
-#line 2173 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2174 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpidchange();
 #line 2179 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumapprofun();
@@ -228,23 +235,23 @@ void pumapprofun();
 void hmisetup();
 #line 2300 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void saveall();
-#line 2327 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2326 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void writeString(char add, String data);
-#line 2339 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2338 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void mqttpumpidchange(int pumpid);
-#line 2439 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2438 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumappproSend();
-#line 2489 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2488 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedPreset();
-#line 2564 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2563 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun1();
-#line 2599 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2597 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun2();
-#line 2627 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2625 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void resendpreset();
-#line 2657 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2654 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedAppro();
-#line 2735 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2731 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void resendappro();
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
@@ -252,15 +259,15 @@ bool fms_uart2_begin(bool flag, int baudrate);
 void fm_rx_irq_interrupt();
 #line 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_decode(uint8_t* data, uint32_t len);
-#line 52 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
+#line 50 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 void fms_uart2_task(void* arg);
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 bool initialize_fms_wifi(bool flag);
-#line 38 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+#line 42 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 bool wifi_led_ticker();
-#line 45 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
+#line 49 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 static void wifi_task(void *arg);
-#line 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 48 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup() {
   init_staus_leds();  // initialize status LEDs
 #ifdef USE_CLI
@@ -278,12 +285,14 @@ void setup() {
 
   fms_pin_mode(BUILTIN_LED, OUTPUT);
 
-  // fms_load_protocol_config();  // load protocol config from nvs storage
+  /* test features protocol selection 
+  fms_load_protocol_config();  // load protocol config from nvs storage
 
-  // while (sysCfg.protocol == "0") {  // wait for protocol to be set
-  //   FMS_LOG_ERROR("Protocol not set, waiting...");
-  //   vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
-  // }
+  while (sysCfg.protocol == "0") {  // wait for protocol to be set
+    FMS_LOG_ERROR("Protocol not set, waiting...");
+    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+  }
+  */
 
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
@@ -301,6 +310,7 @@ void setup() {
   lanfeng.init(1, fms_uart2_serial);  // add slave id
 #endif
 
+
 #ifdef USE_RESTAR
   red_star_init();  // redstar init
 #endif
@@ -309,15 +319,18 @@ void setup() {
   fms_tatsuno_init();  // tatsuno init
 #endif
 
-  // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
-  //   fms_task_create();
-  // }
+/* test features
+  if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
+    fms_task_create();
+  }
+  */
 
    if (fms_initialize_wifi()) {  // wifi is connected create all task s
     fms_task_create();
   }
 
 }
+
 
 void loop() {
 }
@@ -677,7 +690,6 @@ void sendPumpRequest(uint8_t nozzleNumber) {
   }
 }
 
-
 bool waitForPumpApproval(int pumpIndex) {
   int wait_time = 0;
   while (!pump_approve[pumpIndex] && wait_time < PUMP_REQUEST_TIMEOUT_MS) {
@@ -690,7 +702,6 @@ bool waitForPumpApproval(int pumpIndex) {
   return pump_approve[pumpIndex];
 }
 
-
 void startPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0001); // pump on & off control 
   if (setPumpResult != 0x01) {
@@ -698,7 +709,6 @@ void startPump(uint16_t pumpStateAddr) {
     return;
   }
 }
-
 
 void stopPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0000); // pump on & off control 
@@ -711,7 +721,6 @@ void stopPump(uint16_t pumpStateAddr) {
 float LivePrice(uint32_t literPerPrice, float l_liter_float) {
   return (literPerPrice) * l_liter_float;  // optional features // S = P × L // live price = Liter per price * live liter
 }
-
 
 void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
   uint32_t liveData_result = lanfeng.readLiveData(liveDataAddr, l_liter);     // get Live Liter
@@ -747,7 +756,6 @@ void startFinalDataPublish() {
   String finalMessage = fms_generateFinalData(1, literPerPrice, s_liter_float, finalPrice, t_liter_float, t_amount_float);
   fms_mqtt_client.publish(ppfinal, finalMessage.c_str());
 }
-
 
 void setLivePrice(float price) {
   uint32_t floatAsInt;
@@ -809,7 +817,68 @@ void fms_lanfeng_protocol() {
     presetMessageGet = false; // reset after using
   }
 }
+
 #endif
+
+/* change note lanfeng mqtt */
+
+/* 
+//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
+//   bool tp_match = false;
+
+//   String topic_ = String(topic);
+//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
+//   int last = topic_.lastIndexOf('/');
+//   String topic_value = topic_.substring(last+1);
+//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
+//   int nozzle_num = topic_value.toInt();
+//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+//   // check if the topic is approved message or not
+//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
+//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
+//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
+//     if (incommingMessage == String(approvmsg)){
+//       pump_approve[nozzle_num-1] = true;
+//       tp_match = true;
+//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
+//     }
+//   }
+
+  
+//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+//     {
+//       tp_match = true;
+//       switch (i){
+//         case 0: {
+//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
+//           int pumpID = fms_decodePumpId(incommingMessage);
+//           int presetAmount = fms_decodePresetAmount(incommingMessage);
+//           presetMessageGet = true; // for preset message get from mqtt broker
+//           // pump_approve[pumpID-1] = true;
+//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
+//           break;
+//         }
+//         case 1: {
+//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
+//           break;
+//         }
+//       }
+//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
+//       break;
+//     } 
+//     else {
+//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
+//     }
+//   }
+
+//   if (!tp_match) {
+//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
+//   }
+
+
+*/
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 /*
@@ -1003,81 +1072,29 @@ void fms_set_protocol_config(const String& protocol) {
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 //#define FMS_MQTT_DEBUG
 #ifdef FMS_MQTT_DEBUG
-  #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[MQTT][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
-  #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[MQTT][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+  #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[fms_mqtt.ino][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+  #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[fms_mqtt.ino][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
 #else
   #define FMS_MQTT_LOG_DEBUG(format, ...)
   #define FMS_MQTT_LOG_ERROR(format, ...)
 #endif
 
-char fms_nmf_tp_prefix[64];
 
+char fms_nmf_tp_prefix[64];
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
+  Serial.print("fms_mqtt.ino:13:Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  String incommingMessage = "";
-  for (int j = 0; j < length; j++) incommingMessage += (char)payload[j];
-//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
-//   bool tp_match = false;
+  String message = "";
+  for (int j = 0; j < length; j++) message += (char)payload[j];
 
-//   String topic_ = String(topic);
-//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
-//   int last = topic_.lastIndexOf('/');
-//   String topic_value = topic_.substring(last+1);
-//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
-//   int nozzle_num = topic_value.toInt();
-//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
-//   // check if the topic is approved message or not
-//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
-//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
-//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
-//     if (incommingMessage == String(approvmsg)){
-//       pump_approve[nozzle_num-1] = true;
-//       tp_match = true;
-//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
-//     }
-//   }
-
-  
-//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
-//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
-//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
-//     {
-//       tp_match = true;
-//       switch (i){
-//         case 0: {
-//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
-//           int pumpID = fms_decodePumpId(incommingMessage);
-//           int presetAmount = fms_decodePresetAmount(incommingMessage);
-//           presetMessageGet = true; // for preset message get from mqtt broker
-//           // pump_approve[pumpID-1] = true;
-//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
-//           break;
-//         }
-//         case 1: {
-//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
-//           break;
-//         }
-//       }
-//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
-//       break;
-//     } 
-//     else {
-//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
-//     }
-//   }
-
-//   if (!tp_match) {
-//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
-//   }
   #ifdef USE_REDSTAR
   // mqtt callback for redstar protocol
-   redstar_pump_setting(topic,incommingMessage); // call redstar pump setting function
+   redstar_pump_setting(topic,message); // call redstar pump setting function
   #endif
   #ifdef USE_TATSUNO
   // mqtt callback for tatsuno protocol
-   tatsuno_pump_setting(topic,incommingMessage); // call tatsuno pump setting function
+   tatsuno_pump_setting(topic,message); // call tatsuno pump setting function
   #endif
 }
 
@@ -1104,6 +1121,7 @@ void fms_mqtt_reconnect() {
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
       fms_mqtt_client.publish(willTopic, "online", true);
       fms_subsbribe_topics();
+      /* old feature use below style */
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
       // fms_mqtt_client.subscribe("detpos/local_server/#");
@@ -1117,9 +1135,9 @@ void fms_mqtt_reconnect() {
   }
 }
 
-unsigned long previous_Millis = 0;
-const long interval = 1000; // Interval for sending messages
-bool ledState_ = false;
+unsigned long previous_Millis   = 0;
+const long interval             = 1000; // Interval for sending messages
+bool ledState_                  = false;
 
 static void mqtt_task(void* arg) {
   BaseType_t rc;
@@ -1128,7 +1146,6 @@ static void mqtt_task(void* arg) {
 
   while (mqttTask) {
     unsigned long currentMillis = millis();
-
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
       fms_mqtt_reconnect();
@@ -2295,11 +2312,23 @@ bool fm_cli_task_create() {
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 
 #ifdef USE_TATSUNO
+
+
+/* tatsuno parameter */
 #define RESPONSE_BUFFER_SIZE 50
 int length = 0;
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
 
 
+/* 
+
+#define LED_RED                     GPIO_NUM_32
+#define LED_GREEN                   GPIO_NUM_14 
+#define LED_BLUE                    GPIO_NUM_13
+#define LED_YELLOW                  GPIO_NUM_33
+
+
+*/
 #define wifiled 33
 #define powerled 32
 #define TXled 27
@@ -2410,6 +2439,7 @@ bool pumplivefor1 = false;       // for select count
 bool pumplivecountfor1 = false;  // for select count
 bool pumplivefor2 = false;       // for select count
 bool pumplivecountfor2 = false;  // for select count
+
 //ak add
 char reloadArry[3];
 bool reloadcount = false;
@@ -2421,6 +2451,7 @@ String final_str;
 unsigned long previousMillis = 0;
 char server_rpy_ary[7];
 int waitcount;
+/* end tatsuno parameter */
 
 
 
@@ -2432,7 +2463,6 @@ void fms_tatsuno_init() {
   enqactivetime1 = millis() / 1000;
 
 }
-
 
 void EEPROMWrite() {
   EEPROM.write(109, 1);  //devicenum
@@ -2458,7 +2488,6 @@ void EEPROMWrite() {
 
   Serial.println("Yepp Save#############################################################");
 }
-
 
 void fms_tatsuno_protocol_main() {
   FMS_TATSUNO_LOG_DEBUG("Running Tatsuno protocol main function");
@@ -2614,9 +2643,8 @@ void fms_tatsuno_protocol_main() {
   } else pumpenqactive();
 }
 
-
 void tatsuno_pump_setting(char* topic, String payload){
-String incommingMessage = payload;
+ incommingMessage = payload;
 
   if (String(topic) == device_Id_topic) {
     DynamicJsonDocument doc(4096);  // Adjust the size based on your JSON data size
@@ -3192,7 +3220,6 @@ void BufferClear() {
   for (int j = 0; j < 50; j++) Buffer[j] = 0x00;
 }
 
-
 void pumpactive() {
 
   activetime = millis() / 1000;
@@ -3223,7 +3250,6 @@ void pumpenqactive() {
   } else enqactivecount = true;
 }
 
-
 // void sendfun() {
 //   digitalWrite(15, HIGH);
 //   delay(20);
@@ -3231,7 +3257,6 @@ void pumpenqactive() {
 //   Serial.println("sending ");
 //   delay(20);
 // }
-
 
 void initEEPROMdatashow() {
   for (int j = 0; j < 50; j++) {
@@ -3381,7 +3406,6 @@ void EEPROMinit() {
   }
 }
 
-
 void sendenq(int eq) {
 
   // last add
@@ -3402,9 +3426,6 @@ void sendenq(int eq) {
   //last add
   // delay(20); //speed
 }
-
-
-
 
 void sendACK1() {
   digitalWrite(15, HIGH);
@@ -4330,7 +4351,6 @@ void pump2Totalizerstatus() {
   digitalWrite(15, LOW);
 }
 
-
 void pump2status() {
   digitalWrite(15, HIGH);
   delay(20);
@@ -4340,7 +4360,6 @@ void pump2status() {
   delay(5);
   digitalWrite(15, LOW);
 }
-
 
 void pump1status() {
   digitalWrite(15, HIGH);
@@ -4388,7 +4407,6 @@ void pricechangeapprove1fun() {
   fms_mqtt_client.publish("detpos/device/price", ppbuffer);
   txledonoff();
 }
-
 
 void finalmqtt1() {
 
@@ -4469,7 +4487,6 @@ void pumpidchange() {  //change incomming pumpid(0 - 8) from device to mqtt pump
   if (Buffer[1] == 0x40) mqttpumpidchange(pumpid1);
   else if (Buffer[1] == 0x41) mqttpumpidchange(pumpid2);
 }
-
 
 void pumapprofun() {
   // char pumpapproArray[13];
@@ -4617,7 +4634,6 @@ void saveall() {
 
   Serial.println("yep all save");
 }
-
 
 void writeString(char add, String data) {
   int _size = data.length();
@@ -4890,7 +4906,6 @@ unsigned char BCCfun1() {
   return lrc;
 }
 
-
 unsigned char BCCfun2() {
 
   unsigned char bccData[18];
@@ -4947,7 +4962,6 @@ void resendpreset() {
     delay(2);
   }
 }
-
 
 void sendCalculatedAppro() {
 
@@ -5025,7 +5039,6 @@ void sendCalculatedAppro() {
 
   sendenq(pumpnum);
 }
-
 
 void resendappro() {
   // delay(100); //speed
@@ -5119,24 +5132,21 @@ void fms_uart2_decode(uint8_t* data, uint32_t len) {
 
 }
 
-
-
 void fms_uart2_task(void* arg) {
   BaseType_t rc;
   while (1) {
 
-        #ifdef USE_LANFENG // development features 
-            fms_lanfeng_protocol(); // lanfeng protocol 
+        #ifdef USE_LANFENG /* developemnt features */
+            fms_lanfeng_protocol(); /* lanfeng protocol */
         #endif
 
-        #ifdef USE_RESTAR
+        #ifdef USE_RESTAR /* development features */
          FMS_LOG_INFO("[RESTAR] Starting Redstar Protocol");
-            fms_red_star_protocol_main();  // redstar protocol
+            fms_red_star_protocol_main();  /* red star protocol */
         #endif
 
-        #ifdef USE_TATSUNO
-       // FMS_LOG_INFO("[RESTAR] Starting tatsuno Protocol");
-            fms_tatsuno_protocol_main();     // tatsuno protocol
+        #ifdef USE_TATSUNO /* pprd report development features */
+            fms_tatsuno_protocol_main();     /* tatsuno protocol */
         #endif
 // #ifdef USE_MUX_PC817
 // test_mux();
@@ -5152,6 +5162,7 @@ bool initialize_fms_wifi(bool flag) {
     fms_nvs_storage.begin("fms_config", false);
     String ssid_str = fms_nvs_storage.getString("ssid");
     String pass_str = fms_nvs_storage.getString("pass");
+    
     if(ssid_str.length() == 0 || pass_str.length() == 0) {
       gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(500));
@@ -5159,6 +5170,7 @@ bool initialize_fms_wifi(bool flag) {
       fms_nvs_storage.end();
       return false;
     }
+
     fms_nvs_storage.end();
     FMS_LOG_DEBUG("SSID : %s , PASS : %s", ssid_str, pass_str);
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
@@ -5171,11 +5183,13 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);  // auto reconnect function
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
+
     while (WiFi.status() != WL_CONNECTED) {
       gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(500));
       gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(500));
+
       FMS_LOG_INFO("WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
     }

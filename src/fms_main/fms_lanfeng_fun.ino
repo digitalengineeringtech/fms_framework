@@ -13,7 +13,6 @@ void sendPumpRequest(uint8_t nozzleNumber) {
   }
 }
 
-
 bool waitForPumpApproval(int pumpIndex) {
   int wait_time = 0;
   while (!pump_approve[pumpIndex] && wait_time < PUMP_REQUEST_TIMEOUT_MS) {
@@ -26,7 +25,6 @@ bool waitForPumpApproval(int pumpIndex) {
   return pump_approve[pumpIndex];
 }
 
-
 void startPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0001); // pump on & off control 
   if (setPumpResult != 0x01) {
@@ -34,7 +32,6 @@ void startPump(uint16_t pumpStateAddr) {
     return;
   }
 }
-
 
 void stopPump(uint16_t pumpStateAddr) {
   uint32_t setPumpResult = lanfeng.setPumpState(pumpStateAddr, 0x0000); // pump on & off control 
@@ -47,7 +44,6 @@ void stopPump(uint16_t pumpStateAddr) {
 float LivePrice(uint32_t literPerPrice, float l_liter_float) {
   return (literPerPrice) * l_liter_float;  // optional features // S = P × L // live price = Liter per price * live liter
 }
-
 
 void publishPumpData(int pumpIndex, uint16_t liveDataAddr, uint16_t priceAddr) {
   uint32_t liveData_result = lanfeng.readLiveData(liveDataAddr, l_liter);     // get Live Liter
@@ -83,7 +79,6 @@ void startFinalDataPublish() {
   String finalMessage = fms_generateFinalData(1, literPerPrice, s_liter_float, finalPrice, t_liter_float, t_amount_float);
   fms_mqtt_client.publish(ppfinal, finalMessage.c_str());
 }
-
 
 void setLivePrice(float price) {
   uint32_t floatAsInt;
@@ -145,4 +140,65 @@ void fms_lanfeng_protocol() {
     presetMessageGet = false; // reset after using
   }
 }
+
 #endif
+
+/* change note lanfeng mqtt */
+
+/* 
+//   FMS_MQTT_LOG_DEBUG("INCOMMING TIOPIC [%s] : %s",topic,incommingMessage);
+//   bool tp_match = false;
+
+//   String topic_ = String(topic);
+//  // get topic last value(for /) deptos/local_server/1 , /1 value or /permit or /price 
+//   int last = topic_.lastIndexOf('/');
+//   String topic_value = topic_.substring(last+1);
+//   // some return topic contain noz id detpos/local_server/1 , check noz id or other 
+//   int nozzle_num = topic_value.toInt();
+//   FMS_MQTT_LOG_DEBUG("Topic value : [%s]:%d", topic_value.c_str(),nozzle_num);
+//   // check if the topic is approved message or not
+//   if(nozzle_num >=1 && nozzle_num <= MAX_NOZZLES){
+//     snprintf(approvmsg,sizeof(approvmsg),"%02dappro",nozzle_num);
+//     FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE GENERTED : %s",approvmsg);
+//     if (incommingMessage == String(approvmsg)){
+//       pump_approve[nozzle_num-1] = true;
+//       tp_match = true;
+//       FMS_MQTT_LOG_DEBUG("APPROVED MESSAGE for Nozzle %d: %s", nozzle_num, incommingMessage.c_str());
+//     }
+//   }
+
+  
+//   for (int i = 0 ; i < fms_sub_topics_value_count; i++){
+//       const char* sub_tp_value = fms_sub_topics_value[i]; // declare in main.h file
+//     if(strcmp(sub_tp_value,topic_value.c_str()) == 0)
+//     {
+//       tp_match = true;
+//       switch (i){
+//         case 0: {
+//           FMS_MQTT_LOG_DEBUG("preset topic matched: %s", topic_value.c_str());
+//           int pumpID = fms_decodePumpId(incommingMessage);
+//           int presetAmount = fms_decodePresetAmount(incommingMessage);
+//           presetMessageGet = true; // for preset message get from mqtt broker
+//           // pump_approve[pumpID-1] = true;
+//           FMS_MQTT_LOG_DEBUG("Pump ID: %d, Preset Amount: %d", pumpID, presetAmount);
+//           break;
+//         }
+//         case 1: {
+//           FMS_MQTT_LOG_DEBUG("price topic matched: %s", topic_value.c_str());
+//           break;
+//         }
+//       }
+//       FMS_MQTT_LOG_DEBUG("MATCH TRUE");
+//       break;
+//     } 
+//     else {
+//         FMS_MQTT_LOG_DEBUG("not matched : [%s] == %s",topic,fms_sub_topics_value[i]);
+//     }
+//   }
+
+//   if (!tp_match) {
+//     FMS_MQTT_LOG_ERROR("Topic not matched : %s", topic);
+//   }
+
+
+*/
