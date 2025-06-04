@@ -32,11 +32,7 @@
 #include <EEPROM.h>
 
 Ticker ticker;
-String firmwareVersion                = "0.1.0";              // Current firmware version
-String deviceName                     = "ultm_25505v01_";     // device ID (for)  change here like this user can change with configpanel
 
-
-#define CLI_PASSWORD                    "admin"               // cli password     // change this password
 #define BUILTIN_LED                     2  
 // Device details
 #define STATION_ID                      1                     // station id
@@ -102,7 +98,8 @@ bool UART_RECEIVE_STATE             = true;
 // nozzle config
 #define MAX_NOZZLES                 2 // change your noz count
 bool pump_approve[MAX_NOZZLES]      = {false};
-// OTA  configuration 
+
+/* OTA  configuration  parameter */
 bool          otaInProgress         = false;
 uint8_t       otaProgress           = 0;
 const char*   updateStatus          = "Idle";
@@ -113,9 +110,9 @@ unsigned long lastUptimeUpdate      = 0;
 unsigned long lastInfoRequest       = 0;
 String cachedInfoResponse           = "";
 const unsigned long INFO_CACHE_TIME = 1000;     // 1 second cache
-const String correctUsername        = "admin";  // change your login username here
-const String correctPassword        = "1234";   // change your login pass here
 bool isAuthenticated                = false;    // optional ota password
+/* end ota configuration parameter */
+
 // UART command flag
 bool use_uart_command               = true;
 bool use_serial1                    = true;

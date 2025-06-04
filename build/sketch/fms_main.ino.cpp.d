@@ -348,8 +348,8 @@ d:\FMS\ Framework\development_version\fms_framework\build\sketch\fms_main.ino.cp
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.2.0\libraries\EEPROM\src/EEPROM.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_cli.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_debug.h \
- d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_filemanager.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_json_helper.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_lanfeng.h \
- d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/Redstar.h \
- d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_tatsuno.h
+ d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_redstar.h \
+ d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_tatsuno.h \
+ d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_filemanager.h

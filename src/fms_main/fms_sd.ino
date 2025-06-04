@@ -78,7 +78,7 @@ static void sd_task(void* arg) {
     */
 
     //rc = xTaskNotify(heventTask, 3, eSetBits);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
     //write_data_sd("HELLO\n\r");
     //
   }

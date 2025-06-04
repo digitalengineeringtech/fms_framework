@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update only if data has changed to reduce DOM operations
     if (!data) return
 
-    elements.deviceName.textContent = data.deviceName || "ESP32 Device"
+    elements.deviceName.textContent = data.deviceName || "ULTM_"
     elements.firmwareVersion.textContent = data.firmwareVersion || "Unknown"
     elements.ipAddress.textContent = data.ipAddress || "Unknown"
     elements.macAddress.textContent = data.macAddress || "Unknown"

@@ -1,40 +1,37 @@
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 /*
 
-     FMS main source file
+  FMS main source file
 
-     Author: Trion
+  Author: Trion
 
-     Date: 2025
+  Date: 2025
 
-     Guided By Senior Engineer : Sir Thiha Kyaw
+  Guided By Senior Engineer : Sir Thiha Kyaw
 
-     Description: This file is the main source file of FMS project.
-
-*/
-# 8 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
-# 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 13 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 15 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-# 16 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
-/* change note */
-/*
-
- use restar 
-
- uncomment #define USE_RESTAR
-
- use tatsuno
-
-  uncomment #define USE_TATSUNO
+  Description: This file is the main source file of FMS project.
 
 */
-# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
-// #define USE_RESTAR
+# 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+/* device login page */
+const String correctUsername = "admin"; /* change your login username here*/
+const String correctPassword = "admin"; /*change your login pass here*/
+const String firmwareVersion = "0.1.0"; /* Current firmware version*/
+String deviceName = "ultm_25505v01_"; /*device ID (for)  change here like this user can change with configpanel*/
+
+/* end change note  */
+
+
+
+
+# 22 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 23 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 25 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 26 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
+# 29 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 
 
 // #define DISABLE_MQTT_DEBUG
@@ -45,19 +42,21 @@
 
 
 
-//#define DISABLE_LANFENG
 
 
+
+
+/* #define USE_RESTAR */
 
 
 FMS_FileManager fileManager;
-fms_cli fms_cli(Serial0 /* cli serial port*/, "admin" /* cli password     // change this password*/); // Use "admin" as the default password change your admin pass here
+fms_cli fms_cli(Serial0 /* cli serial port*/, "admin" /*cli password change this password*/); // Use "admin" as the default password change your admin pass here
 Redstar redstar(Serial1 /* uart2 serial port*/); // create redstar object
 TatsunoProtocol tatsuno(Serial1 /* uart2 serial port*/); // Create an instance of TatsunoProtocol with the HardwareSerial object
 fmsLanfeng lanfeng(22, 22); // set re de pin (DTR PIN)s
 
-
 /* Main function */
+
 void setup() {
   init_staus_leds(); // initialize status LEDs
 
@@ -70,6 +69,7 @@ void setup() {
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
   fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
+  fms_cli.register_command("protocol_config"," Set Protococl Congfig", handle_protocol_config_command, 11, 11);
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
 
 
@@ -90,7 +90,7 @@ void setup() {
   }
 
   */
-# 75 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+# 82 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
   fms_pin_mode(25, 0x03); // Multiplexer
   fms_pin_mode(26, 0x03);
   fms_pin_mode(27 /* enable input (active LOW) */, 0x03);
@@ -100,11 +100,11 @@ void setup() {
   fms_run_sd_test(); // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
   fms_boot_count(true); // boot count
-# 96 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+# 102 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
   fms_tatsuno_init(); // tatsuno init
 
 
-/* test features
+  /* test features
 
   if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
 
@@ -113,13 +113,11 @@ void setup() {
   }
 
   */
-# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
-   if (fms_initialize_wifi()) { // wifi is connected create all task s
+# 111 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+  if (fms_initialize_wifi()) { // wifi is connected create all task s
     fms_task_create();
   }
-
 }
-
 
 void loop() {
 }
@@ -149,30 +147,26 @@ void handle_restart_command(const std::vector<String>& args) {
 
 // Alternative WiFi scan implementation that uses even less memory
 void handle_wifi_scan_safe_command(const std::vector<String>& args) {
-  // Set a very conservative limit on the number of networks to scan
   const int MAX_NETWORKS = 5;
-
   // Start scan
   fms_cli.respond("wifiscan_safe", "Scanning for networks...");
-
-  // Set WiFi to station mode
   WiFi.mode(WIFI_MODE_STA);
   WiFi.disconnect();
-  delay(100);
-
+  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
+# 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+            1000 
+# 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+            ) / ( TickType_t ) 1000U ) ));
   // Use synchronous scan with limited time per channel
   int numNetworks = WiFi.scanNetworks(false, true, false, 200);
-
   if (numNetworks <= 0) {
     fms_cli.respond("wifiscan_safe", numNetworks == 0 ? "No networks found" : "Scan failed");
     return;
   }
-
   // Limit the number of networks to prevent memory issues
   if (numNetworks > MAX_NETWORKS) {
     numNetworks = MAX_NETWORKS;
   }
-
   // Send a simplified response with minimal memory usage
   fms_cli.respond("wifiscan_safe", "Found " + String(numNetworks) + " networks");
 
@@ -422,9 +416,9 @@ void handle_protocol_command(const std::vector<String>& args) {
 
     fms_set_protocol_config("redstar");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 290 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 290 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) )); // Allow time for changes to take effect
     ESP.restart();
     // Set Redstar protocol
@@ -434,9 +428,9 @@ void handle_protocol_command(const std::vector<String>& args) {
 
     fms_set_protocol_config("tatsuno");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 306 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 306 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) )); // Allow time for changes to take effect
     ESP.restart();
     // Set Tatsuno protocol
@@ -462,14 +456,38 @@ size_t custom_print(const uint8_t* buffer, size_t size) {
   return Serial0.write(buffer, size);
 }
 
+// Protocol config command
+void handle_protocol_config_command(const std::vector<String>& args) {
+  if (args.size() < 11) {
+    fms_cli.respond("protocol_config", "Usage: protocol_config <param1> <param2> ... <param11>", false);
+    return;
+  }
+
+  String protocol = args[0];
+  uint8_t devn = args[1].toInt();
+  uint8_t noz = args[2].toInt();
+  uint8_t pumpids[8];
+  for (int i = 0; i < 8; i++) {
+    pumpids[i] = args[i + 3].toInt();
+  }
+  Serial0.printf(
+    "[INFO] Setting protocol configuration: %s, devn: %d, noz: %d, pumpids: %d %d %d %d %d %d %d %d\n",
+    protocol.c_str(), devn, noz,
+    pumpids[0], pumpids[1], pumpids[2], pumpids[3],
+    pumpids[4], pumpids[5], pumpids[6], pumpids[7]
+  );
+
+  fms_cli.respond("protocol_config", "Setting protocol configuration... accepted", true);
+}
+
 static void cli_task(void* arg) {
   BaseType_t rc;
   // cli command
   while (1) {
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 335 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
+# 351 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 335 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 351 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -607,13 +625,13 @@ void fms_boot_count(bool bootsave) {
   }
 
   if (!fms_nvs_storage.begin("fms_config", false)) {
-    fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
+    fmsLog(FMS_LOG_ERROR, "[fms_main_func.ino:13] Failed to initialize NVS storage");
     return;
   }
 
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0) + 1;
   app_cpu = xPortGetCoreID();
-  fmsLog(FMS_LOG_INFO, "CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+  fmsLog(FMS_LOG_INFO, "[fms_main_func.ino:19] CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
 
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // Close NVS storage
@@ -639,10 +657,10 @@ bool fms_initialize_uart2() {
 
 bool fms_initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
-    fmsLog(FMS_LOG_INFO, "Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
+    fmsLog(FMS_LOG_INFO, "[fms_main_func:45] Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
     return true;
   } else {
-    fmsLog(FMS_LOG_WARNING, "Failed to connect to WiFi");
+    fmsLog(FMS_LOG_WARNING, "[fms_main_func:48] Failed to connect to WiFi");
     return false;
   }
 }
@@ -651,9 +669,9 @@ void fms_run_sd_test() {
 
   fms_config_load_sd_test();
   if (!LittleFS.begin(true)) { // preference storage (1MB)
-    Serial0.println("[STORAGE] Failed to mount file system");
+    Serial0.println("[fms_main_func.ino:57] [STORAGE] Failed to mount file system");
   } else {
-    Serial0.println("[STORAGE] File system mounted");
+    Serial0.println("[fms_main_func.ino:59] [STORAGE] File system mounted");
   }
   // load system config file
 
@@ -947,7 +965,7 @@ ota server
     v 0.1 ota server
 
 */
-# 15 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 14 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 // For large uploads - increase buffer size
 
 
@@ -1008,7 +1026,7 @@ void handleLogout() {
 }
 
 void fms_set_ota_server() {
-  fmsLog(FMS_LOG_INFO, "ota server created");
+  fmsLog(FMS_LOG_INFO, "[fms_ota_server.ino:75] ota server created");
   server.enableCORS(true);
   const char* cacheControl = "max-age=86400";
   server.serveStatic("/", LittleFS, "/login.html", cacheControl);
@@ -1043,9 +1061,9 @@ void fms_set_ota_server() {
       esp_task_wdt_init(&wdtConfig);
 
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 109 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+# 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                 1000 
-# 109 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 108 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                 ) / ( TickType_t ) 1000U ) ));
       ESP.restart();
     },
@@ -1155,6 +1173,7 @@ static void web_server_task(void* arg) {
   deviceName = deviceName + String(WiFi.macAddress()).c_str();
   fms_set_ota_server();
   server.begin();
+
   while (1) {
     server.handleClient();
     // Update uptime counter (every second)
@@ -1162,19 +1181,31 @@ static void web_server_task(void* arg) {
       uptime++;
       lastUptimeUpdate = millis();
     }
-    // sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
-    // pending to upgrade  mongoose wizard ui builder 
-    // UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
-    // Serial.print("Stack Remaining: ");
-    // Serial.println(stackRemaining);  // Prints remaining stack (in words)
-    vTaskDelay(1000 / ( ( TickType_t ) 1000 / 
-# 230 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
-                     1000 
-# 230 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
-                     ));
+
+    vTaskDelay(100 / ( ( TickType_t ) 1000 / 
+# 226 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+                    1000 
+# 226 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+                    ));
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
+
+/* change note */
+/* user take stack out error */
+/* 
+
+sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
+
+pending to upgrade  mongoose wizard ui builder 
+
+UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
+
+Serial.print("Stack Remaining: ");
+
+Serial.println(stackRemaining);  // Prints remaining stack (in words)
+
+*/
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_redstar_fun.ino"
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 /*
@@ -1267,7 +1298,7 @@ static void sd_task(void* arg) {
     */
 # 80 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
     //rc = xTaskNotify(heventTask, 3, eSetBits);
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
 # 81 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino" 3
               1000 
 # 81 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
@@ -1337,17 +1368,12 @@ bool fm_cli_task_create() {
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 
 
-
-
 /* tatsuno parameter */
 
 int length = 0;
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
 
-
-/* 
-
-
+/*
 
 #define LED_RED                     GPIO_NUM_32
 
@@ -1357,12 +1383,9 @@ int length = 0;
 
 #define LED_YELLOW                  GPIO_NUM_33
 
-
-
-
-
 */
-# 24 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+
+
 // #define RXD2 16
 // #define TXD2 17
 
@@ -1383,7 +1406,6 @@ unsigned char page[9] = { 0X5A, 0XA5, 0X07, 0X82, 0X00, 0X84, 0X5A, 0X01, 0X00 }
 unsigned char deviceary[8] = { 0x5A, 0XA5, 0x05, 0X82, 0x31, 0x00, 0x00, 0x00 };
 
 int wifitrytime = 0;
-
 
 // to dispenser
 uint8_t enq1[4] = { 0x04, 0x40, 0x51, 0x05 };
@@ -1434,6 +1456,7 @@ int pumpid7;
 int pumpid8;
 int nozzlenum;
 int devicenum;
+
 int pumpmqttnum;
 char presetmqttary[11];
 char pricechangeary[7];
@@ -1483,81 +1506,135 @@ char server_rpy_ary[7];
 int waitcount;
 /* end tatsuno parameter */
 
+/* tatsuno config pump setting parameter */
+struct TatsunoConfig {
+  uint8_t devn;
+  uint8_t noz;
+  uint8_t pumpids[8];
+};
 
+TatsunoConfig tatsunoConfig = {
+  .devn = 1, // Device number
+  .noz = 2, // Nozzle number
+  .pumpids = {1, 2, 0, 0, 0, 0, 0, 0} // Pump IDs
+};
+bool fms_save_tatsuno_config(TatsunoConfig& cfg);
+bool fms_load_tatsuno_config(TatsunoConfig& cfg);
+
+/*** end pump setting parameter ****/
 
 void fms_tatsuno_init() {
-  tatsuno.begin(19200, true, 16, 17); // Initialize TatsunoProtocol with baud rate 19200 and debug mode enabled
-  EEPROM.begin(512); // Initialize EEPROM with size 512 bytes
-  initEEPROMdatashow();
-  EEPROMinit();
+  pinMode(22, 0x03);
+  tatsuno.begin(19200, true, 16, 17);
+  //fms_save_tatsuno_config(tatsunoConfig); /* Save Tatsuno configuration to NVS storage*/
+  vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
+# 162 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+            1000 
+# 162 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+            ) / ( TickType_t ) 1000U ) ));
+  fms_load_tatsuno_config(tatsunoConfig); /* Load Tatsuno configuration from NVS storage */
+  fms_tatsuno_device_setup(); /*Setup Tatsuno device*/
   enqactivetime1 = millis() / 1000;
-
 }
 
-void EEPROMWrite() {
-  EEPROM.write(109, 1); //devicenum
-  EEPROM.commit();
-  EEPROM.write(110, 2); // nozzlenum
-  EEPROM.commit();
-  EEPROM.write(101, 1);
-  EEPROM.commit();
-  EEPROM.write(102, 2);
-  EEPROM.commit();
-  EEPROM.write(103, 0);
-  EEPROM.commit();
-  EEPROM.write(104, 0);
-  EEPROM.commit();
-  EEPROM.write(105, 0);
-  EEPROM.commit();
-  EEPROM.write(106, 0);
-  EEPROM.commit();
-  EEPROM.write(107, 0);
-  EEPROM.commit();
-  EEPROM.write(108, 0);
-  EEPROM.commit();
+/* save tatsuno config */
+bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
+  if (!fms_nvs_storage.begin("fms_ts_config", false)) {
+    fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
+    return false;
+  }
 
-  Serial0.println("Yepp Save#############################################################");
+  fms_nvs_storage.putUChar("devn", cfg.devn);
+  fms_nvs_storage.putUChar("noz", cfg.noz);
+
+  char key[12]; // enough for "pumpidX" + '\0'
+  for (int i = 0; i < 8; i++) {
+    snprintf(key, sizeof(key), "pumpid%d", i + 1);
+    fms_nvs_storage.putUChar(key, cfg.pumpids[i]);
+  }
+
+  fms_nvs_storage.end();
+  fmsLog(FMS_LOG_INFO, "Tatsuno configuration saved successfully");
+  return true;
 }
+
+bool fms_load_tatsuno_config(TatsunoConfig& cfg) {
+  if (!fms_nvs_storage.begin("fms_ts_config", true)) {
+    fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
+    return false;
+  }
+
+  cfg.devn = fms_nvs_storage.getUChar("devn", 1);
+  cfg.noz = fms_nvs_storage.getUChar("noz", 2);
+
+  char key[12];
+  for (int i = 0; i < 8; i++) {
+    snprintf(key, sizeof(key), "pumpid%d", i + 1);
+    cfg.pumpids[i] = fms_nvs_storage.getUChar(key, i + 1);
+  }
+
+  fms_nvs_storage.end();
+
+  // Update global or local variables if needed
+  pumpid1 = cfg.pumpids[0];
+  pumpid2 = cfg.pumpids[1];
+  pumpid3 = cfg.pumpids[2];
+  pumpid4 = cfg.pumpids[3];
+  pumpid5 = cfg.pumpids[4];
+  pumpid6 = cfg.pumpids[5];
+  pumpid7 = cfg.pumpids[6];
+  pumpid8 = cfg.pumpids[7];
+
+  devicenum = cfg.devn;
+  nozzlenum = cfg.noz;
+
+  fmsLog(FMS_LOG_INFO, "Tatsuno configuration loaded successfully");
+
+  Serial0.printf("%d  %d  %d  %d  %d  %d  %d  %d  %d  %d",
+  devicenum,
+  nozzlenum,
+  pumpid1,
+  pumpid2,
+  pumpid3,
+  pumpid4,
+  pumpid5,
+  pumpid6,
+  pumpid7,
+  pumpid8);
+  return true;
+}
+/* end save tatsuno config */
 
 void fms_tatsuno_protocol_main() {
-  ;
-  digitalWrite(32, 0x1);
-
-
+  gpio_set_level(GPIO_NUM_13, 1);
   // if (!digitalRead(hmi)) hmivalue = true;
  hmivalue = false; // Set to false for testing, change as needed
   if (hmivalue) {
-    Serial0.println("HMI ");
+    Serial0.println("[fms_tatsuno_fun.ino]  HMI ");
     hmisetup();
   } else {
-
-
     if (WiFi.status() == WL_CONNECTED) {
-      // digitalWrite(wifiled, HIGH);
       if (!fms_mqtt_client.connected()) {
         //  serverConnectionIcon("disconnected");
-        Serial0.println("Cloud disconnect");
+        Serial0.println("[fms_tatsuno_fun.ino]  Cloud disconnect");
         myfirst = true;
-        digitalWrite(33, 0x0);
+        gpio_set_level(GPIO_NUM_32, 0x0);
       } else {
-        // Serial.println("Connected to the Cloud");
-        digitalWrite(33, 0x1);
-
+        // Serial.println("[fms_tatsuno_fun.ino]  Connected to the Cloud");
+          gpio_set_level(GPIO_NUM_32, 0x1);
+          gpio_set_level(GPIO_NUM_14, 0x1);
         if (myfirst) {
           sendenq(1);
           mainfun();
           myfirst = false;
           pricereqfun();
-
         }
         // pumpactive();
       }
-
     } else {
-      Serial0.println("Not Connected");
+      Serial0.println("[fms_tatsuno_fun.ino]  Not Connected");
      // initWiFi();
     }
-
     // if (!client.connected()) {
     //   reconnect();
     // }
@@ -1575,39 +1652,38 @@ void fms_tatsuno_protocol_main() {
     enqactivetime1 = millis() / 1000;
     // delay(10);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2 ) * ( TickType_t ) 
-# 235 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 282 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
               1000 
-# 235 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 282 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Adjusted delay for speed
     //delay(2); //speed change here
-   ;
+   Serial0.printf("Buffer[%d] : 0x%02X", i , Buffer[i]);
+
     i++;
 
     if (Buffer[i - 1] == 0x00) i = 0; // might delete later
 
     if (Buffer[i - 1] == 0x04) {
-      // Serial.print(addresscount);
-      // Serial.println("get04");
+      // Serial.println(addresscount);
+      // Serial.println("[fms_tatsuno_fun.ino]  get04");
       i = 0;
 
       addresscount++; // enq for another pump
-      Serial0.print(addresscount);
-      Serial0.println("get04");
+      Serial0.printf("Address Count : %d",addresscount);
+      Serial0.println("[fms_tatsuno_fun.ino]  get04");
 
       // add reload fun
 
       if (reloadcount) {
         reloadfun();
-
         reloadcount = false;
       }
 
       // else
       switch (pumppresetcount) {
         case true:
-          Serial0.println("yep u got");
+          Serial0.println("[fms_tatsuno_fun.ino] yep u got");
           pumppresetfun();
-
           pumppresetcount = false;
 
           // pumplivefor1 = true;
@@ -1625,15 +1701,15 @@ void fms_tatsuno_protocol_main() {
 
             if (addresscount == 2 && pump2live) {
               sendpumpstatus(2);
-              // Serial.println("i gety");
+              // Serial.println("[fms_tatsuno_fun.ino]  i gety");
             } else if (addresscount == 1 && pump1live) {
               sendpumpstatus(1);
-              Serial0.println("i gety");
+              Serial0.println("[fms_tatsuno_fun.ino]  i gety");
             }
 
 
             else {
-              Serial0.print("yep ");
+              Serial0.println("[fms_tatsuno_fun.ino]  yep ");
               sendenq(addresscount);
 
               //loadoffadd
@@ -1654,10 +1730,10 @@ void fms_tatsuno_protocol_main() {
     }
 
     else if (Buffer[i - 1] == 0x03) { // GetdataFrom dispenser
-      Buffer[i] = Serial2.read();
+      Buffer[i] = Serial1 /* uart2 serial port*/.read();
       // delay(20); //speed
       delay(2); //speed
-      // Serial.println("getCRCdata");
+      // Serial.println("[fms_tatsuno_fun.ino]  getCRCdata");
       i = 0;
 
       //loadoffadd
@@ -1666,7 +1742,7 @@ void fms_tatsuno_protocol_main() {
       messageClassified();
 
     } else if (Buffer[i - 1] == 0x10) { // Get ACK From dispenser
-      Buffer[i] = Serial2.read();
+      Buffer[i] = Serial1 /* uart2 serial port*/.read();
       if (Buffer[i] == 0x31) {
         sendEOT();
       }
@@ -1677,6 +1753,7 @@ void fms_tatsuno_protocol_main() {
   } else pumpenqactive();
 }
 
+/* mqtt callback */
 void tatsuno_pump_setting(char* topic, String payload){
  incommingMessage = payload;
 
@@ -1685,7 +1762,7 @@ void tatsuno_pump_setting(char* topic, String payload){
     DeserializationError error = deserializeJson(doc, incommingMessage);
 
     if (error) {
-      Serial0.print(((reinterpret_cast<const __FlashStringHelper *>(("JSON parsing failed: ")))));
+      Serial0.println(((reinterpret_cast<const __FlashStringHelper *>(("JSON parsing failed: ")))));
       Serial0.println(error.c_str());
       return;
     }
@@ -1710,16 +1787,17 @@ void tatsuno_pump_setting(char* topic, String payload){
     pumpid7 = doc["pumpid7"].as<const int>();
     pumpid8 = doc["pumpid8"].as<const int>();
 
-    Serial0.println(devicenum);
-    Serial0.println(nozzlenum);
-    Serial0.println(pumpid1);
-    Serial0.println(pumpid2);
-    Serial0.println(pumpid3);
-    Serial0.println(pumpid4);
-    Serial0.println(pumpid5);
-    Serial0.println(pumpid6);
-    Serial0.println(pumpid7);
-    Serial0.println(pumpid8);
+Serial0.printf("devicenum: %d ,", devicenum);
+Serial0.printf("nozzlenum: %d ,", nozzlenum);
+Serial0.printf("pumpid1: %d ,", pumpid1);
+Serial0.printf("pumpid2: %d ,", pumpid2);
+Serial0.printf("pumpid3: %d ,", pumpid3);
+Serial0.printf("pumpid4: %d ,", pumpid4);
+Serial0.printf("pumpid5: %d ,", pumpid5);
+Serial0.printf("pumpid6: %d ,", pumpid6);
+Serial0.printf("pumpid7: %d ,", pumpid7);
+Serial0.printf("pumpid8: %d ,", pumpid8);
+
 
     EEPROM.write(101, pumpid1);
     EEPROM.commit();
@@ -1741,7 +1819,7 @@ void tatsuno_pump_setting(char* topic, String payload){
     EEPROM.commit();
     EEPROM.write(110, nozzlenum);
     EEPROM.commit();
-    Serial0.println("yep all save");
+    Serial0.println("[fms_tatsuno_fun.ino]  yep all save");
   }
 
 
@@ -1766,11 +1844,11 @@ void tatsuno_pump_setting(char* topic, String payload){
   if (String(topic) == String(pumppresetbuf)) { // preset change
     rxledonoff();
     incommingMessage.toCharArray(presetmqttary, incommingMessage.length() + 1);
-    Serial0.print("preset is ");
-    Serial0.println(presetmqttary);
+    Serial0.printf("preset is: %s", presetmqttary);
 
-    Serial0.print(presetmqttary[0], 16);
-    Serial0.print(presetmqttary[1], 16);
+
+    Serial0.println(presetmqttary[0], 16);
+    Serial0.println(presetmqttary[1], 16);
 
     charArray[0] = presetmqttary[0];
     charArray[1] = presetmqttary[1];
@@ -1802,7 +1880,7 @@ void tatsuno_pump_setting(char* topic, String payload){
 
   if (String(topic) == String(server_rpy)) {
     incommingMessage.toCharArray(server_rpy_ary, incommingMessage.length() + 1);
-    // Serial.println("hey i am working");
+    // Serial.println("[fms_tatsuno_fun.ino]  hey i am working");
     char temp_rp[4];
 
     for (int i = 0; i < 5; i++) {
@@ -1819,7 +1897,7 @@ void tatsuno_pump_setting(char* topic, String payload){
     Serial0.println(resetid[1]);
     // delay(4000);
     if (atoi(resetid) == devicenum) {
-      Serial0.println("yep");
+      Serial0.println("[fms_tatsuno_fun.ino]  yep");
       // ESP.restart();
     }
   }
@@ -2052,12 +2130,8 @@ void pplivemqtt() {
 
 
   ppbuffer[2] = 'L';
-
   int y = 0;
-
-
   for (int j = 6; j < 12; j++) {
-
     if (j == 9) {
       ppbuffer[y + 3] = '.';
       y++;
@@ -2098,21 +2172,16 @@ void pplivemqtt() {
     ppbuffer[y + 3] = Buffer[j];
     y++;
   }
-
-
   zerocount = true;
-  Serial0.println(ppbuffer);
 
-
+  Serial0.printf("ppbuffer : %s " ,ppbuffer);
   fms_mqtt_client.publish(pplive, ppbuffer);
   txledonoff();
 }
 
 void sendCalculatedCRC() {
-
   uint8_t unCalculatedCRCdata[6];
   for (int y = 0; y < 6; y++) {
-
     unCalculatedCRCdata[y] = Buffer[y + 3];
   }
   uint16_t polynomial = 0x8408; // CRC-CCITT polynomial
@@ -2123,17 +2192,16 @@ void sendCalculatedCRC() {
   uint16_t crc_resultLowbyte = ((uint8_t)((crc_result) & 0xff));
   uint16_t crc_plus = crc_resultHighbyte + crc_resultLowbyte;
 
-  Serial0.println("your crc final is ");
-  Serial0.print(crc_plus);
+  Serial0.printf("crc final value %d \n",crc_plus);
 
   if (crc_plus > 255) {
     crc_plus = crc_plus - 256;
-    Serial0.println("Warnning..................................................CRC is higher255");
+    Serial0.println("[fms_tatsuno_fun.ino]  Warnning..................................................CRC is higher255");
   }
 
 
 
-  Serial0.print("CRC without initial value: 0x");
+  Serial0.println("[fms_tatsuno_fun.ino]  CRC without initial value: 0x");
   Serial0.println(crc_result, 16);
 
   String str;
@@ -2193,12 +2261,12 @@ void sendCalculatedCRC() {
 
   delay(50); //speed
 
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   // delay(20);
-  Serial2.write(CalculatedCRCdata, 9);
+  Serial1 /* uart2 serial port*/.write(CalculatedCRCdata, 9);
   delay(7);
-  digitalWrite(15, 0x0);
-  Serial0.println("sending CRC");
+  digitalWrite(22, 0x0);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending CRC");
   // delay(20);
 }
 
@@ -2220,14 +2288,12 @@ unsigned char BCCfun() {
     lrc ^= bccData[j];
   }
   // Print LRC checksum in hexadecimal and decimal format
-  Serial0.print("LRC Checksum (Hex): 0x");
-  if (lrc < 0x10) {
-    Serial0.print("0");
-  }
-  Serial0.println(lrc, 16);
 
-  Serial0.print("LRC Checksum (Decimal): ");
-  Serial0.println(lrc);
+  if (lrc < 0x10) {
+    Serial0.println("[fms_tatsuno_fun.ino]  0");
+  }
+Serial0.printf("LRC Checksum (Hex): 0x%02X", lrc);
+Serial0.printf("LRC Checksum (Decimal): %d", lrc);
 
   return lrc;
 }
@@ -2260,8 +2326,8 @@ void pumpactive() {
 
   if ((activetime - activetime1) > 5) {
     if (activecount) {
-      Serial0.println("active");
-      Serial0.println(activebuf);
+      Serial0.println("[fms_tatsuno_fun.ino]  active");
+      Serial0.printf("topic : [%s]", activebuf);
       fms_mqtt_client.publish(activebuf, "1");
       txledonoff();
       activecount = false;
@@ -2276,7 +2342,7 @@ void pumpenqactive() {
 
   if ((enqactivetime - enqactivetime1) > 3) {
     if (enqactivecount) {
-      Serial0.println("enqactive");
+      Serial0.println("[fms_tatsuno_fun.ino]  enqactive");
       sendenq(1);
       enqactivecount = false;
     }
@@ -2285,59 +2351,14 @@ void pumpenqactive() {
 }
 
 // void sendfun() {
-//   digitalWrite(15, HIGH);
+//   digitalWrite(DIR_PIN, HIGH);
 //   delay(20);
-//   Serial2.write(enq1, 4);
-//   Serial.println("sending ");
+//   fms_uart2_serial.write(enq1, 4);
+//   Serial.println("[fms_tatsuno_fun.ino]  sending ");
 //   delay(20);
 // }
 
-void initEEPROMdatashow() {
-  for (int j = 0; j < 50; j++) {
-    ssidBuf[j] = EEPROM.read(j);
-  }
-  for (int j = 50; j < 100; j++) {
-    passBuf[j - 50] = EEPROM.read(j);
-  }
-  Serial0.print(ssidBuf);
-  Serial0.print("  ");
-  Serial0.println(passBuf);
-
-  pumpid1 = EEPROM.read(101);
-  pumpid2 = EEPROM.read(102);
-  pumpid3 = EEPROM.read(103);
-  pumpid4 = EEPROM.read(104);
-  pumpid5 = EEPROM.read(105);
-  pumpid6 = EEPROM.read(106);
-  pumpid7 = EEPROM.read(107);
-  pumpid8 = EEPROM.read(108);
-
-  devicenum = EEPROM.read(109);
-  nozzlenum = EEPROM.read(110);
-
-  Serial0.print(devicenum);
-  Serial0.print("  ");
-  Serial0.print(nozzlenum);
-  Serial0.print("  ");
-  Serial0.print(pumpid1);
-  Serial0.print("  ");
-  Serial0.print(pumpid2);
-  Serial0.print("  ");
-  Serial0.print(pumpid3);
-  Serial0.print("  ");
-  Serial0.print(pumpid4);
-  Serial0.print("  ");
-  Serial0.print(pumpid5);
-  Serial0.print("  ");
-  Serial0.print(pumpid6);
-  Serial0.print("  ");
-  Serial0.print(pumpid7);
-  Serial0.print("  ");
-  Serial0.print(pumpid8);
-  Serial0.println("  ");
-}
-
-void EEPROMinit() {
+void fms_tatsuno_device_setup() {
 
   if (devicenum == 1) {
     //pumpreqbuf
@@ -2445,58 +2466,61 @@ void sendenq(int eq) {
   // last add
   // delay(50);   
   delay(10); //speed
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   // delay(20)
   delay(10); //speed
-  if (eq == 1) Serial2.write(enq1, sizeof(enq1));
-  else if (eq == 2) Serial2.write(enq2, sizeof(enq2));
-  Serial0.print("SendEnq ");
-  Serial0.println(eq);
+  if (eq == 1) Serial1 /* uart2 serial port*/.write(enq1, sizeof(enq1));
+  else if (eq == 2) Serial1 /* uart2 serial port*/.write(enq2, sizeof(enq2));
+
+  Serial0.printf("[fms_tatsuno_fun.ino] SendEnq : %d \n", eq);
+
 
   delay(3.5);
   // delay(6.8);
   // delay(4);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   //last add
   // delay(20); //speed
 }
 
 void sendACK1() {
-  digitalWrite(15, 0x1);
-  Serial2.write(ACK1, sizeof(ACK1));
-  Serial0.println("sending ACK");
+  digitalWrite(22, 0x1);
+  Serial1 /* uart2 serial port*/.write(ACK1, sizeof(ACK1));
+  Serial0.println("[fms_tatsuno_fun.ino]  sending ACK");
 
   delay(2);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void sendEOT() {
-  digitalWrite(15, 0x1);
-  Serial2.write(EOT, 1); //eot
-  Serial0.println("sending EOT ");
+  digitalWrite(22, 0x1);
+  Serial1 /* uart2 serial port*/.write(EOT, 1); //eot
+  Serial0.println("[fms_tatsuno_fun.ino]  sending EOT ");
   delay(4);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 
   // sendenq(1);
 }
 
 void txledonoff() {
-  digitalWrite(27, 0x1);
-
-  delay(10);
-  digitalWrite(27, 0x0);
-  // delay(10);
-  // delay(10);
+  gpio_set_level(GPIO_NUM_33,0x0);
+  vTaskDelay(10 / ( ( TickType_t ) 1000 / 
+# 1131 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+                 1000 
+# 1131 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+                 )); // delay for 10 ms
+  gpio_set_level(GPIO_NUM_33, 0x1);
 }
 
 void rxledonoff() {
-  digitalWrite(26, 0x1);
-  delay(10);
-  digitalWrite(26, 0x0);
-  // delay(10);
-  // delay(10);
+  gpio_set_level(GPIO_NUM_13, 0x1);
+  vTaskDelay(10 / ( ( TickType_t ) 1000 / 
+# 1137 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+                 1000 
+# 1137 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+                 )); // delay for 10 ms
+  gpio_set_level(GPIO_NUM_13, 0x0);
 }
-
 ///// cancel final add
 void cancelfinalsend() {
 
@@ -2516,7 +2540,7 @@ void cancelfinalsend() {
   ppbuffer[6] = 'e';
   ppbuffer[7] = 'l';
 
-  Serial0.println(ppbuffer);
+  Serial0.printf("ppbuffer : %s" ,ppbuffer);
   fms_mqtt_client.publish(reqcancelbuf, ppbuffer);
   txledonoff();
 }
@@ -2532,11 +2556,11 @@ void finalsend() {
 
   sendACK1();
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   delay(30);
-  if (Serial2.available()) {
-    Serial0.print("U got");
-    Serial0.println(Serial2.read());
+  if (Serial1 /* uart2 serial port*/.available()) {
+  int receivedByte = Serial1 /* uart2 serial port*/.read();
+  Serial0.printf("U got: 0x%02X (%d)", receivedByte, receivedByte);
     delay(10);
   }
 
@@ -2546,15 +2570,15 @@ void finalsend() {
   int count1;
   char charack0[2];
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   // delay(500);
   delay(30);
-  if (Serial2.available()) {
-    Serial0.println("U got ");
-    charack0[0] = Serial2.read();
-    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -2571,14 +2595,14 @@ void finalsend() {
   // }
 
   // delay(50);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   delay(30);
-  if (Serial2.available()) {
-    Serial0.println("U got2 ");
-    charack0[0] = Serial2.read();
-    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got2 ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -2590,21 +2614,18 @@ void finalsend() {
 
   char totalizerary[33];
   int totalizercount = 0;
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   delay(50);
-  while (Serial2.available()) {
+  while (Serial1 /* uart2 serial port*/.available()) {
 
-    totalizerary[totalizercount] = Serial2.read();
-    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
-    Serial0.print(totalizercount);
-    Serial0.print("// ");
-    Serial0.print(totalizerary[totalizercount], 16);
-    Serial0.print(" ");
+    totalizerary[totalizercount] = Serial1 /* uart2 serial port*/.read();
+    // if (charack0[0] == 0x04) charack0[0] =  fms_uart2_serial.read();
+    Serial0.printf("%d // 0x%02X , ", totalizercount, totalizerary[totalizercount]);
     delay(10);
     if (totalizerary[totalizercount] == 0x03) {
-      totalizerary[totalizercount + 1] = Serial2.read();
+      totalizerary[totalizercount + 1] = Serial1 /* uart2 serial port*/.read();
       delay(10);
-      Serial0.println();
+      Serial0.println("[fms_tatsuno_fun.ino]  ");
       break;
     }
     totalizercount++;
@@ -2614,31 +2635,29 @@ void finalsend() {
   while (totalizerary[4] != 0x35) { // wait for totalizer
 
     sendACK1();
-    digitalWrite(15, 0x0);
+    digitalWrite(22, 0x0);
     delay(30);
-    if (Serial2.available()) {
-      Serial0.print("U got4 ");
-      Serial0.println(Serial2.read());
+    if (Serial1 /* uart2 serial port*/.available()) {
+   char ch = Serial1 /* uart2 serial port*/.read();
+    Serial0.printf("U got char: %c (0x%02X)", ch, ch);
+
     }
     sendenq(pumpnum);
 
     totalizercount = 0;
 
-    digitalWrite(15, 0x0);
+    digitalWrite(22, 0x0);
     delay(50);
-    while (Serial2.available()) {
+    while (Serial1 /* uart2 serial port*/.available()) {
 
-      totalizerary[totalizercount] = Serial2.read();
-      // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
-      Serial0.print(totalizercount);
-      Serial0.print("// ");
-      Serial0.print(totalizerary[totalizercount], 16);
-      Serial0.print(" ");
+      totalizerary[totalizercount] = Serial1 /* uart2 serial port*/.read();
+      Serial0.printf("%d // 0x%02X", totalizercount, totalizerary[totalizercount]);
+      // if (charack0[0] == 0x04) charack0[0] =  fms_uart2_serial.read();
       delay(10);
       if (totalizerary[totalizercount] == 0x03) {
-        totalizerary[totalizercount + 1] = Serial2.read();
+        totalizerary[totalizercount + 1] = Serial1 /* uart2 serial port*/.read();
         delay(10);
-        Serial0.println();
+        Serial0.println("[fms_tatsuno_fun.ino]   ");
         break;
       }
       totalizercount++;
@@ -2672,12 +2691,12 @@ void finalsend() {
   zerocount = true;
   ppbuffer[y] = 'A';
   y++;
-  // Serial.println("my j is");
+  // Serial.println("[fms_tatsuno_fun.ino]  my j is");
 
   for (int j = 21; j < 31; j++) {
     // Serial.println(j);
     if (totalizerary[j] == 0x30 && zerocount) {
-      // Serial.print("zero");
+      // Serial.println("[fms_tatsuno_fun.ino]  zero");
       continue;
     }
     if (totalizerary[j] != 0x30) {
@@ -2685,13 +2704,13 @@ void finalsend() {
     }
     ppbuffer[y] = totalizerary[j];
     // Serial.println(j);
-    // Serial.print(ppbuffer[y]);
+    // Serial.println(ppbuffer[y]);
     y++;
   }
 
-  Serial0.println();
+  Serial0.println("[fms_tatsuno_fun.ino]  ");
   zerocount = true;
-  Serial0.println(ppbuffer);
+  Serial0.printf("ppbuffer : %s" ,ppbuffer);
   fms_mqtt_client.publish(ppfinal, ppbuffer);
   txledonoff();
 
@@ -2714,7 +2733,7 @@ void finalsend() {
 
 
     if (ppbuffer[0] == server_rpy_ary[0] && ppbuffer[1] == server_rpy_ary[1] && final_str == "D1S1") {
-      Serial0.println("Bye ....................................");
+      Serial0.println("[fms_tatsuno_fun.ino]  Bye ....................................");
       final_str = "";
       break;
     }
@@ -2755,14 +2774,15 @@ void sendcrcfun() {
   delay(20);
 
   sendACK1();
-  Serial0.print("get");
+  Serial0.println("[fms_tatsuno_fun.ino]  get");
 
 
   // delay(4);
   delay(20);
-  if (Serial2.available()) {
-    Serial0.print("U got ");
-    Serial0.println(Serial2.read(),16);
+  if (Serial1 /* uart2 serial port*/.available()) {
+   int receivedByte = Serial1 /* uart2 serial port*/.read();
+   Serial0.printf("U got: 0x%02X (%d)", receivedByte, receivedByte);
+
   }
 
   delay(50);
@@ -2771,36 +2791,32 @@ void sendcrcfun() {
   else if (pumpnum == 2) pump2Select();
 
   // sendCalculatedCRC();
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   // // delay(500);
   delay(30);
   // delay(4);
-  if (Serial2.available()) {
+  if (Serial1 /* uart2 serial port*/.available()) {
 
-    Buffer[0] = Serial2.read();
-    Buffer[1] = Serial2.read();
+    Buffer[0] = Serial1 /* uart2 serial port*/.read();
+    Buffer[1] = Serial1 /* uart2 serial port*/.read();
     // delay(5);  // delay(20)
-    Serial0.print("your name is");
-    Serial0.println(Buffer[0], 16);
-    Serial0.println(Buffer[1], 16);
+    Serial0.printf("your name is : 0x%02X 0x%02X", Buffer[0], Buffer[1]);
     delay(2);
   }
 
   sendCalculatedCRC();
 
   delay(4);
-  if (Serial2.available()) {
+  if (Serial1 /* uart2 serial port*/.available()) {
 
-    Buffer[0] = Serial2.read();
-    Buffer[1] = Serial2.read();
+    Buffer[0] = Serial1 /* uart2 serial port*/.read();
+    Buffer[1] = Serial1 /* uart2 serial port*/.read();
     // delay(5);  // delay(20)
-    Serial0.print("your name1 is");
-    Serial0.println(Buffer[0], 16);
-    Serial0.println(Buffer[1], 16);
+    Serial0.printf("your name1 is : 0x%02X 0x%02X", Buffer[0], Buffer[1]);
     delay(2);
   }
 
-  Serial0.println("i am waiting");
+  Serial0.println("[fms_tatsuno_fun.ino]  i am waiting");
   // delay(100);  //speed
   delay(20);
 
@@ -2811,8 +2827,8 @@ void pricechangefun() {
 
   incommingMessage.toCharArray(pricechangeary, incommingMessage.length() + 1);
 
-  Serial0.print("pc is ");
-  Serial0.println(pricechangeary);
+  Serial0.printf("pc is :%s", pricechangeary);
+
 
 
   charArray[0] = pricechangeary[0];
@@ -2838,17 +2854,11 @@ void pricechangefun() {
     //pricechangesuccess mqtt need
     pricechangeapprove2fun();
   }
-  Serial0.print("ur noz1 price is");
-  Serial0.print(unitpriceary1[0], 16);
-  Serial0.print(unitpriceary1[1], 16);
-  Serial0.print(unitpriceary1[2], 16);
-  Serial0.println(unitpriceary1[3], 16);
+  Serial0.printf("ur noz1 price is :0x%02X 0x%02X 0x%02X 0x%02X \n",
+                        unitpriceary1[0], unitpriceary1[1], unitpriceary1[2], unitpriceary1[3]);
+  Serial0.printf("ur noz2 price is : 0x%02X 0x%02X 0x%02X 0x%02X \n",
+                        unitpriceary2[0], unitpriceary2[1], unitpriceary2[2], unitpriceary2[3]);
 
-  Serial0.print("ur noz2 price is");
-  Serial0.print(unitpriceary2[0], 16);
-  Serial0.print(unitpriceary2[1], 16);
-  Serial0.print(unitpriceary2[2], 16);
-  Serial0.println(unitpriceary2[3], 16);
 }
 
 void pumpmqttnumchange() { //change incomming pumpid(0 - 32) from Mqtt to Device pumpid(0 - 2)
@@ -2955,15 +2965,15 @@ void sendpumpstatus(int pump) {
   int count1;
   char charack0[2];
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   // // delay(500);
   delay(30);
-  if (Serial2.available()) {
-    Serial0.println("U got ");
-    charack0[0] = Serial2.read();
-    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
 
     Serial0.println(charack0[0], 16);
@@ -2976,18 +2986,18 @@ void sendpumpstatus(int pump) {
       else if (pump == 2) pump2status();
     }
   }
-  Serial0.println("shis shi");
+  Serial0.println("[fms_tatsuno_fun.ino]  shis shi");
   // delay(50);
   // digitalWrite(15, LOW);
   // // delay(500);
   delay(20);
 
-  if (Serial2.available()) {
-    Serial0.println("U got 1221");
-    charack0[0] = Serial2.read();
-    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got 1221");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    // if (charack0[0] == 0x04) charack0[0] =  fms_uart2_serial.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -3020,7 +3030,7 @@ void pumppresetfun() {
     CalculatedPresetdata[12] = presetmqttary[9];
 
   } else if (presetmqttary[2] == 0x50) {
-    Serial0.println("yep u changed approved");
+    Serial0.println("[fms_tatsuno_fun.ino]  yep u changed approved");
     CalculatedPresetdata[5] = 0x33; // fueling with Prest fueling(Preset value cannot be changed at dispenser)
     CalculatedPresetdata[6] = 0x32; // Amount
 
@@ -3077,15 +3087,15 @@ void pumppresetfun() {
   int count1;
   char charack0[2];
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   // delay(500);
   delay(30);
-  if (Serial2.available()) {
-    Serial0.println("U got ");
-    charack0[0] = Serial2.read();
-    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    // if (charack0[0] == 0x04) charack0[0] =  fms_uart2_serial.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -3098,7 +3108,7 @@ void pumppresetfun() {
 
 void reloadfun() {
 
-  Serial0.println("reload fun start");
+  Serial0.println("[fms_tatsuno_fun.ino]  reload fun start");
 
   for (int i = 0; i < 50; i++) {
     ppbuffer[i] = 0x00;
@@ -3134,15 +3144,15 @@ void reloadfun() {
   int count1;
   char charack0[2];
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 
   delay(30);
-  if (Serial2.available()) {
-    Serial0.println("U got ");
-    charack0[0] = Serial2.read();
-    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -3151,15 +3161,15 @@ void reloadfun() {
   if (pumpnum == 1) pump1Totalizerstatus();
   else if (pumpnum == 2) pump2Totalizerstatus();
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   delay(30); // to open
 
-  if (Serial2.available()) { // to change if
-    Serial0.println("U got2 ");
-    charack0[0] = Serial2.read();
-    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) { // to change if
+    Serial0.println("[fms_tatsuno_fun.ino]  U got2 ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -3169,22 +3179,20 @@ void reloadfun() {
 
   char totalizerary[33];
   int totalizercount = 0;
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   delay(50);
 
-  while (Serial2.available()) {
+  while (Serial1 /* uart2 serial port*/.available()) {
 
-    totalizerary[totalizercount] = Serial2.read();
-    // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
-    Serial0.print(totalizercount);
-    Serial0.print("//");
-    Serial0.print(totalizerary[totalizercount], 16);
-    Serial0.print(" ");
+    totalizerary[totalizercount] = Serial1 /* uart2 serial port*/.read();
+    // if (charack0[0] == 0x04) charack0[0] =  fms_uart2_serial.read();
+    Serial0.printf("%d // 0x%02X \n", totalizercount, totalizerary[totalizercount]);
+
     delay(10);
     if (totalizerary[totalizercount] == 0x03) {
-      totalizerary[totalizercount + 1] = Serial2.read();
+      totalizerary[totalizercount + 1] = Serial1 /* uart2 serial port*/.read();
       delay(10);
-      Serial0.println();
+      Serial0.println("[fms_tatsuno_fun.ino]   ");
       break;
     }
 
@@ -3195,40 +3203,38 @@ void reloadfun() {
   // finalmqtt2
   while (totalizerary[4] != 0x35) { // wait for totalizer
     sendACK1();
-    digitalWrite(15, 0x0);
+    digitalWrite(22, 0x0);
     delay(30);
-    if (Serial2.available()) {
-      Serial0.print("U got4 ");
-      Serial0.println(Serial2.read());
+    if (Serial1 /* uart2 serial port*/.available()) {
+    int receivedByte = Serial1 /* uart2 serial port*/.read();
+    Serial0.printf("U got 4 : 0x%02X (%d) \n", receivedByte, receivedByte);
+
     }
 
     sendenq(pumpnum);
 
     totalizercount = 0;
 
-    digitalWrite(15, 0x0);
+    digitalWrite(22, 0x0);
     delay(50);
 
-    while (Serial2.available()) {
+    while (Serial1 /* uart2 serial port*/.available()) {
 
-      totalizerary[totalizercount] = Serial2.read();
-      // if (charack0[0] == 0x04) charack0[0] = Serial2.read();
-      Serial0.print(totalizercount);
-      Serial0.print("//");
-      Serial0.print(totalizerary[totalizercount], 16);
-      Serial0.print(" ");
+      totalizerary[totalizercount] = Serial1 /* uart2 serial port*/.read();
+      // if (charack0[0] == 0x04) charack0[0] =  fms_uart2_serial.read();
+      Serial0.printf("%d // 0x%02X \n", totalizercount, totalizerary[totalizercount]);
       delay(10);
 
       if (totalizerary[totalizercount] == 0x03) {
-        totalizerary[totalizercount + 1] = Serial2.read();
+        totalizerary[totalizercount + 1] = Serial1 /* uart2 serial port*/.read();
         delay(10);
-        Serial0.println();
+        Serial0.println("[fms_tatsuno_fun.ino]   ");
         break;
       }
 
       if (totalizerary[0] == 0x04) {
 
-        Serial0.println("first loop break");
+        Serial0.println("[fms_tatsuno_fun.ino]  first loop break");
         reloadcheck = true;
         break;
       }
@@ -3237,7 +3243,7 @@ void reloadfun() {
     }
 
     if (reloadcheck) {
-      Serial0.println("bye reload...................");
+      Serial0.println("[fms_tatsuno_fun.ino]  bye reload...................");
       reloadcheck = false;
       break;
     }
@@ -3252,11 +3258,11 @@ void reloadfun() {
 
 
   // for (int i = 0; i < 6; i++) {
-  //   Serial.print(ppbuffer[i]);
+  //   Serial.println(ppbuffer[i]);
   // }
 
   // Serial.println();
-  Serial0.printf("mqtt count is => %d\n", y);
+  Serial0.printf("mqtt count is => %d \n", y);
 
   for (int j = 11; j < 21; j++) {
 
@@ -3280,12 +3286,12 @@ void reloadfun() {
   zerocount = true;
   ppbuffer[y] = 'A';
   y++;
-  // Serial.println("my j is");
+  // Serial.println("[fms_tatsuno_fun.ino]  my j is");
 
   for (int j = 21; j < 31; j++) {
     // Serial.println(j);
     if (totalizerary[j] == 0x30 && zerocount) {
-      // Serial.print("zero");
+      // Serial.println("[fms_tatsuno_fun.ino]  zero");
       continue;
     }
     if (totalizerary[j] != 0x30) {
@@ -3293,14 +3299,14 @@ void reloadfun() {
     }
     ppbuffer[y] = totalizerary[j];
     // Serial.println(j);
-    // Serial.print(ppbuffer[y]);
+    // Serial.println(ppbuffer[y]);
     y++;
   }
 
-  Serial0.println();
+  Serial0.println("[fms_tatsuno_fun.ino]   ");
   zerocount = true;
+  Serial0.printf("ppbuffer : %s \n", ppbuffer);
 
-  Serial0.println(ppbuffer);
 
   fms_mqtt_client.publish(pumpfinalreloadbuf, ppbuffer);
 
@@ -3324,7 +3330,7 @@ void reloadfun() {
   // while (waitcount < 2) {
 
   //   if (ppbuffer[0] == server_rpy_ary[0] && ppbuffer[1] == server_rpy_ary[1] && final_str == "D1S1") {
-  //     Serial.println("Bye ....................................");
+  //     Serial.println("[fms_tatsuno_fun.ino]  Bye ....................................");
   //     final_str = "";
   //     break;
   //   }
@@ -3368,56 +3374,56 @@ void pricereqfun() {
 }
 
 void pump1Totalizerstatus() {
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(totalizerstatus1, 7);
-  Serial0.println("sending 1totalizerstatus");
+  Serial1 /* uart2 serial port*/.write(totalizerstatus1, 7);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending 1totalizerstatus");
   delay(5);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void pump2Totalizerstatus() {
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(totalizerstatus2, 7);
-  Serial0.println("sending 2totalizerstatus");
+  Serial1 /* uart2 serial port*/.write(totalizerstatus2, 7);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending 2totalizerstatus");
   delay(5);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void pump2status() {
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(pump2statusary, 7);
-  Serial0.println("sending pump2status");
+  Serial1 /* uart2 serial port*/.write(pump2statusary, 7);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending pump2status");
   // delay(4.5);
   delay(5);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void pump1status() {
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(pump1statusary, 7);
-  Serial0.println("sending pump1status");
+  Serial1 /* uart2 serial port*/.write(pump1statusary, 7);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending pump1status");
   delay(5);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void pump1Select() {
-  digitalWrite(15, 0x1);
-  Serial2.write(select1, sizeof(select1));
-  Serial0.println("sending select1");
+  digitalWrite(22, 0x1);
+  Serial1 /* uart2 serial port*/.write(select1, sizeof(select1));
+  Serial0.println("[fms_tatsuno_fun.ino]  sending select1");
   delay(4);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void pump2Select() {
-  digitalWrite(15, 0x1);
-  Serial2.write(select2, sizeof(select2));
-  Serial0.println("sending select2");
+  digitalWrite(22, 0x1);
+  Serial1 /* uart2 serial port*/.write(select2, sizeof(select2));
+  Serial0.println("[fms_tatsuno_fun.ino]  sending select2");
   delay(4);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 }
 
 void pricechangeapprove2fun() {
@@ -3525,9 +3531,7 @@ void pumpidchange() { //change incomming pumpid(0 - 8) from device to mqtt pumpi
 void pumapprofun() {
   // char pumpapproArray[13];
   incommingmsg1.toCharArray(pumpapproArray, incommingmsg1.length() + 1);
-  Serial0.print("Appro  is ");
-
-  Serial0.println(pumpapproArray);
+  Serial0.printf("Appro  is : %s \n", pumpapproArray);
 
   charArray[0] = pumpapproArray[0];
   charArray[1] = pumpapproArray[1];
@@ -3544,14 +3548,14 @@ void hmisetup() {
     for (int j = 0; j <= 50; j++) //this loop will store whole frame in buffer array.
     {
       Buffer[j] = Serial0.read();
-      Serial0.print(Buffer[j], 16);
-      Serial0.print(" ");
+      Serial0.println(Buffer[j], 16);
+      Serial0.println("[fms_tatsuno_fun.ino]   ");
     }
-    Serial0.println();
+    Serial0.println("[fms_tatsuno_fun.ino]   ");
 
     if (Buffer[4] == 0x10 && Buffer[8] == 0x01) {
       ESP.restart();
-      Serial0.println("restart");
+      Serial0.println("[fms_tatsuno_fun.ino]  restart");
     } else if (Buffer[4] == 0x13) { // wifi ssid
       for (int j = 0; j < 50; j++) ssidBuf[j] = 0;
 
@@ -3559,7 +3563,7 @@ void hmisetup() {
         if (Buffer[j + 9] == 0xFF) break;
         ssidBuf[j] = Buffer[j + 9];
       }
-      Serial0.println(ssidBuf);
+      Serial0.printf("ssid : %s ,",ssidBuf);
 
       Serial0.write(showSSID, 6);
       Serial0.write(ssidBuf, 30);
@@ -3573,7 +3577,7 @@ void hmisetup() {
         if (Buffer[j + 9] == 0xFF) break;
         passBuf[j] = Buffer[j + 9];
       }
-      Serial0.println(passBuf);
+      Serial0.printf ("pass : %s \n" , passBuf);
       Serial0.write(showPASS, 6);
       Serial0.write(passBuf, 50);
       Serial0.write(showPASS, 6);
@@ -3583,54 +3587,57 @@ void hmisetup() {
       WiFi.begin(ssidBuf, passBuf);
       wifitrytime = 0;
       while (WiFi.status() != WL_CONNECTED && wifitrytime != 15) {
-        Serial0.print('.');
-        digitalWrite(33, 0x1);
-        delay(500);
-        digitalWrite(33, 0x0);
-        delay(500);
-        wifitrytime++;
+      fmsLog(FMS_LOG_INFO, "[fms_tatsuno_fun.ino:2289 [hmi]] WiFi initialized, connecting to %s... wpa:%s", ssidBuf, passBuf);
+      gpio_set_level(GPIO_NUM_33, 0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 2208 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+                1000 
+# 2208 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+                ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
+      gpio_set_level(GPIO_NUM_33, 0x1);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 2210 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+                1000 
+# 2210 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+                ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
+      wifitrytime++;
       }
       if (WiFi.status() == WL_CONNECTED) {
-        Serial0.print("You are connected in ");
-        Serial0.println(WiFi.localIP());
-        writeString(0, ssidBuf);
-        writeString(50, passBuf);
-
-
+        Serial0.printf(" Wifi Connected : %s \n", WiFi.localIP().toString().c_str());
+        writeString(ssidBuf,passBuf); // save to preferences nvs storage ( trion )
         // digitalWrite(wifiled, HIGH);
-
         Serial0.write(page, 9);
         Serial0.write(0x00);
-        Serial0.println("home page");
+        Serial0.println("[fms_tatsuno_fun.ino]  home page");
         delay(1000);
       }
     } else if (Buffer[4] == 0x31) { // devnumber
       devicenum = Buffer[8];
-      Serial0.println(devicenum);
+      Serial0.printf("%d \n",devicenum);
     } else if (Buffer[4] == 0x41) { // pumpid 1
       pumpid1 = Buffer[8];
-      Serial0.println(pumpid1);
+      Serial0.printf("%d \n",pumpid1);
     } else if (Buffer[4] == 0x42) { // pumpid 2
       pumpid2 = Buffer[8];
-      Serial0.println(pumpid2);
+      Serial0.printf("%d \n",pumpid2);
     } else if (Buffer[4] == 0x43) { // pumpid 3
       pumpid3 = Buffer[8];
-      Serial0.println(pumpid3);
+      Serial0.printf("%d \n",pumpid3);
     } else if (Buffer[4] == 0x44) { // pumpid 4
       pumpid4 = Buffer[8];
-      Serial0.println(pumpid4);
+      Serial0.printf("%d \n",pumpid4);
     } else if (Buffer[4] == 0x45) { // pumpid 5
       pumpid5 = Buffer[8];
-      Serial0.println(pumpid5);
+      Serial0.printf("%d \n",pumpid5);
     } else if (Buffer[4] == 0x46) { // pumpid 6
       pumpid6 = Buffer[8];
-      Serial0.println(pumpid6);
+      Serial0.printf("%d \n",pumpid6);
     } else if (Buffer[4] == 0x47) { // pumpid 7
       pumpid7 = Buffer[8];
-      Serial0.println(pumpid7);
+      Serial0.printf("%d \n",pumpid7);
     } else if (Buffer[4] == 0x48) { // pumpid 8
       pumpid8 = Buffer[8];
-      Serial0.println(pumpid8);
+      Serial0.printf("%d \n",pumpid8);
     } else if (Buffer[4] == 0x40 && Buffer[8] == 0x00) { // 2noz
       nozzlenum = 2;
     } else if (Buffer[4] == 0x40 && Buffer[8] == 0x01) { // 4noz
@@ -3638,7 +3645,23 @@ void hmisetup() {
     } else if (Buffer[4] == 0x40 && Buffer[8] == 0x02) { // 8noz
       nozzlenum = 8;
     } else if (Buffer[4] == 0x40 && Buffer[8] == 0x03) { // save
-      saveall();
+
+    /* save data to nvs storage instance of eeprom */
+      tatsunoConfig.devn = devicenum; // Set device number
+      tatsunoConfig.noz = nozzlenum; // Set nozzle number
+      tatsunoConfig.pumpids[0] = pumpid1; // Set pump IDs
+      tatsunoConfig.pumpids[1] = pumpid2; // Set pump IDs
+      tatsunoConfig.pumpids[2] = pumpid3; // Set pump IDs
+      tatsunoConfig.pumpids[3] = pumpid4; // Set pump IDs
+      tatsunoConfig.pumpids[4] = pumpid5; // Set pump IDs
+      tatsunoConfig.pumpids[5] = pumpid6; // Set pump IDs
+      tatsunoConfig.pumpids[6] = pumpid7; // Set pump IDs
+      tatsunoConfig.pumpids[7] = pumpid8; // Set pump IDs
+
+      Serial0.println("[fms_tatsuno_fun.ino]  save tatsuno config");
+      Serial0.printf("Device Number: %d, Nozzle Number: %d\n", tatsunoConfig.devn, tatsunoConfig.noz);
+      fms_save_tatsuno_config(tatsunoConfig); // Save the configuration; 
+      //saveall();
     }
   }
 }
@@ -3666,19 +3689,17 @@ void saveall() {
   EEPROM.write(110, nozzlenum);
   EEPROM.commit();
 
-  Serial0.println("yep all save");
+  Serial0.println("[fms_tatsuno_fun.ino]  yep all save");
 }
 
-void writeString(char add, String data) {
-  int _size = data.length();
-  int j;
-  for (j = 0; j < _size; j++) {
-    EEPROM.write(add + j, data[j]);
-    EEPROM.commit();
-  }
-  EEPROM.write(add + _size, '\0'); //Add termination null character for String Data
-  EEPROM.commit();
-  Serial0.println("Wrtiting ssid and pass to eeprom");
+void writeString(String ssid, String password) {
+ // Save to preferences
+  fms_nvs_storage.begin("fms_config", false);
+  fms_nvs_storage.putString("ssid", ssid);
+  fms_nvs_storage.putString("pass", password);
+  fms_nvs_storage.end();
+
+  Serial0.println("[fms_tatsuno_fun.ino]  Wrtiting ssid and pass to eeprom");
 }
 
 void mqttpumpidchange(int pumpid) {
@@ -3812,15 +3833,15 @@ void pumappproSend() {
   int count1;
   char charack0[2];
 
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
   // delay(500);
   delay(30);
-  if (Serial2.available()) {
-    Serial0.println("U got ");
-    charack0[0] = Serial2.read();
-    if (charack0[0] == 0x04) charack0[0] = Serial2.read();
+  if (Serial1 /* uart2 serial port*/.available()) {
+    Serial0.println("[fms_tatsuno_fun.ino]  U got ");
+    charack0[0] = Serial1 /* uart2 serial port*/.read();
+    if (charack0[0] == 0x04) charack0[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    charack0[1] = Serial2.read();
+    charack0[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
     Serial0.println(charack0[0], 16);
     Serial0.println(charack0[1], 16);
@@ -3835,28 +3856,28 @@ void sendCalculatedPreset() {
 
   CalculatedPresetdata[19] = BCCfun2();
   for (int y = 0; y < 20; y++) {
-    Serial0.print(CalculatedPresetdata[y], 16);
-    Serial0.print(" ");
+    Serial0.println(CalculatedPresetdata[y], 16);
+    Serial0.println("[fms_tatsuno_fun.ino]   ");
   }
 
-  Serial0.println("");
+  Serial0.println("[fms_tatsuno_fun.ino]  ");
 
   // delay(100); //speed
 
   delay(20); //speed
 
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(CalculatedPresetdata, 20);
+  Serial1 /* uart2 serial port*/.write(CalculatedPresetdata, 20);
   delay(2);
-  Serial2.write(CalculatedPresetdata, 20);
+  Serial1 /* uart2 serial port*/.write(CalculatedPresetdata, 20);
   // delay(2);
-  Serial0.println("sending preset");
+  Serial0.println("[fms_tatsuno_fun.ino]  sending preset");
   // delay(12.5);
   // delay(50);
   // delay(34);
   delay(20);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 
   //tgi add
   // if (Buffer[1] == 0x40) pumpnum = 1;
@@ -3864,22 +3885,22 @@ void sendCalculatedPreset() {
 
   // delay(10);
   delay(4);
-  if (Serial2.available()) {
+  if (Serial1 /* uart2 serial port*/.available()) {
 
-    Buffer[0] = Serial2.read();
+    Buffer[0] = Serial1 /* uart2 serial port*/.read();
     delay(20);
-    Buffer[1] = Serial2.read();
+    Buffer[1] = Serial1 /* uart2 serial port*/.read();
     delay(20);
     // latest pumppreset again
 
-    Serial0.print("your name1 is");
+    Serial0.println("[fms_tatsuno_fun.ino]  your name1 is");
     Serial0.println(Buffer[0], 16);
     Serial0.println(Buffer[1], 16);
     delay(2);
     //Frist time
     if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
       // resend
-      Serial0.println("motor start");
+      Serial0.println("[fms_tatsuno_fun.ino]  motor start");
     } else {
       resendpreset();
     }
@@ -3888,14 +3909,14 @@ void sendCalculatedPreset() {
   // Second time
   if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
     // resend
-    Serial0.println("motor start");
+    Serial0.println("[fms_tatsuno_fun.ino]  motor start");
   } else {
     resendpreset();
   }
   // Third time
   if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
     // resend
-    Serial0.println("motor start");
+    Serial0.println("[fms_tatsuno_fun.ino]  motor start");
   } else {
     resendpreset();
   }
@@ -3903,7 +3924,7 @@ void sendCalculatedPreset() {
   sendenq(pumpnum);
 
 
-  Serial0.println("Uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
+  Serial0.println("[fms_tatsuno_fun.ino]  Uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
 }
 
 unsigned char BCCfun1() {
@@ -3928,14 +3949,13 @@ unsigned char BCCfun1() {
     lrc ^= bccData[j];
   }
   // Print LRC checksum in hexadecimal and decimal format
-  Serial0.print("LRC Checksum (Hex): 0x");
-  if (lrc < 0x10) {
-    Serial0.print("0");
-  }
-  Serial0.println(lrc, 16);
 
-  Serial0.print("LRC Checksum (Decimal): ");
-  Serial0.println(lrc);
+  if (lrc < 0x10) {
+    Serial0.println("[fms_tatsuno_fun.ino]  0");
+  }
+
+  Serial0.printf("LRC Checksum (Hex): 0x%02X, Decimal: %d \n", lrc, lrc);
+
 
   return lrc;
 }
@@ -3956,14 +3976,12 @@ unsigned char BCCfun2() {
     lrc ^= bccData[j];
   }
   // Print LRC checksum in hexadecimal and decimal format
-  Serial0.print("LRC Checksum (Hex): 0x");
-  if (lrc < 0x10) {
-    Serial0.print("0");
-  }
-  Serial0.println(lrc, 16);
 
-  Serial0.print("LRC Checksum (Decimal): ");
-  Serial0.println(lrc);
+  if (lrc < 0x10) {
+    Serial0.println("[fms_tatsuno_fun.ino]  0");
+  }
+  Serial0.printf("LRC Checksum (Hex): 0x%02X, Decimal: %d \n", lrc, lrc);
+
 
   return lrc;
 }
@@ -3972,25 +3990,25 @@ void resendpreset() {
   // delay(100);//speed
   delay(20);
 
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(CalculatedPresetdata, 20);
-  Serial0.println("sending preset again");
+  Serial1 /* uart2 serial port*/.write(CalculatedPresetdata, 20);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending preset again");
   // delay(12.5);
   // delay(50);
-  // delay(34);d
+  // delay(34);
   delay(20);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 
 
   delay(4);
-  if (Serial2.available()) {
+  if (Serial1 /* uart2 serial port*/.available()) {
 
-    Buffer[0] = Serial2.read();
+    Buffer[0] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    Buffer[1] = Serial2.read();
+    Buffer[1] = Serial1 /* uart2 serial port*/.read();
     delay(10);
-    Serial0.print("your resend again is");
+    Serial0.println("[fms_tatsuno_fun.ino]  your resend again is");
     Serial0.println(Buffer[0], 16);
     Serial0.println(Buffer[1], 16);
     delay(2);
@@ -4007,27 +4025,27 @@ void sendCalculatedAppro() {
 
   CalculatedApprodata[19] = BCCfun1();
   for (int y = 0; y < 20; y++) {
-    Serial0.print(CalculatedApprodata[y], 16);
-    Serial0.print(" ");
+    Serial0.println(CalculatedApprodata[y], 16);
+    Serial0.println("[fms_tatsuno_fun.ino]   ");
   }
-  Serial0.println("");
+  Serial0.println("[fms_tatsuno_fun.ino]  ");
 
 
   // delay(100); //speed
 
   delay(20); //speed
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(CalculatedApprodata, 20);
+  Serial1 /* uart2 serial port*/.write(CalculatedApprodata, 20);
   delay(2);
-  Serial2.write(CalculatedApprodata, 20);
+  Serial1 /* uart2 serial port*/.write(CalculatedApprodata, 20);
   // delay(2);
-  Serial0.println("sending Appro1");
+  Serial0.println("[fms_tatsuno_fun.ino]  sending Appro1");
   // delay(13);
   // delay(50);
   // delay(34);
   delay(20);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 
   //tgi add
   if (Buffer[1] == 0x40) pumpnum = 1;
@@ -4035,22 +4053,22 @@ void sendCalculatedAppro() {
 
   // delay(10);
   delay(4);
-  if (Serial2.available()) {
+  if (Serial1 /* uart2 serial port*/.available()) {
 
-    Buffer[0] = Serial2.read();
+    Buffer[0] = Serial1 /* uart2 serial port*/.read();
     delay(20);
-    Buffer[1] = Serial2.read();
+    Buffer[1] = Serial1 /* uart2 serial port*/.read();
     delay(20);
     // latest pumppreset again
 
-    Serial0.print("your name1 is");
+    Serial0.println("[fms_tatsuno_fun.ino]  your name1 is");
     Serial0.println(Buffer[0], 16);
     Serial0.println(Buffer[1], 16);
     delay(2);
     //Frist time
     if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
 
-      Serial0.println("app motor start");
+      Serial0.println("[fms_tatsuno_fun.ino]  app motor start");
     } else {
       resendappro();
     }
@@ -4059,14 +4077,14 @@ void sendCalculatedAppro() {
   // Second time
   if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
     // resend
-    Serial0.println("app motor start");
+    Serial0.println("[fms_tatsuno_fun.ino]  app motor start");
   } else {
     resendappro();
   }
   // Third time
   if (Buffer[0] == 0x10 || Buffer[0] == 0x30 || Buffer[0] == 0x31 || Buffer[1] == 0x31) { // Incoming ack1
     // resend
-    Serial0.println("app motor start");
+    Serial0.println("[fms_tatsuno_fun.ino]  app motor start");
   } else {
     resendappro();
   }
@@ -4078,15 +4096,15 @@ void resendappro() {
   // delay(100); //speed
 
   delay(20); //speed
-  digitalWrite(15, 0x1);
+  digitalWrite(22, 0x1);
   delay(20);
-  Serial2.write(CalculatedApprodata, 20);
-  Serial0.println("sending resend appro");
+  Serial1 /* uart2 serial port*/.write(CalculatedApprodata, 20);
+  Serial0.println("[fms_tatsuno_fun.ino]  sending resend appro");
   // delay(13);
   // delay(50);
   // delay(34);
   delay(20);
-  digitalWrite(15, 0x0);
+  digitalWrite(22, 0x0);
 
   //tgi add
   if (Buffer[1] == 0x40) pumpnum = 1;
@@ -4094,13 +4112,13 @@ void resendappro() {
 
   // delay(10);
   delay(4);
-  if (Serial2.available()) {
+  if (Serial1 /* uart2 serial port*/.available()) {
 
-    Buffer[0] = Serial2.read();
+    Buffer[0] = Serial1 /* uart2 serial port*/.read();
     delay(20);
-    Buffer[1] = Serial2.read();
+    Buffer[1] = Serial1 /* uart2 serial port*/.read();
     delay(20);
-    Serial0.print("your resend again is");
+    Serial0.println("[fms_tatsuno_fun.ino]  your resend again is");
     Serial0.println(Buffer[0], 16);
     Serial0.println(Buffer[1], 16);
     delay(2);
@@ -4194,7 +4212,7 @@ bool initialize_fms_wifi(bool flag) {
                 1000 
 # 10 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
-      fmsLog(FMS_LOG_ERROR, "[DEBUG WiFi] wifi .. credential .. value is empty");
+      fmsLog(FMS_LOG_ERROR, "[fms_wifi.ino:11] [DEBUG WiFi] wifi .. credential .. value is empty");
       fms_nvs_storage.end();
       return false;
     }
@@ -4204,7 +4222,7 @@ bool initialize_fms_wifi(bool flag) {
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
     strncpy(sysCfg.wifi_password, pass_str.c_str(), sizeof(sysCfg.wifi_password) - 1);
     if (sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") {
-      fmsLog(FMS_LOG_ERROR, "[DEBUG WiFi] wifi .. credential .. value is empty");
+      fmsLog(FMS_LOG_ERROR, "[fms_wifi.ino:21] [DEBUG WiFi] wifi .. credential .. value is empty");
       return false;
     }
 
@@ -4213,20 +4231,20 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
 
     while (WiFi.status() != WL_CONNECTED) {
-      gpio_set_level(GPIO_NUM_33, 0x0);
-      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+      gpio_set_level(GPIO_NUM_32, 0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
 # 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
 # 31 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
-      gpio_set_level(GPIO_NUM_33, 0x1);
-      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+      gpio_set_level(GPIO_NUM_32, 0x1);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
 # 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
 # 33 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
 
-      fmsLog(FMS_LOG_INFO, "WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
+      fmsLog(FMS_LOG_INFO, "[fms_wifi.ino:35] WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 36 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
@@ -4248,27 +4266,27 @@ static void wifi_task(void *arg) {
   BaseType_t rc;
   while (1) {
     if (WiFi.status() != WL_CONNECTED) {
-      fmsLog(FMS_LOG_WARNING, "Failed to connect to WiFi");
-      gpio_set_level(GPIO_NUM_33, 0x0);
-      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+      fmsLog(FMS_LOG_WARNING, "[fms_wifi.ino:53] Failed to connect to WiFi");
+      gpio_set_level(GPIO_NUM_32, 0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
 # 55 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
 # 55 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
-      gpio_set_level(GPIO_NUM_33, 0x1);
-      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+      gpio_set_level(GPIO_NUM_32, 0x1);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
 # 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
                 1000 
 # 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
                 ) / ( TickType_t ) 1000U ) ));
     } else {
-      fmsLog(FMS_LOG_INFO, "Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
+      // FMS_LOG_INFO("[fms_wifi.ino:59] Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
       gpio_set_level(GPIO_NUM_33, 0x1);
       gpio_set_level(GPIO_NUM_32, 0x1);
       gpio_set_level(GPIO_NUM_13, 0x1);
       gpio_set_level(GPIO_NUM_14, 0x0);
     }
-    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+    vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
 # 65 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino" 3
               1000 
 # 65 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"

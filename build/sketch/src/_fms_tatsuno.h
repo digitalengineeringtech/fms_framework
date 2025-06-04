@@ -6,10 +6,11 @@
 
 // Debug logging configuration
 #ifdef FMS_TATSUNO_DEBUG_OPEN
-  #define FMS_TATSUNO_LOG_DEBUG(format, ...) Serial.print("[TATSUNO][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
-  #define FMS_TATSUNO_LOG_ERROR(format, ...) Serial.print("[TATSUNO][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+  #define FMS_TATSUNO_LOG_DEBUG(format, ...) Serial.print("[fms_tatsuno_fun.ino][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+  #define FMS_TATSUNO_LOG_ERROR(format, ...) Serial.print("[fms_tatsuno_fun.ino][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
+  #define FMS_TATSUNO_LOG_HEX(format, ...) Serial.print("[fms_tatsuno_fun.ino][DEBUG]"); Serial.print(format,HEX); Serial.println()
 #else
-  #define FMS_TATSUNO_LOG_DEBUG(format, ...)
+  #define FMS_TATSUNO_LOG_DEBUG(format, ...) 
   #define FMS_TATSUNO_LOG_ERROR(format, ...)
 #endif
 
@@ -38,7 +39,7 @@ public:
         if (_serial.available()) {
             return true;
         } else {
-            FMS_TATSUNO_LOG_DEBUG("No data available");
+            //FMS_TATSUNO_LOG_DEBUG("No data available");
             return false;
         }
     }

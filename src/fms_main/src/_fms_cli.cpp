@@ -110,9 +110,11 @@ void fms_cli::process_input() {
                     if (command == "login" && args.size() == 1) {
                         _authenticated = authenticate(args[0]);
                         if (_authenticated) {
-                            _serial.println("Login successful");
+                            respond("login", "Login successful", true);
+                            //_serial.println("Login successful");
                         } else {
-                            _serial.println("Invalid password");
+                            respond("login", "Invalid password", false);
+                            //_serial.println("Invalid password");
                         }
                     } else {
                         _serial.println("Please login with 'login <password>'");

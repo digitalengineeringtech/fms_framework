@@ -10,13 +10,13 @@ void fms_boot_count(bool bootsave) {
   }
 
   if (!fms_nvs_storage.begin("fms_config", false)) {
-    FMS_LOG_ERROR("Failed to initialize NVS storage");
+    FMS_LOG_ERROR("[fms_main_func.ino:13] Failed to initialize NVS storage");
     return;
   }
 
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0) + 1;
   app_cpu = xPortGetCoreID();
-  FMS_LOG_INFO("CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
+  FMS_LOG_INFO("[fms_main_func.ino:19] CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
 
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end();  // Close NVS storage
@@ -42,10 +42,10 @@ bool fms_initialize_uart2() {
 
 bool fms_initialize_wifi() {
   if (initialize_fms_wifi(wifi_start_event)) {
-    FMS_LOG_INFO("Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
+    FMS_LOG_INFO("[fms_main_func:45] Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
     return true;
   } else {
-    FMS_LOG_WARNING("Failed to connect to WiFi");
+    FMS_LOG_WARNING("[fms_main_func:48] Failed to connect to WiFi");
     return false;
   }
 }
@@ -54,9 +54,9 @@ void fms_run_sd_test() {
 #if true
   fms_config_load_sd_test();
   if (!LittleFS.begin(true)) {  // preference storage (1MB)
-    Serial.println("[STORAGE] Failed to mount file system");
+    Serial.println("[fms_main_func.ino:57] [STORAGE] Failed to mount file system");
   } else {
-    Serial.println("[STORAGE] File system mounted");
+    Serial.println("[fms_main_func.ino:59] [STORAGE] File system mounted");
   }
   // load system config file
 #endif

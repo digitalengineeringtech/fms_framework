@@ -795,10 +795,14 @@ class FMSDebugUI(QMainWindow):
         # Connect signals for all logs tab
         self.all_logs_table.itemSelectionChanged.connect(self.show_all_logs_details)
         
+        # find a device 
+
+
         # Add tabs to tab widget
         self.tabs.addTab(log_tab, "Logs")
         self.tabs.addTab(commands_tab, "Commands")
         self.tabs.addTab(all_logs_tab, "All Logs")
+        self.tabs.addTab(,"Find Device")
         
         # Add tab widget to main layout
         main_layout.addWidget(self.tabs)

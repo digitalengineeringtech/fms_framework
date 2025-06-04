@@ -8,7 +8,7 @@ bool initialize_fms_wifi(bool flag) {
     if(ssid_str.length() == 0 || pass_str.length() == 0) {
       gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(500));
-      FMS_LOG_ERROR("[DEBUG WiFi] wifi .. credential .. value is empty");
+      FMS_LOG_ERROR("[fms_wifi.ino:11] [DEBUG WiFi] wifi .. credential .. value is empty");
       fms_nvs_storage.end();
       return false;
     }
@@ -18,7 +18,7 @@ bool initialize_fms_wifi(bool flag) {
     strncpy(sysCfg.wifi_ssid, ssid_str.c_str(), sizeof(sysCfg.wifi_ssid) - 1);
     strncpy(sysCfg.wifi_password, pass_str.c_str(), sizeof(sysCfg.wifi_password) - 1);
     if (sysCfg.wifi_ssid == " " || sysCfg.wifi_password == " ") {
-      FMS_LOG_ERROR("[DEBUG WiFi] wifi .. credential .. value is empty");
+      FMS_LOG_ERROR("[fms_wifi.ino:21] [DEBUG WiFi] wifi .. credential .. value is empty");
       return false;
     }
     
@@ -27,12 +27,12 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
 
     while (WiFi.status() != WL_CONNECTED) {
-      gpio_set_level(LED_YELLOW, LOW);
-      vTaskDelay(pdMS_TO_TICKS(500));
-      gpio_set_level(LED_YELLOW, HIGH);
-      vTaskDelay(pdMS_TO_TICKS(500));
+      gpio_set_level(LED_RED, LOW);
+      vTaskDelay(pdMS_TO_TICKS(100));
+      gpio_set_level(LED_RED, HIGH);
+      vTaskDelay(pdMS_TO_TICKS(100));
 
-      FMS_LOG_INFO("WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
+      FMS_LOG_INFO("[fms_wifi.ino:35] WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
       vTaskDelay(pdMS_TO_TICKS(1000));  // Wait for 1 second before repeating
     }
     return true;
@@ -50,18 +50,18 @@ static void wifi_task(void *arg) {
   BaseType_t rc;
   while (1) {
     if (WiFi.status() != WL_CONNECTED) {
-      FMS_LOG_WARNING("Failed to connect to WiFi");
-      gpio_set_level(LED_YELLOW, LOW);
-      vTaskDelay(pdMS_TO_TICKS(500));
-      gpio_set_level(LED_YELLOW, HIGH);
-      vTaskDelay(pdMS_TO_TICKS(500));
+      FMS_LOG_WARNING("[fms_wifi.ino:53] Failed to connect to WiFi");
+      gpio_set_level(LED_RED, LOW);
+      vTaskDelay(pdMS_TO_TICKS(100));
+      gpio_set_level(LED_RED, HIGH);
+      vTaskDelay(pdMS_TO_TICKS(100));
     } else {
-      FMS_LOG_INFO("Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
+      // FMS_LOG_INFO("[fms_wifi.ino:59] Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
       gpio_set_level(LED_YELLOW, HIGH);
       gpio_set_level(LED_RED, HIGH);
       gpio_set_level(LED_BLUE, HIGH);
       gpio_set_level(LED_GREEN, LOW);
     }
-    vTaskDelay(pdMS_TO_TICKS(500));  // Wait for 1 second before repeating
+    vTaskDelay(pdMS_TO_TICKS(100));  // Wait for 1 second before repeating
   }
 }

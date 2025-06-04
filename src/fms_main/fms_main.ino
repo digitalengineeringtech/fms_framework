@@ -1,28 +1,32 @@
 /*
-     FMS main source file
-     Author: Trion
-     Date: 2025
-     Guided By Senior Engineer : Sir Thiha Kyaw
-     Description: This file is the main source file of FMS project.
+  FMS main source file
+  Author: Trion
+  Date: 2025
+  Guided By Senior Engineer : Sir Thiha Kyaw
+  Description: This file is the main source file of FMS project.
 */
+ 
+
+/* device login page */
+const String correctUsername = "admin";           /* change your login username here*/
+const String correctPassword = "admin";           /*change your login pass here*/
+const String firmwareVersion = "0.1.0";           /* Current firmware version*/
+String deviceName            = "ultm_25505v01_";  /*device ID (for)  change here like this user can change with configpanel*/
+#define CLI_PASSWORD         "admin"              /*cli password change this password*/
+/* end change note  */
+
+#define FMS_TATSUNO_DEBUG_OPEN
+
+
 #include "_fms_main.h"
 #include "src/_fms_cli.h"
 #include "src/_fms_debug.h"
-#include "src/_fms_filemanager.h"
 #include "src/_fms_json_helper.h"
 #include "src/_fms_lanfeng.h"
-#include <src/Redstar.h> /* test features */
+#include <src/_fms_redstar.h>           /* test features */
 #include <src/_fms_tatsuno.h>
-/* change note */
-/*
- use restar 
- uncomment #define USE_RESTAR
- use tatsuno
-  uncomment #define USE_TATSUNO
-*/
+#include <src/_fms_filemanager.h>  /* test features */
 
-// #define USE_RESTAR
-#define USE_TATSUNO
 
 // #define DISABLE_MQTT_DEBUG
 // #ifdef DISABLE_MQTT_DEBUG
@@ -32,19 +36,21 @@
 
 #define USE_CLI
 #define DISABLE_LANFENG  // Uncomment this line to disable the library
-//#define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
 #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
 #endif
 
-FMS_FileManager fileManager;
-fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);  // Use "admin" as the default password change your admin pass here
-Redstar redstar(fms_uart2_serial); // create redstar object
-TatsunoProtocol tatsuno(fms_uart2_serial);  // Create an instance of TatsunoProtocol with the HardwareSerial object
-fmsLanfeng lanfeng(22, 22);                     // set re de pin (DTR PIN)s
+/* #define USE_RESTAR */
+#define USE_TATSUNO
 
+FMS_FileManager fileManager;
+fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
+Redstar redstar(fms_uart2_serial);                  // create redstar object
+TatsunoProtocol tatsuno(fms_uart2_serial);          // Create an instance of TatsunoProtocol with the HardwareSerial object
+fmsLanfeng lanfeng(22, 22);                         // set re de pin (DTR PIN)s
 
 /* Main function */
+
 void setup() {
   init_staus_leds();  // initialize status LEDs
 #ifdef USE_CLI
@@ -57,6 +63,7 @@ void setup() {
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
   fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
+  fms_cli.register_command("protocol_config"," Set Protococl Congfig", handle_protocol_config_command, 11, 11);
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
 #endif
 
@@ -78,36 +85,33 @@ void setup() {
   enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
 
-  fms_run_sd_test();                       // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(true);            // show serial logging data on Serial Monitor
-  fms_boot_count(true);                    // boot count
+  fms_run_sd_test();                        // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
+  fms_boot_count(true);                     // boot count
 
 #ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
-  lanfeng.init(1, fms_uart2_serial);  // add slave id
+  lanfeng.init(1, fms_uart2_serial);       // add slave id
 #endif
 
-
 #ifdef USE_RESTAR
-  red_star_init();  // redstar init
+  red_star_init();                         // redstar init
 #endif
 
 #ifdef USE_TATSUNO
-  fms_tatsuno_init();  // tatsuno init
+  fms_tatsuno_init();                      // tatsuno init
 #endif
 
-/* test features
+  /* test features
   if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
     fms_task_create();
   }
   */
 
-   if (fms_initialize_wifi()) {  // wifi is connected create all task s
+  if (fms_initialize_wifi()) {             // wifi is connected create all task s
     fms_task_create();
   }
-
 }
-
 
 void loop() {
 }

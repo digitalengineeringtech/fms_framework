@@ -11,7 +11,6 @@ ota server
     description : lite_version ota 
     v 0.1 ota server
 */
-
 // For large uploads - increase buffer size
 #define HTTP_UPLOAD_BUFLEN 4096         // Increased from default 1460
 #define WDT_TIMEOUT_S 30
@@ -72,7 +71,7 @@ void handleLogout() {
 }
 
 void fms_set_ota_server() {
-  FMS_LOG_INFO("ota server created");
+  FMS_LOG_INFO("[fms_ota_server.ino:75] ota server created");
   server.enableCORS(true);
   const char* cacheControl = "max-age=86400";
   server.serveStatic("/", LittleFS, "/login.html", cacheControl);
@@ -215,6 +214,7 @@ static void web_server_task(void* arg) {
   deviceName = deviceName + String(WiFi.macAddress()).c_str();
   fms_set_ota_server();
   server.begin();
+
   while (1) {
     server.handleClient();
     // Update uptime counter (every second)
@@ -222,12 +222,18 @@ static void web_server_task(void* arg) {
       uptime++;
       lastUptimeUpdate = millis();
     }
-    // sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
-    // pending to upgrade  mongoose wizard ui builder 
-    // UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
-    // Serial.print("Stack Remaining: ");
-    // Serial.println(stackRemaining);  // Prints remaining stack (in words)
+   
     vTaskDelay(100 / portTICK_PERIOD_MS);
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
+
+/* change note */
+/* user take stack out error */
+/* 
+sometime webserver is outoff stack error , fix your stack size in fms_header.h file 
+pending to upgrade  mongoose wizard ui builder 
+UBaseType_t stackRemaining = uxTaskGetStackHighWaterMark(NULL);
+Serial.print("Stack Remaining: ");
+Serial.println(stackRemaining);  // Prints remaining stack (in words)
+*/

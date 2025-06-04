@@ -23,30 +23,22 @@ void handle_restart_command(const std::vector<String>& args) {
 
 // Alternative WiFi scan implementation that uses even less memory
 void handle_wifi_scan_safe_command(const std::vector<String>& args) {
-  // Set a very conservative limit on the number of networks to scan
   const int MAX_NETWORKS = 5;
-
   // Start scan
   fms_cli.respond("wifiscan_safe", "Scanning for networks...");
-
-  // Set WiFi to station mode
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  delay(100);
-
+  vTaskDelay(pdMS_TO_TICKS(100));
   // Use synchronous scan with limited time per channel
   int numNetworks = WiFi.scanNetworks(false, true, false, 200);
-
   if (numNetworks <= 0) {
     fms_cli.respond("wifiscan_safe", numNetworks == 0 ? "No networks found" : "Scan failed");
     return;
   }
-
   // Limit the number of networks to prevent memory issues
   if (numNetworks > MAX_NETWORKS) {
     numNetworks = MAX_NETWORKS;
   }
-
   // Send a simplified response with minimal memory usage
   fms_cli.respond("wifiscan_safe", "Found " + String(numNetworks) + " networks");
 
@@ -328,10 +320,34 @@ size_t custom_print(const uint8_t* buffer, size_t size) {
   return Serial.write(buffer, size);
 }
 
+// Protocol config command
+void handle_protocol_config_command(const std::vector<String>& args) {
+  if (args.size() < 11) {
+    fms_cli.respond("protocol_config", "Usage: protocol_config <param1> <param2> ... <param11>", false);
+    return;
+  }
+
+  String protocol = args[0];
+  uint8_t devn = args[1].toInt();
+  uint8_t noz = args[2].toInt();
+  uint8_t pumpids[8];
+  for (int i = 0; i < 8; i++) {
+    pumpids[i] = args[i + 3].toInt();
+  }
+  Serial.printf(
+    "[INFO] Setting protocol configuration: %s, devn: %d, noz: %d, pumpids: %d %d %d %d %d %d %d %d\n",
+    protocol.c_str(), devn, noz,
+    pumpids[0], pumpids[1], pumpids[2], pumpids[3],
+    pumpids[4], pumpids[5], pumpids[6], pumpids[7]
+  );
+
+  fms_cli.respond("protocol_config", "Setting protocol configuration... accepted", true);
+}
+
 static void cli_task(void* arg) {
   BaseType_t rc;
   // cli command
   while (1) {
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

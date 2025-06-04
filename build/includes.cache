@@ -110,11 +110,6 @@
     "Includepath": null
   },
   {
-    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\Redstar.cpp",
-    "Include": "",
-    "Includepath": null
-  },
-  {
     "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\_fms_cli.cpp",
     "Include": "",
     "Includepath": null
@@ -126,6 +121,11 @@
   },
   {
     "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\_fms_filemanager.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "d:\\FMS Framework\\development_version\\fms_framework\\build\\sketch\\src\\_fms_redstar.cpp",
     "Include": "",
     "Includepath": null
   },
