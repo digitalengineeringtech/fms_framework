@@ -277,7 +277,7 @@ void handle_wifi_connect_command(const std::vector<String>& args) {
 void handle_wifi_read_command(const std::vector<String>& args) {
   if (WiFi.status() == WL_CONNECTED) {
     // Use individual prints instead of building a large string
-    Serial0.println("{");
+    Serial0.print("{");
     Serial0.print("  \"ssid\": \"");
     Serial0.print(WiFi.SSID());
     Serial0.print("\",");
@@ -286,7 +286,7 @@ void handle_wifi_read_command(const std::vector<String>& args) {
     Serial0.print(",");
     Serial0.print("  \"ip\": \"");
     Serial0.print(WiFi.localIP().toString());
-    Serial0.println("\"");
+    Serial0.print("\"");
     Serial0.println("}");
   } else {
     fms_cli.respond("wifiread", "WiFi not connected", false);
