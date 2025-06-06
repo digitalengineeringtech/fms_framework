@@ -22,7 +22,7 @@ from PyQt5.QtWidgets import (
     QTextEdit, QTabWidget, QGroupBox, QFormLayout, QSpinBox,
     QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
     QFileDialog, QMessageBox, QDialog, QGridLayout, QInputDialog,
-    QDialogButtonBox, QFrame, QListWidget, QListWidgetItem
+    QDialogButtonBox, QFrame, QListWidget, QListWidgetItem, QMenu
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSettings
 from PyQt5.QtGui import QColor, QTextCharFormat, QFont, QIcon, QSyntaxHighlighter, QTextCursor
@@ -297,6 +297,11 @@ class LogParser:
                     result = data.get("result", "")
                     message = f"Command '{command}': {result}"
                     level = "INFO" if success else "ERROR"
+                    
+                    # Show dialog box for successful login
+                    if command == "login" and success and result == "Login successful":
+                        QMessageBox.information(None, "Login Status", "Login successful")
+                    
                     return LogEntry(now, level, message, line)
         except json.JSONDecodeError:
             pass
@@ -475,6 +480,7 @@ class FMSDebugUI(QMainWindow):
         
         # Setup UI
         self.setup_ui()
+        self.setup_toolbar()  # Add this line after setup_ui()
         self.load_settings()
         self.refresh_ports()
         
@@ -486,7 +492,7 @@ class FMSDebugUI(QMainWindow):
     def setup_ui(self):
         main_widget = QWidget()
         main_layout = QVBoxLayout(main_widget)
-        
+       
         self.tabs = QTabWidget()
         
         # Create tabs
@@ -500,6 +506,21 @@ class FMSDebugUI(QMainWindow):
         # Status bar
         self.statusBar().showMessage("Ready")
     
+    def setup_toolbar(self):
+        toolbar = self.addToolBar("Main Toolbar")
+        toolbar.setMovable(False)
+    
+        # Help action
+        help_action = toolbar.addAction("Help")
+        help_action.setStatusTip("Show command help")
+        help_action.triggered.connect(self.show_command_dialog)
+        toolbar.addSeparator()
+        
+        # About
+        about_action = toolbar.addAction("About")
+        about_action.setStatusTip("About FMS Debug Logger")
+        about_action.triggered.connect(self.show_about_dialog)
+
     def create_log_tab(self):
         log_tab = QWidget()
         layout = QVBoxLayout(log_tab)
@@ -571,7 +592,7 @@ class FMSDebugUI(QMainWindow):
                 }
                 QPushButton:pressed {
                     background-color: #6200EE;
-                    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+                    
                 }
                 QPushButton:disabled {
                     background-color: #CCCCCC;
@@ -609,6 +630,8 @@ class FMSDebugUI(QMainWindow):
         connection_layout.addRow("Baud Rate:", self.baud_combo)
         connection_layout.addRow("", self.connect_button)
         connection_layout.addRow(login_layout)
+        connection_layout.addRow(QLabel("Before Send Command to ultramarine board , plese login CLI  terminal"))
+       
   
         connection_group.setLayout(connection_layout)
         top_layout.addWidget(connection_group)
@@ -714,16 +737,6 @@ class FMSDebugUI(QMainWindow):
         log_splitter.addWidget(self.all_logs_details)
         log_layout.addWidget(log_splitter)
         log_group.setLayout(log_layout)
-
-        # Command response section
-        # response_group = QGroupBox("Command Response")
-        # response_layout = QVBoxLayout()
-        # self.command_response = QTextEdit()
-        # self.command_response.setReadOnly(True)
-        # self.command_response.setFont(QFont("Monospace", 9))
-        # self.json_highlighter = JsonSyntaxHighlighter(self.command_response.document())
-        # response_layout.addWidget(self.command_response)
-        # response_group.setLayout(response_layout)
         
         # Command history section
         history_group = QGroupBox("Command History")
@@ -746,10 +759,8 @@ class FMSDebugUI(QMainWindow):
         
         # Add groups to main splitter
         main_splitter.addWidget(log_group)
-        # main_splitter.addWidget(response_group)
         main_splitter.addWidget(history_group)
         main_splitter.setSizes([300, 200, 200])
-        
         layout.addWidget(main_splitter)
         
         # Connect signals
@@ -1270,14 +1281,14 @@ class FMSDebugUI(QMainWindow):
         self.auto_scroll = state == Qt.Checked
     
     def refresh_log_display(self):
-        self.log_table.setRowCount(0)
+        # self.log_table.setRowCount(0)
         for log_entry in self.logs:
             if self.should_display_log(log_entry):
                 self.add_log_to_table(log_entry)
     
     def clear_logs(self):
         self.logs = []
-        self.log_table.setRowCount(0)
+        # self.log_table.setRowCount(0)
         self.all_logs_table.setRowCount(0)
         self.log_details.clear()
         self.all_logs_details.clear()
@@ -1308,6 +1319,7 @@ class FMSDebugUI(QMainWindow):
         
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save logs: {str(e)}")    
+    
     def show_command_dialog(self):
         dialog = CommandDialog(self)
         if dialog.exec_() == QDialog.Accepted:
@@ -1315,6 +1327,15 @@ class FMSDebugUI(QMainWindow):
             if command:
                 self.send_cli_command(command)
     
+    def show_about_dialog(self):
+        about_text = (
+            "<h2>Ultm FMS Setup Tool</h2>"
+            "<p>Version 0.1</p>"
+            "<p>This tool allows you to configure and manage Ultm FMS devices.</p>"
+            "<p>Developed by: iih</p>"
+        )
+        QMessageBox.about(self, "About Ultm FMS Setup Tool", about_text)
+
     def send_custom_command(self):
         command = self.custom_command_input.text()
         if command:
@@ -1470,10 +1491,13 @@ class FMSDebugUI(QMainWindow):
         self.disconnect_serial()
         self.save_settings()
         event.accept()
-
+    
+   
 def main():
     app = QApplication(sys.argv)
     window = FMSDebugUI()
+    window.setStatusTip("copyright (c) 2023 Ultm FMS @2025 iih")
+    window.setWindowTitle("Ultm FMS Debug Tool v0.1")
     window.show()
     sys.exit(app.exec_())
 

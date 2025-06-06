@@ -286,7 +286,7 @@ void handle_protocol_command(const std::vector<String>& args) {
   String protocol = args[0];
   if (protocol == "redstar") {
     #define USE_RESTAR
-    fms_set_protocol_config("redstar");
+    //fms_set_protocol_config("redstar");
     vTaskDelay(pdMS_TO_TICKS(1000)); // Allow time for changes to take effect
     ESP.restart();
     // Set Redstar protocol
@@ -294,7 +294,7 @@ void handle_protocol_command(const std::vector<String>& args) {
     // Add any additional setup for Redstar here
   } else if (protocol == "tatsuno") {
     #define USE_TATSUNO
-    fms_set_protocol_config("tatsuno");
+    //fms_set_protocol_config("tatsuno");
     vTaskDelay(pdMS_TO_TICKS(1000)); // Allow time for changes to take effect
     ESP.restart();
     // Set Tatsuno protocol
@@ -323,25 +323,51 @@ size_t custom_print(const uint8_t* buffer, size_t size) {
 // Protocol config command
 void handle_protocol_config_command(const std::vector<String>& args) {
   if (args.size() < 11) {
-    fms_cli.respond("protocol_config", "Usage: protocol_config <param1> <param2> ... <param11>", false);
+    fms_cli.respond("protocol_config", "Usage: protocol_config <protocol> <device_id> <nozzle_count> <pump_id1> ... <pump_id8>", false);
     return;
   }
 
   String protocol = args[0];
+  // Validate protocol
+  if (protocol != "tatsuno" && protocol != "gilbarco" && protocol != "redstar" && protocol != "haungyang") {
+    fms_cli.respond("protocol_config", "Invalid protocol. Must be tatsuno, gilbarco, redstar, or haungyang", false);
+    return;
+  }
+
+  // Validate device and nozzle numbers
   uint8_t devn = args[1].toInt();
   uint8_t noz = args[2].toInt();
-  uint8_t pumpids[8];
+  if (devn == 0 || devn > 255) {
+    fms_cli.respond("protocol_config", "Device ID must be between 1 and 255", false);
+    return;
+  }
+  if (noz == 0 || noz > 8) {
+    fms_cli.respond("protocol_config", "Nozzle count must be between 1 and 8", false);
+    return;
+  }
+
+  // Validate and store pump IDs
+  uint8_t pumpids[8] = {0};
   for (int i = 0; i < 8; i++) {
     pumpids[i] = args[i + 3].toInt();
+    if (pumpids[i] > 255) {
+      fms_cli.respond("protocol_config", "Pump ID " + String(i+1) + " must be between 0 and 255", false);
+      return;
+    }
   }
-  Serial.printf(
-    "[INFO] Setting protocol configuration: %s, devn: %d, noz: %d, pumpids: %d %d %d %d %d %d %d %d\n",
-    protocol.c_str(), devn, noz,
-    pumpids[0], pumpids[1], pumpids[2], pumpids[3],
-    pumpids[4], pumpids[5], pumpids[6], pumpids[7]
-  );
 
-  fms_cli.respond("protocol_config", "Setting protocol configuration... accepted", true);
+  // All validation passed, update configuration
+  dcfg.pt = protocol;
+  dcfg.devn = devn;
+  dcfg.noz = noz;
+  memcpy(dcfg.pumpids, pumpids, sizeof(pumpids));
+
+  fms_set_protocol_config(dcfg);
+  fms_cli.respond("protocol_config", 
+    "Protocol configuration saved:\n"
+    "Protocol: " + protocol + "\n"
+    "Device ID: " + String(devn) + "\n"
+    "Nozzle count: " + String(noz), true);
 }
 
 static void cli_task(void* arg) {

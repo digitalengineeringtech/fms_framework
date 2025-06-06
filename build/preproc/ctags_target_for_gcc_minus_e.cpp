@@ -278,7 +278,7 @@ void handle_wifi_read_command(const std::vector<String>& args) {
   if (WiFi.status() == WL_CONNECTED) {
     // Use individual prints instead of building a large string
     Serial0.print("{");
-    Serial0.print("  \"ssid\": \"");
+    Serial0.print("\"ssid\": \"");
     Serial0.print(WiFi.SSID());
     Serial0.print("\",");
     Serial0.print("  \"rssi\": ");
@@ -414,7 +414,7 @@ void handle_protocol_command(const std::vector<String>& args) {
   String protocol = args[0];
   if (protocol == "redstar") {
 
-    fms_set_protocol_config("redstar");
+    //fms_set_protocol_config("redstar");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 290 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
@@ -426,7 +426,7 @@ void handle_protocol_command(const std::vector<String>& args) {
     // Add any additional setup for Redstar here
   } else if (protocol == "tatsuno") {
 
-    fms_set_protocol_config("tatsuno");
+    //fms_set_protocol_config("tatsuno");
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
 # 298 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
@@ -459,25 +459,51 @@ size_t custom_print(const uint8_t* buffer, size_t size) {
 // Protocol config command
 void handle_protocol_config_command(const std::vector<String>& args) {
   if (args.size() < 11) {
-    fms_cli.respond("protocol_config", "Usage: protocol_config <param1> <param2> ... <param11>", false);
+    fms_cli.respond("protocol_config", "Usage: protocol_config <protocol> <device_id> <nozzle_count> <pump_id1> ... <pump_id8>", false);
     return;
   }
 
   String protocol = args[0];
+  // Validate protocol
+  if (protocol != "tatsuno" && protocol != "gilbarco" && protocol != "redstar" && protocol != "haungyang") {
+    fms_cli.respond("protocol_config", "Invalid protocol. Must be tatsuno, gilbarco, redstar, or haungyang", false);
+    return;
+  }
+
+  // Validate device and nozzle numbers
   uint8_t devn = args[1].toInt();
   uint8_t noz = args[2].toInt();
-  uint8_t pumpids[8];
+  if (devn == 0 || devn > 255) {
+    fms_cli.respond("protocol_config", "Device ID must be between 1 and 255", false);
+    return;
+  }
+  if (noz == 0 || noz > 8) {
+    fms_cli.respond("protocol_config", "Nozzle count must be between 1 and 8", false);
+    return;
+  }
+
+  // Validate and store pump IDs
+  uint8_t pumpids[8] = {0};
   for (int i = 0; i < 8; i++) {
     pumpids[i] = args[i + 3].toInt();
+    if (pumpids[i] > 255) {
+      fms_cli.respond("protocol_config", "Pump ID " + String(i+1) + " must be between 0 and 255", false);
+      return;
+    }
   }
-  Serial0.printf(
-    "[INFO] Setting protocol configuration: %s, devn: %d, noz: %d, pumpids: %d %d %d %d %d %d %d %d\n",
-    protocol.c_str(), devn, noz,
-    pumpids[0], pumpids[1], pumpids[2], pumpids[3],
-    pumpids[4], pumpids[5], pumpids[6], pumpids[7]
-  );
 
-  fms_cli.respond("protocol_config", "Setting protocol configuration... accepted", true);
+  // All validation passed, update configuration
+  dcfg.pt = protocol;
+  dcfg.devn = devn;
+  dcfg.noz = noz;
+  memcpy(dcfg.pumpids, pumpids, sizeof(pumpids));
+
+  fms_set_protocol_config(dcfg);
+  fms_cli.respond("protocol_config",
+    "Protocol configuration saved:\n"
+    "Protocol: " + protocol + "\n"
+    "Device ID: " + String(devn) + "\n"
+    "Nozzle count: " + String(noz), true);
 }
 
 static void cli_task(void* arg) {
@@ -485,9 +511,9 @@ static void cli_task(void* arg) {
   // cli command
   while (1) {
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 351 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 377 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 351 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 377 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -796,16 +822,42 @@ void init_staus_leds() {
   fms_nvs_storage.end(); // Close NVS storage
 }
 
-void fms_set_protocol_config(const String& protocol) {
-  if (!fms_nvs_storage.begin("fms_p_config", false)) {
-    fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
+void fms_set_protocol_config(DisConfig& cfg) {
+  if (!fms_nvs_storage.begin("fms_d_config", false)) {
+    fmsLog(FMS_LOG_ERROR, "[Protocol Config] Failed to initialize NVS storage");
     return;
   }
 
-  fms_nvs_storage.putString("protocol", protocol);
-  sysCfg.protocol = protocol; // Update the global configuration
-  fmsLog(FMS_LOG_INFO, "Protocol set to: %s", sysCfg.protocol.c_str());
-  fms_nvs_storage.end(); // Close NVS storage
+  // Save configuration to NVS storage
+  bool success = true;
+  success &= fms_nvs_storage.putString("protocol", cfg.pt);
+  success &= fms_nvs_storage.putUChar("devn", cfg.devn);
+  success &= fms_nvs_storage.putUChar("noz", cfg.noz);
+
+  // Save pump IDs
+  char key[12];
+  for (int i = 0; i < 8; i++) {
+    snprintf(key, sizeof(key), "pumpid%d", i + 1);
+    success &= fms_nvs_storage.putUChar(key, cfg.pumpids[i]);
+  }
+
+  if (success) {
+    fmsLog(FMS_LOG_INFO, "[Protocol Config] %s configuration saved successfully", cfg.pt.c_str());
+    Serial0.printf(
+      "Protocol: %s, Device ID: %d, Nozzle count: %d\n"
+      "Pump IDs: %d %d %d %d %d %d %d %d\n",
+      cfg.pt.c_str(), cfg.devn, cfg.noz,
+      cfg.pumpids[0], cfg.pumpids[1], cfg.pumpids[2], cfg.pumpids[3],
+      cfg.pumpids[4], cfg.pumpids[5], cfg.pumpids[6], cfg.pumpids[7]
+    );
+
+    // Update system configuration
+    sysCfg.protocol = cfg.pt;
+  } else {
+    fmsLog(FMS_LOG_ERROR, "[Protocol Config] Failed to save some configuration values");
+  }
+
+  fms_nvs_storage.end();
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 //#define FMS_MQTT_DEBUG
@@ -1518,6 +1570,7 @@ TatsunoConfig tatsunoConfig = {
   .noz = 2, // Nozzle number
   .pumpids = {1, 2, 0, 0, 0, 0, 0, 0} // Pump IDs
 };
+
 bool fms_save_tatsuno_config(TatsunoConfig& cfg);
 bool fms_load_tatsuno_config(TatsunoConfig& cfg);
 
@@ -1528,18 +1581,18 @@ void fms_tatsuno_init() {
   tatsuno.begin(19200, true, 16, 17);
   //fms_save_tatsuno_config(tatsunoConfig); /* Save Tatsuno configuration to NVS storage*/
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 162 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 163 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
             1000 
-# 162 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 163 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
             ) / ( TickType_t ) 1000U ) ));
   fms_load_tatsuno_config(tatsunoConfig); /* Load Tatsuno configuration from NVS storage */
-  fms_tatsuno_device_setup(); /*Setup Tatsuno device*/
+  fms_tatsuno_device_setup(); /* Setup Tatsuno device*/
   enqactivetime1 = millis() / 1000;
 }
 
 /* save tatsuno config */
 bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
-  if (!fms_nvs_storage.begin("fms_ts_config", false)) {
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
     fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
     return false;
   }
@@ -1559,7 +1612,7 @@ bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
 }
 
 bool fms_load_tatsuno_config(TatsunoConfig& cfg) {
-  if (!fms_nvs_storage.begin("fms_ts_config", true)) {
+  if (!fms_nvs_storage.begin("fms_p_config", true)) {
     fmsLog(FMS_LOG_ERROR, "Failed to initialize NVS storage");
     return false;
   }
@@ -1652,9 +1705,9 @@ void fms_tatsuno_protocol_main() {
     enqactivetime1 = millis() / 1000;
     // delay(10);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2 ) * ( TickType_t ) 
-# 282 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 283 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
               1000 
-# 282 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 283 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Adjusted delay for speed
     //delay(2); //speed change here
    Serial0.printf("Buffer[%d] : 0x%02X", i , Buffer[i]);
@@ -2505,9 +2558,9 @@ void sendEOT() {
 void txledonoff() {
   gpio_set_level(GPIO_NUM_33,0x0);
   vTaskDelay(10 / ( ( TickType_t ) 1000 / 
-# 1131 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 1132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                  1000 
-# 1131 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 1132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                  )); // delay for 10 ms
   gpio_set_level(GPIO_NUM_33, 0x1);
 }
@@ -2515,9 +2568,9 @@ void txledonoff() {
 void rxledonoff() {
   gpio_set_level(GPIO_NUM_13, 0x1);
   vTaskDelay(10 / ( ( TickType_t ) 1000 / 
-# 1137 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 1138 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                  1000 
-# 1137 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 1138 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                  )); // delay for 10 ms
   gpio_set_level(GPIO_NUM_13, 0x0);
 }
@@ -3590,15 +3643,15 @@ void hmisetup() {
       fmsLog(FMS_LOG_INFO, "[fms_tatsuno_fun.ino:2289 [hmi]] WiFi initialized, connecting to %s... wpa:%s", ssidBuf, passBuf);
       gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 2208 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 2209 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                 1000 
-# 2208 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 2209 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       gpio_set_level(GPIO_NUM_33, 0x1);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 2210 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 2211 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                 1000 
-# 2210 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 2211 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       wifitrytime++;
       }

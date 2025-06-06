@@ -169,22 +169,22 @@ float liveLiterPrice;
 
 
 // modbus address
-const uint16_t NOZ_HANDLE_ADDR  = 0x02E0;
-const uint16_t PUMP_STATE_ADDR  = 0x02DE;
-const uint16_t LIVE_DATA_ADDR   = 0x02C4;
-const uint16_t PRICE_ADDR       = 0x02D8;
-const uint16_t SELL_LITER_ADDR  = 0x02D4;
-const uint16_t TOTALIZER_LITER_ADDR = 0x02BC;
-const uint16_t TOTALIZER_AMOUNT_ADDR = 0x02C0;
-const uint16_t LIVE_PRICE_ADDR       = 0x02C8;
-const uint8_t  NOZ_ID            = 01;
+const uint16_t NOZ_HANDLE_ADDR        = 0x02E0;
+const uint16_t PUMP_STATE_ADDR        = 0x02DE;
+const uint16_t LIVE_DATA_ADDR         = 0x02C4;
+const uint16_t PRICE_ADDR             = 0x02D8;
+const uint16_t SELL_LITER_ADDR        = 0x02D4;
+const uint16_t TOTALIZER_LITER_ADDR   = 0x02BC;
+const uint16_t TOTALIZER_AMOUNT_ADDR  = 0x02C0;
+const uint16_t LIVE_PRICE_ADDR        = 0x02C8;
+const uint8_t  NOZ_ID                 = 01;
 // end modbus address
 
 // from old 
-char approv_topic[22]                 = "detpos/local_server/1";
-char preset_topic[28]                 = "detpos/local_server/preset";  // return from local server
-// char reload_topic[29]               = "detpos/local_server/reload/1";  // return from local server
-char price_change_topic[26]           = "detpos/local_server/price";  // return from local server
+char approv_topic[22]               = "detpos/local_server/1";
+char preset_topic[28]               = "detpos/local_server/preset";  // return from local server
+// char reload_topic[29]            = "detpos/local_server/reload/1";  // return from local server
+char price_change_topic[26]         = "detpos/local_server/price";  // return from local server
 char device_Id_topic[40]            = "detpos/local_server/initial1/det/0A0000";  // return from local server
 
 char pplive[25]                     = "detpos/device/livedata/1";
@@ -201,10 +201,20 @@ char payload[10]; // for permit message
 // old topic for old version
 char reload_topic[29] = "detpos/local_server/reload/1";
 
+
+/* dispenser config */
+struct DisConfig{
+  String   pt;              // protocol type
+  uint8_t  devn;            // device number
+  uint8_t  noz;             // nozzle number
+  uint8_t pumpids[8];       // pump ids
+}dcfg;
+
+
 struct SYSCFG {
   unsigned long bootcount;
   unsigned long version;
-  char          wifi_ssid[32]         = "";
+  char          wifi_ssid[32]         = " ";
   char          wifi_password[64]     = " ";
   char          mqtt_server_host[32]  = "192.168.1.115";
   char*         mqtt_user             = MQTT_USER;
@@ -212,9 +222,9 @@ struct SYSCFG {
   uint32_t      mqtt_port             = MQTT_PORT;
   String        mqtt_device_id        = deviceName;
   char*         mqtt_lwt_status[20];
-  String         device_id            = deviceName;
+  String        device_id             = deviceName;
   uint32_t      station_id            = STATION_ID;
-  String         protocol              = "0";  // protocol type
+  String        protocol              = "0";  // protocol type
 } sysCfg;
 
 // cli config

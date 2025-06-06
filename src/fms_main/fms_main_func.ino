@@ -174,14 +174,40 @@ void init_staus_leds() {
   fms_nvs_storage.end();  // Close NVS storage
 }
 
-void fms_set_protocol_config(const String& protocol) {
-  if (!fms_nvs_storage.begin("fms_p_config", false)) {
-    FMS_LOG_ERROR("Failed to initialize NVS storage");
+void fms_set_protocol_config(DisConfig& cfg) {
+  if (!fms_nvs_storage.begin("fms_d_config", false)) {
+    FMS_LOG_ERROR("[Protocol Config] Failed to initialize NVS storage");
     return;
   }
 
-  fms_nvs_storage.putString("protocol", protocol);
-  sysCfg.protocol = protocol;  // Update the global configuration
-  FMS_LOG_INFO("Protocol set to: %s", sysCfg.protocol.c_str());
-  fms_nvs_storage.end();  // Close NVS storage
+  // Save configuration to NVS storage
+  bool success = true;
+  success &= fms_nvs_storage.putString("protocol", cfg.pt);
+  success &= fms_nvs_storage.putUChar("devn", cfg.devn);
+  success &= fms_nvs_storage.putUChar("noz", cfg.noz);
+
+  // Save pump IDs
+  char key[12];
+  for (int i = 0; i < 8; i++) {
+    snprintf(key, sizeof(key), "pumpid%d", i + 1);
+    success &= fms_nvs_storage.putUChar(key, cfg.pumpids[i]);
+  }
+
+  if (success) {
+    FMS_LOG_INFO("[Protocol Config] %s configuration saved successfully", cfg.pt.c_str());
+    Serial.printf(
+      "Protocol: %s, Device ID: %d, Nozzle count: %d\n"
+      "Pump IDs: %d %d %d %d %d %d %d %d\n",
+      cfg.pt.c_str(), cfg.devn, cfg.noz,
+      cfg.pumpids[0], cfg.pumpids[1], cfg.pumpids[2], cfg.pumpids[3],
+      cfg.pumpids[4], cfg.pumpids[5], cfg.pumpids[6], cfg.pumpids[7]
+    );
+    
+    // Update system configuration
+    sysCfg.protocol = cfg.pt;
+  } else {
+    FMS_LOG_ERROR("[Protocol Config] Failed to save some configuration values");
+  }
+
+  fms_nvs_storage.end();
 }

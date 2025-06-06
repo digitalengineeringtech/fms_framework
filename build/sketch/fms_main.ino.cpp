@@ -79,7 +79,7 @@ void handle_protocol_command(const std::vector<String>& args);
 size_t custom_print(const uint8_t* buffer, size_t size);
 #line 324 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_protocol_config_command(const std::vector<String>& args);
-#line 347 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+#line 373 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 static void cli_task(void* arg);
 #line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_boot_count(bool bootsave);
@@ -110,7 +110,7 @@ void init_staus_leds();
 #line 147 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_load_protocol_config();
 #line 177 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
-void fms_set_protocol_config(const String& protocol);
+void fms_set_protocol_config(DisConfig& cfg);
 #line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
 #line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
@@ -157,105 +157,105 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
 bool fm_cli_task_create();
-#line 158 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 159 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_init();
-#line 236 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 237 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_protocol_main();
-#line 276 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 277 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void mainfun();
-#line 381 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 382 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void tatsuno_pump_setting(char* topic, String payload);
-#line 530 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 531 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void messageClassified();
-#line 705 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 706 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpreqmqtt();
-#line 735 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 736 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pplivemqtt();
-#line 806 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 807 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedCRC();
-#line 897 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 898 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun();
-#line 925 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 926 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 uint16_t calculate_crc(uint8_t* data, int length, uint16_t polynomial);
-#line 943 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 944 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void BufferClear();
-#line 947 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 948 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpactive();
-#line 963 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 964 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpenqactive();
-#line 985 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 986 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_device_setup();
-#line 1088 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1089 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendenq(int eq);
-#line 1110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1111 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendACK1();
-#line 1119 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1120 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendEOT();
-#line 1129 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1130 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void txledonoff();
-#line 1135 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1136 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void rxledonoff();
-#line 1141 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1142 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void cancelfinalsend();
-#line 1164 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1165 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void finalsend();
-#line 1382 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1383 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendcrcfun();
-#line 1442 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1443 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangefun();
-#line 1480 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1481 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpmqttnumchange();
-#line 1576 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1577 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendpumpstatus(int pump);
-#line 1627 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1628 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumppresetfun();
-#line 1725 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1726 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void reloadfun();
-#line 1979 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1980 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricereqfun();
-#line 1992 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1993 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1Totalizerstatus();
-#line 2001 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2002 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2Totalizerstatus();
-#line 2010 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2011 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2status();
-#line 2020 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2021 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1status();
-#line 2029 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2030 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1Select();
-#line 2037 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2038 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2Select();
-#line 2045 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2046 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangeapprove2fun();
-#line 2056 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2057 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangeapprove1fun();
-#line 2067 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2068 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void finalmqtt1();
-#line 2142 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2143 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpidchange();
-#line 2147 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2148 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumapprofun();
-#line 2161 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2162 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void hmisetup();
-#line 2277 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2278 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void saveall();
-#line 2303 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2304 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void writeString(String ssid, String password);
-#line 2313 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2314 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void mqttpumpidchange(int pumpid);
-#line 2413 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2414 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumappproSend();
-#line 2463 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2464 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedPreset();
-#line 2538 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2539 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun1();
-#line 2571 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2572 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun2();
-#line 2597 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2598 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void resendpreset();
-#line 2626 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2627 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedAppro();
-#line 2703 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2704 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void resendappro();
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
@@ -490,7 +490,7 @@ void handle_wifi_read_command(const std::vector<String>& args) {
   if (WiFi.status() == WL_CONNECTED) {
     // Use individual prints instead of building a large string
     Serial.print("{");
-    Serial.print("  \"ssid\": \"");
+    Serial.print("\"ssid\": \"");
     Serial.print(WiFi.SSID());
     Serial.print("\",");
     Serial.print("  \"rssi\": ");
@@ -626,7 +626,7 @@ void handle_protocol_command(const std::vector<String>& args) {
   String protocol = args[0];
   if (protocol == "redstar") {
     #define USE_RESTAR
-    fms_set_protocol_config("redstar");
+    //fms_set_protocol_config("redstar");
     vTaskDelay(pdMS_TO_TICKS(1000)); // Allow time for changes to take effect
     ESP.restart();
     // Set Redstar protocol
@@ -634,7 +634,7 @@ void handle_protocol_command(const std::vector<String>& args) {
     // Add any additional setup for Redstar here
   } else if (protocol == "tatsuno") {
     #define USE_TATSUNO
-    fms_set_protocol_config("tatsuno");
+    //fms_set_protocol_config("tatsuno");
     vTaskDelay(pdMS_TO_TICKS(1000)); // Allow time for changes to take effect
     ESP.restart();
     // Set Tatsuno protocol
@@ -663,25 +663,51 @@ size_t custom_print(const uint8_t* buffer, size_t size) {
 // Protocol config command
 void handle_protocol_config_command(const std::vector<String>& args) {
   if (args.size() < 11) {
-    fms_cli.respond("protocol_config", "Usage: protocol_config <param1> <param2> ... <param11>", false);
+    fms_cli.respond("protocol_config", "Usage: protocol_config <protocol> <device_id> <nozzle_count> <pump_id1> ... <pump_id8>", false);
     return;
   }
 
   String protocol = args[0];
+  // Validate protocol
+  if (protocol != "tatsuno" && protocol != "gilbarco" && protocol != "redstar" && protocol != "haungyang") {
+    fms_cli.respond("protocol_config", "Invalid protocol. Must be tatsuno, gilbarco, redstar, or haungyang", false);
+    return;
+  }
+
+  // Validate device and nozzle numbers
   uint8_t devn = args[1].toInt();
   uint8_t noz = args[2].toInt();
-  uint8_t pumpids[8];
+  if (devn == 0 || devn > 255) {
+    fms_cli.respond("protocol_config", "Device ID must be between 1 and 255", false);
+    return;
+  }
+  if (noz == 0 || noz > 8) {
+    fms_cli.respond("protocol_config", "Nozzle count must be between 1 and 8", false);
+    return;
+  }
+
+  // Validate and store pump IDs
+  uint8_t pumpids[8] = {0};
   for (int i = 0; i < 8; i++) {
     pumpids[i] = args[i + 3].toInt();
+    if (pumpids[i] > 255) {
+      fms_cli.respond("protocol_config", "Pump ID " + String(i+1) + " must be between 0 and 255", false);
+      return;
+    }
   }
-  Serial.printf(
-    "[INFO] Setting protocol configuration: %s, devn: %d, noz: %d, pumpids: %d %d %d %d %d %d %d %d\n",
-    protocol.c_str(), devn, noz,
-    pumpids[0], pumpids[1], pumpids[2], pumpids[3],
-    pumpids[4], pumpids[5], pumpids[6], pumpids[7]
-  );
 
-  fms_cli.respond("protocol_config", "Setting protocol configuration... accepted", true);
+  // All validation passed, update configuration
+  dcfg.pt = protocol;
+  dcfg.devn = devn;
+  dcfg.noz = noz;
+  memcpy(dcfg.pumpids, pumpids, sizeof(pumpids));
+
+  fms_set_protocol_config(dcfg);
+  fms_cli.respond("protocol_config", 
+    "Protocol configuration saved:\n"
+    "Protocol: " + protocol + "\n"
+    "Device ID: " + String(devn) + "\n"
+    "Nozzle count: " + String(noz), true);
 }
 
 static void cli_task(void* arg) {
@@ -1075,16 +1101,42 @@ void init_staus_leds() {
   fms_nvs_storage.end();  // Close NVS storage
 }
 
-void fms_set_protocol_config(const String& protocol) {
-  if (!fms_nvs_storage.begin("fms_p_config", false)) {
-    FMS_LOG_ERROR("Failed to initialize NVS storage");
+void fms_set_protocol_config(DisConfig& cfg) {
+  if (!fms_nvs_storage.begin("fms_d_config", false)) {
+    FMS_LOG_ERROR("[Protocol Config] Failed to initialize NVS storage");
     return;
   }
 
-  fms_nvs_storage.putString("protocol", protocol);
-  sysCfg.protocol = protocol;  // Update the global configuration
-  FMS_LOG_INFO("Protocol set to: %s", sysCfg.protocol.c_str());
-  fms_nvs_storage.end();  // Close NVS storage
+  // Save configuration to NVS storage
+  bool success = true;
+  success &= fms_nvs_storage.putString("protocol", cfg.pt);
+  success &= fms_nvs_storage.putUChar("devn", cfg.devn);
+  success &= fms_nvs_storage.putUChar("noz", cfg.noz);
+
+  // Save pump IDs
+  char key[12];
+  for (int i = 0; i < 8; i++) {
+    snprintf(key, sizeof(key), "pumpid%d", i + 1);
+    success &= fms_nvs_storage.putUChar(key, cfg.pumpids[i]);
+  }
+
+  if (success) {
+    FMS_LOG_INFO("[Protocol Config] %s configuration saved successfully", cfg.pt.c_str());
+    Serial.printf(
+      "Protocol: %s, Device ID: %d, Nozzle count: %d\n"
+      "Pump IDs: %d %d %d %d %d %d %d %d\n",
+      cfg.pt.c_str(), cfg.devn, cfg.noz,
+      cfg.pumpids[0], cfg.pumpids[1], cfg.pumpids[2], cfg.pumpids[3],
+      cfg.pumpids[4], cfg.pumpids[5], cfg.pumpids[6], cfg.pumpids[7]
+    );
+    
+    // Update system configuration
+    sysCfg.protocol = cfg.pt;
+  } else {
+    FMS_LOG_ERROR("[Protocol Config] Failed to save some configuration values");
+  }
+
+  fms_nvs_storage.end();
 }
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
@@ -2486,6 +2538,7 @@ TatsunoConfig tatsunoConfig = {
   .noz = 2,   // Nozzle number
   .pumpids = {1, 2, 0, 0, 0, 0, 0, 0} // Pump IDs
 };
+
 bool fms_save_tatsuno_config(TatsunoConfig& cfg);
 bool fms_load_tatsuno_config(TatsunoConfig& cfg);
 
@@ -2496,14 +2549,14 @@ void fms_tatsuno_init() {
   tatsuno.begin(19200, true, RXD2, TXD2); 
   //fms_save_tatsuno_config(tatsunoConfig); /* Save Tatsuno configuration to NVS storage*/
   vTaskDelay(pdMS_TO_TICKS(100)); 
-  fms_load_tatsuno_config(tatsunoConfig);  /* Load Tatsuno configuration from NVS storage */
-  fms_tatsuno_device_setup();  /*Setup Tatsuno device*/
+  fms_load_tatsuno_config(tatsunoConfig);   /* Load Tatsuno configuration from NVS storage */
+  fms_tatsuno_device_setup();               /* Setup Tatsuno device*/
   enqactivetime1 = millis() / 1000;
 }
 
 /* save tatsuno config */
 bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
-  if (!fms_nvs_storage.begin("fms_ts_config", false)) {
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
     FMS_LOG_ERROR("Failed to initialize NVS storage");
     return false;
   }
@@ -2523,7 +2576,7 @@ bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
 }
 
 bool fms_load_tatsuno_config(TatsunoConfig& cfg) {
-  if (!fms_nvs_storage.begin("fms_ts_config", true)) {
+  if (!fms_nvs_storage.begin("fms_p_config", true)) {
     FMS_LOG_ERROR("Failed to initialize NVS storage");
     return false;
   }

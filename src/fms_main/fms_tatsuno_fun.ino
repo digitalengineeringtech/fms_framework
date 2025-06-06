@@ -150,6 +150,7 @@ TatsunoConfig tatsunoConfig = {
   .noz = 2,   // Nozzle number
   .pumpids = {1, 2, 0, 0, 0, 0, 0, 0} // Pump IDs
 };
+
 bool fms_save_tatsuno_config(TatsunoConfig& cfg);
 bool fms_load_tatsuno_config(TatsunoConfig& cfg);
 
@@ -160,14 +161,14 @@ void fms_tatsuno_init() {
   tatsuno.begin(19200, true, RXD2, TXD2); 
   //fms_save_tatsuno_config(tatsunoConfig); /* Save Tatsuno configuration to NVS storage*/
   vTaskDelay(pdMS_TO_TICKS(100)); 
-  fms_load_tatsuno_config(tatsunoConfig);  /* Load Tatsuno configuration from NVS storage */
-  fms_tatsuno_device_setup();  /*Setup Tatsuno device*/
+  fms_load_tatsuno_config(tatsunoConfig);   /* Load Tatsuno configuration from NVS storage */
+  fms_tatsuno_device_setup();               /* Setup Tatsuno device*/
   enqactivetime1 = millis() / 1000;
 }
 
 /* save tatsuno config */
 bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
-  if (!fms_nvs_storage.begin("fms_ts_config", false)) {
+  if (!fms_nvs_storage.begin("fms_p_config", false)) {
     FMS_LOG_ERROR("Failed to initialize NVS storage");
     return false;
   }
@@ -187,7 +188,7 @@ bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
 }
 
 bool fms_load_tatsuno_config(TatsunoConfig& cfg) {
-  if (!fms_nvs_storage.begin("fms_ts_config", true)) {
+  if (!fms_nvs_storage.begin("fms_d_config", true)) {
     FMS_LOG_ERROR("Failed to initialize NVS storage");
     return false;
   }
