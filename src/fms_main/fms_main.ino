@@ -9,14 +9,16 @@
 
 /* device login page */
 const String correctUsername = "admin";           /* change your login username here*/
-const String correctPassword = "admin";           /*change your login pass here*/
-const String firmwareVersion = "0.1.0";           /* Current firmware version*/
-String deviceName            = "ultm_25505v01_";  /*device ID (for)  change here like this user can change with configpanel*/
-#define CLI_PASSWORD         "admin"              /*cli password change this password*/
+const String correctPassword = "admin";           /* change your login pass here*/
+const String firmwareVersion = "0.3.0";           /* Current firmware version*/
+String deviceName            = "ultm_25505v01_";  /* device ID (for)  change here like this user can change with configpanel*/
+#define CLI_PASSWORD         "admin"              /* cli password change this password*/
 /* end change note  */
 
 #define FMS_TATSUNO_DEBUG_OPEN
-
+/* #define USE_RESTAR */
+#define USE_TATSUNO
+// #define USE_REDSTAR
 
 #include "_fms_main.h"
 #include "src/_fms_cli.h"
@@ -29,7 +31,7 @@ String deviceName            = "ultm_25505v01_";  /*device ID (for)  change here
 
 
 // #define DISABLE_MQTT_DEBUG
-// #ifdef DISABLE_MQTT_DEBUG
+// #ifdef DISABLE_MQTT_DEBUGP
 // #undef FMS_MQTT_DEBUG
 // #endif
 // #define USE_MQTT_DEBUG
@@ -40,8 +42,7 @@ String deviceName            = "ultm_25505v01_";  /*device ID (for)  change here
 #undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
 #endif
 
-/* #define USE_RESTAR */
-#define USE_TATSUNO
+
 
 FMS_FileManager fileManager;
 fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
@@ -55,22 +56,22 @@ void setup() {
   init_staus_leds();  // initialize status LEDs
 #ifdef USE_CLI
   fms_cli.begin(115200);  // Initialize the CLI with a baud rate of 115200
-  fms_cli.register_command("wifi", "Configure WiFi settings", handle_wifi_command, 2, 2);
-  fms_cli.register_command("wifi_connect", "Connect to WiFi network", handle_wifi_connect_command, 2, 2);
-  fms_cli.register_command("restart", "Restart the system", handle_restart_command);
+  fms_cli.register_command("wifi",         "Configure WiFi settings",       handle_wifi_command, 2, 2);
+  fms_cli.register_command("wifi_connect", "Connect to WiFi network",       handle_wifi_connect_command, 2, 2);
+  fms_cli.register_command("restart",      "Restart the system",            handle_restart_command);
   fms_cli.register_command("wifiscan_safe", "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
-  fms_cli.register_command("wifiread", "Read current WiFi status", handle_wifi_read_command);
-  fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
-  fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
-  fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
-  fms_cli.register_command("protocol_config"," Set Protococl Congfig", handle_protocol_config_command, 11, 11);
+  fms_cli.register_command("wifiread",      "Read current WiFi status",     handle_wifi_read_command);
+  fms_cli.register_command("wifi_test",     "Test WiFi connection",         handle_wifi_test_command);
+  fms_cli.register_command("uuid_change",   "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
+  fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
+  fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
+
   //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
 #endif
-
   fms_pin_mode(BUILTIN_LED, OUTPUT);
 
   /* test features protocol selection 
-  fms_load_protocol_config();  // load protocol config from nvs storage
+ // fms_load_protocol_config();  // load protocol config from nvs storage
 
   while (sysCfg.protocol == "0") {  // wait for protocol to be set
     FMS_LOG_ERROR("Protocol not set, waiting...");
@@ -94,7 +95,7 @@ void setup() {
   lanfeng.init(1, fms_uart2_serial);       // add slave id
 #endif
 
-#ifdef USE_RESTAR
+#ifdef USE_REDSTAR
   red_star_init();                         // redstar init
 #endif
 
@@ -102,11 +103,11 @@ void setup() {
   fms_tatsuno_init();                      // tatsuno init
 #endif
 
-  /* test features
-  if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
-    fms_task_create();
-  }
-  */
+  // /* test features
+  // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
+  //   fms_task_create();
+  // }
+  // */
 
   if (fms_initialize_wifi()) {             // wifi is connected create all task s
     fms_task_create();

@@ -1,3 +1,12 @@
+/*
+change note : 
+  if (protocol != "tatsuno" && protocol != "gilbarco" && protocol != "redstar" && protocol != "haungyang") {
+    fms_cli.respond("protocol_config", "Invalid protocol. Must be tatsuno, gilbarco, redstar, or haungyang", false);
+    return;
+  }
+
+*/
+
 // cli command function
 void handle_wifi_command(const std::vector<String>& args) {
   if (args.size() != 2) {
@@ -328,7 +337,7 @@ void handle_protocol_config_command(const std::vector<String>& args) {
   }
 
   String protocol = args[0];
-  // Validate protocol
+  // Validate protocol 
   if (protocol != "tatsuno" && protocol != "gilbarco" && protocol != "redstar" && protocol != "haungyang") {
     fms_cli.respond("protocol_config", "Invalid protocol. Must be tatsuno, gilbarco, redstar, or haungyang", false);
     return;

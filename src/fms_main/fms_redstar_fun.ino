@@ -1,5 +1,5 @@
 
-#ifdef USE_RESTAR
+#ifdef USE_REDSTAR
 
 #define FMS_RED_DEBUG_OPEN
 #ifdef FMS_RED_DEBUG_OPEN

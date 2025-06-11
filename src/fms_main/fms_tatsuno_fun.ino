@@ -1,8 +1,9 @@
 
 #ifdef USE_TATSUNO
+
 /* tatsuno parameter */
 #define RESPONSE_BUFFER_SIZE 50
-int length = 0;
+
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
 
 /*
@@ -166,7 +167,7 @@ void fms_tatsuno_init() {
   enqactivetime1 = millis() / 1000;
 }
 
-/* save tatsuno config */
+/* save tatsuno config optional features curently remove this */
 bool fms_save_tatsuno_config(TatsunoConfig& cfg) {
   if (!fms_nvs_storage.begin("fms_p_config", false)) {
     FMS_LOG_ERROR("Failed to initialize NVS storage");

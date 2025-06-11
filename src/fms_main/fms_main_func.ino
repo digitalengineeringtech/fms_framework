@@ -146,32 +146,29 @@ void init_staus_leds() {
 
  void fms_load_protocol_config() {
 
-  if (!fms_nvs_storage.begin("fms_p_config", false)) {
-    FMS_LOG_ERROR("Failed to initialize NVS storage");
+  if (!fms_nvs_storage.begin("fms_d_config", false)) {
+    FMS_LOG_ERROR("[Protocol Config] Failed to initialize NVS storage");
     return;
   }
 
-  sysCfg.protocol = fms_nvs_storage.getString("protocol", "0");  // Default to "redstar" if not set
-  if (sysCfg.protocol != "redstar" && sysCfg.protocol != "tatsuno") {
-    FMS_LOG_ERROR("Invalid protocol configuration, defaulting to redstar");
-    sysCfg.protocol = "0";  // Default to "redstar" if invalid
-  }
-  FMS_LOG_INFO("Protocol: %s", sysCfg.protocol.c_str());
-
+  // Load protocol type
+  sysCfg.protocol = fms_nvs_storage.getString("protocol", "0");  // Default to "redstar"
+  FMS_LOG_INFO("[Protocol Config] Protocol: %s", sysCfg.protocol.c_str());
+  // Set protocol defines
   if (sysCfg.protocol == "redstar") {
-    #define USE_RESTAR
-    #undef USE_TATSUNO  // Ensure Tatsuno is not defined
-    FMS_LOG_INFO("Using Redstar protocol");
+    #define USE_REDSTAR
+    #undef USE_TATSUNO
+    FMS_LOG_INFO("[Protocol Config] Using Redstar protocol");
   } else if (sysCfg.protocol == "tatsuno") {
     #define USE_TATSUNO
-    #undef USE_RESTAR  // Ensure Redstar is not defined
-    FMS_LOG_INFO("Using Tatsuno protocol");
+    #undef USE_REDSTAR
+    FMS_LOG_INFO("[Protocol Config] Using Tatsuno protocol");
   } else {
-    FMS_LOG_ERROR("Unknown protocol, defaulting to redstar");
-    sysCfg.protocol = "0";  // Default to "redstar"
+    FMS_LOG_ERROR("[Protocol Config] Unknown protocol, defaulting to Redstar");
+    sysCfg.protocol = "0";
   }
 
-  fms_nvs_storage.end();  // Close NVS storage
+  fms_nvs_storage.end();
 }
 
 void fms_set_protocol_config(DisConfig& cfg) {
@@ -208,6 +205,5 @@ void fms_set_protocol_config(DisConfig& cfg) {
   } else {
     FMS_LOG_ERROR("[Protocol Config] Failed to save some configuration values");
   }
-
   fms_nvs_storage.end();
 }

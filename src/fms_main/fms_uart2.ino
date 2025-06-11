@@ -55,7 +55,7 @@ void fms_uart2_task(void* arg) {
             fms_lanfeng_protocol(); /* lanfeng protocol */
         #endif
 
-        #ifdef USE_RESTAR /* development features */
+        #ifdef USE_REDSTAR /* development features */
          FMS_LOG_INFO("[RESTAR] Starting Redstar Protocol");
             fms_red_star_protocol_main();  /* red star protocol */
         #endif
