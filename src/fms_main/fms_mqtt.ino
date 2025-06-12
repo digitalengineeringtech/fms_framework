@@ -36,7 +36,9 @@ void fms_subsbribe_topics() {
 
 void fms_mqtt_reconnect() {
   // for check client connection online or offline
-  const char* willTopic = "device/status";
+
+  String willTopicStr = String("device/") + deviceName + "/status";
+  const char* willTopic = willTopicStr.c_str();
   const char* willMessage = "offline";
   bool willRetain = true;
   uint8_t willQos = 1;
@@ -69,7 +71,22 @@ bool ledState_                  = false;
 
 static void mqtt_task(void* arg) {
   BaseType_t rc;
-  fms_mqtt_client.setServer(MQTT_SERVER, 1883);
+   fms_nvs_storage.begin("fms_config", false);
+    String host = fms_nvs_storage.getString("host");
+    String port = fms_nvs_storage.getString("port");
+    
+    if(host.length() == 0 || port.length() == 0) {
+      gpio_set_level(LED_YELLOW, LOW);
+      vTaskDelay(pdMS_TO_TICKS(500));
+      FMS_LOG_ERROR("[fms_mqtt.ino:79] [DEBUG MQTT] mqtt .. credential .. value is empty");
+      fms_nvs_storage.end();
+      return false;
+    }
+
+    fms_nvs_storage.end();
+    FMS_LOG_DEBUG("HOST : %s , PORT : %s", host, port);
+
+  fms_mqtt_client.setServer(host.c_str(), atoi(port.c_str()));
   fms_mqtt_client.setCallback(fms_mqtt_callback);
 
   while (mqttTask) {

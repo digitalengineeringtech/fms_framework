@@ -1,5 +1,6 @@
 // For large uploads - increase buffer size
 /*
+
 #define HTTP_UPLOAD_BUFLEN 4096         // Increased from default 1460
 #define WDT_TIMEOUT_S 30
 

@@ -10,12 +10,14 @@
 /* device login page */
 const String correctUsername = "admin";           /* change your login username here*/
 const String correctPassword = "admin";           /* change your login pass here*/
-const String firmwareVersion = "0.3.0";           /* Current firmware version*/
+const String firmwareVersion = "0.4.0";           /* Current firmware version*/
 String deviceName            = "ultm_25505v01_";  /* device ID (for)  change here like this user can change with configpanel*/
 #define CLI_PASSWORD         "admin"              /* cli password change this password*/
 /* end change note  */
 
 #define FMS_TATSUNO_DEBUG_OPEN
+
+//#define USE_V2_OTA_SERVER
 /* #define USE_RESTAR */
 #define USE_TATSUNO
 // #define USE_REDSTAR
@@ -39,7 +41,7 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 #define USE_CLI
 #define DISABLE_LANFENG  // Uncomment this line to disable the library
 #ifdef DISABLE_LANFENG
-#undef USE_LANFENG  // Undefine USE_LANFENG to disable the library
+#undef USE_LANFENG        // Undefine USE_LANFENG to disable the library
 #endif
 
 
@@ -65,9 +67,9 @@ void setup() {
   fms_cli.register_command("uuid_change",   "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
   fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
   fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
-
-  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
+  fms_cli.register_command("mqtt_config"   ,"Configure Mqtt settings",     handle_mqtt_command,2,2);
 #endif
+
   fms_pin_mode(BUILTIN_LED, OUTPUT);
 
   /* test features protocol selection 

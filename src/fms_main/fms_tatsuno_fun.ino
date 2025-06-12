@@ -1,6 +1,5 @@
 
 #ifdef USE_TATSUNO
-
 /* tatsuno parameter */
 #define RESPONSE_BUFFER_SIZE 50
 
@@ -13,11 +12,11 @@
 #define LED_YELLOW                  GPIO_NUM_33
 */
 
-#define wifiled 33
-#define powerled 32
-#define TXled 27
-#define RXled 26
-#define DIR_PIN 22
+#define wifiled         33
+#define powerled        32
+#define TXled           27
+#define RXled           26
+#define DIR_PIN         22
 
 // #define RXD2 16
 // #define TXD2 17
@@ -33,28 +32,25 @@ char passtemp[50];
 
 char ssidBuf[50];
 char passBuf[50];
-unsigned char showSSID[6] = { 0X5A, 0XA5, 0X40, 0X82, 0X12, 0x00 };
-unsigned char showPASS[6] = { 0X5A, 0XA5, 0X40, 0X82, 0X13, 0x00 };
-unsigned char page[9] = { 0X5A, 0XA5, 0X07, 0X82, 0X00, 0X84, 0X5A, 0X01, 0X00 };  // Page change
-unsigned char deviceary[8] = { 0x5A, 0XA5, 0x05, 0X82, 0x31, 0x00, 0x00, 0x00 };
-
-int wifitrytime = 0;
-
+unsigned char showSSID[6]       = { 0X5A, 0XA5, 0X40, 0X82, 0X12, 0x00 };
+unsigned char showPASS[6]       = { 0X5A, 0XA5, 0X40, 0X82, 0X13, 0x00 };
+unsigned char page[9]           = { 0X5A, 0XA5, 0X07, 0X82, 0X00, 0X84, 0X5A, 0X01, 0X00 };  // Page change
+unsigned char deviceary[8]      = { 0x5A, 0XA5, 0x05, 0X82, 0x31, 0x00, 0x00, 0x00 };
+int wifitrytime                 = 0;
 // to dispenser
-uint8_t enq1[4] = { 0x04, 0x40, 0x51, 0x05 };
-uint8_t enq2[4] = { 0x04, 0x41, 0x51, 0x05 };
+uint8_t enq1[4]                 = { 0x04, 0x40, 0x51, 0x05 };
+uint8_t enq2[4]                 = { 0x04, 0x41, 0x51, 0x05 };
 
 // unsigned char ACK1[2] = { 0x10, 0x31 };
-uint8_t ACK1[2] = { 0x10, 0x31 };
+uint8_t ACK1[2]                 = { 0x10, 0x31 };
 
 // unsigned char select1[4] = { 0x04, 0x40, 0x41, 0x05 };
 // unsigned char select2[4] = { 0x04, 0x41, 0x41, 0x05 };
 
-uint8_t select1[4] = { 0x04, 0x40, 0x41, 0x05 };
-uint8_t select2[4] = { 0x04, 0x41, 0x41, 0x05 };
+uint8_t select1[4]            = { 0x04, 0x40, 0x41, 0x05 };
+uint8_t select2[4]            = { 0x04, 0x41, 0x41, 0x05 };
 
-unsigned char EOT[1] = { 0x04 };
-
+unsigned char EOT[1]              = { 0x04 };
 unsigned char totalizerstatus1[7] = { 0x02, 0x40, 0x41, 0x32, 0x30, 0x03, 0x00 };
 unsigned char totalizerstatus2[7] = { 0x02, 0x41, 0x41, 0x32, 0x30, 0x03, 0x01 };
 unsigned char pump1statusary[7]   = { 0x02, 0x40, 0x41, 0x31, 0x35, 0x03, 0x06 };
@@ -269,7 +265,6 @@ void fms_tatsuno_protocol_main() {
     //   reconnect();
     // }
     // client.loop();
-
     mainfun();
   }
  
@@ -283,12 +278,9 @@ void fms_tatsuno_protocol_main() {
     // delay(10);
     vTaskDelay(pdMS_TO_TICKS(2)); // Adjusted delay for speed
     //delay(2); //speed change here
-   Serial.printf("Buffer[%d] : 0x%02X", i ,  Buffer[i]);
-
+    Serial.printf("Buffer[%d] : 0x%02X", i ,  Buffer[i]);
     i++;
-
     if (Buffer[i - 1] == 0x00) i = 0;  // might delete later
-
     if (Buffer[i - 1] == 0x04) {
       // Serial.println(addresscount);
       // Serial.println("[fms_tatsuno_fun.ino]  get04");
@@ -344,7 +336,6 @@ void fms_tatsuno_protocol_main() {
             }
           }
           break;
-
         default:
           // if nothing else matches, do the default
           // default is optional
@@ -352,19 +343,15 @@ void fms_tatsuno_protocol_main() {
       }
 
       if (addresscount >= 2) addresscount = 0;
-
     }
-
     else if (Buffer[i - 1] == 0x03) {  // GetdataFrom dispenser
       Buffer[i] = fms_uart2_serial.read();
       // delay(20); //speed
       delay(2); //speed
       // Serial.println("[fms_tatsuno_fun.ino]  getCRCdata");
       i = 0;
-
       //loadoffadd
       // delay(100);  //speed
-
       messageClassified();
 
     } else if (Buffer[i - 1] == 0x10) {  // Get ACK From dispenser
@@ -374,7 +361,6 @@ void fms_tatsuno_protocol_main() {
       }
       i = 0;
     }
-
     // i++;
   } else pumpenqactive();
 }

@@ -9,30 +9,7 @@
   #define FMS_RED_DEBUG(format, ...)
   #define FMS_RED_ERROR(format, ...)
 #endif
-/*
-    // if (length > 0) {
-    //   // Serial.print("Received data: ");
-    //   for (int i = 0; i < length; i++) {
-    //     Serial.print(length);
-    //     Serial.print(" ");
-    //     Serial.print("0x");
-    //     Serial.print(response[i], HEX);
-    //     Serial.print(" ");
-    //   }
-    // }
 
-        // for (int i = 0; i < 8; i++) {
-    //   buffer[i] = response[i];  // Store the response in the buffer
-    //   vTaskDelay(pdMS_TO_TICKS(5));  // Delay for 5 milliseconds
-    //   Serial.print(data_count);
-    //   Serial.print("/FE/");
-    //   Serial.print("0x");
-    //   Serial.print(buffer[i], HEX);  // Print the buffer contents in hexadecimal format
-    //   Serial.print(" ");
-    // }
-    // FMS_RED_LOG_DEBUG("nozzel lifted");
-    // data_count = 0;  // Reset length for the next response
-*/
 
 uint8_t addresscount                          = 1;    // Address for the Redstar device
 uint8_t nozzlecount                           = 2;    // Number of nozzles
