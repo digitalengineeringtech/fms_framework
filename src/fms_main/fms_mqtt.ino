@@ -80,7 +80,7 @@ static void mqtt_task(void* arg) {
       vTaskDelay(pdMS_TO_TICKS(500));
       FMS_LOG_ERROR("[fms_mqtt.ino:79] [DEBUG MQTT] mqtt .. credential .. value is empty");
       fms_nvs_storage.end();
-      return false;
+     
     }
 
     fms_nvs_storage.end();

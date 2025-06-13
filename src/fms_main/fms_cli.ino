@@ -379,7 +379,7 @@ void handle_protocol_config_command(const std::vector<String>& args) {
     "Nozzle count: " + String(noz), true);
 }
 
-void handle_protocol_config_command(const std::vector<String>& args) {
+void handle_mqtt_command(const std::vector<String>& args) {
 
 if (args.size() != 2) {
     fms_cli.respond("mqtt_config", "Usage: mqtt_config <host> <port>", false);
@@ -398,7 +398,7 @@ if (args.size() != 2) {
   fms_nvs_storage.end();
 
 
-  fms_cli.respond("mqtt_config", "Failed to connect: " + errorMsg, false);
+  fms_cli.respond("mqtt_config", "config successfully saved", true);
 }
 
 

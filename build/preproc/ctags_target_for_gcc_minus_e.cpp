@@ -65,8 +65,8 @@ void setup() {
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
   fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
   fms_cli.register_command("protocol_config","Set Protococl Congfig", handle_protocol_config_command, 11, 11);
+  fms_cli.register_command("mqtt_config" ,"Configure Mqtt settings", handle_mqtt_command,2,2);
 
-  //fms_cli.register_command("mqtt_connect","Configure Mqtt settings", handle_mqtt_command,)
 
   fms_pin_mode(2, 0x03);
 
@@ -513,14 +513,39 @@ void handle_protocol_config_command(const std::vector<String>& args) {
     "Nozzle count: " + String(noz), true);
 }
 
+void handle_mqtt_command(const std::vector<String>& args) {
+
+if (args.size() != 2) {
+    fms_cli.respond("mqtt_config", "Usage: mqtt_config <host> <port>", false);
+    return;
+  }
+  char mqtt_host[32];
+  char mqtt_port[6];
+
+  String host = args[0];
+  String port = args[1];
+
+    // Save to preferences
+  fms_nvs_storage.begin("fms_config", false);
+  fms_nvs_storage.putString("host", host);
+  fms_nvs_storage.putString("port", port);
+  fms_nvs_storage.end();
+
+
+  fms_cli.respond("mqtt_config", "config successfully saved", true);
+}
+
+
+
+
 static void cli_task(void* arg) {
   BaseType_t rc;
   // cli command
   while (1) {
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 386 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 411 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 386 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 411 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -893,7 +918,9 @@ void fms_subsbribe_topics() {
 
 void fms_mqtt_reconnect() {
   // for check client connection online or offline
-  const char* willTopic = "device/"+deviceName.c_str()+"status";
+
+  String willTopicStr = String("device/") + deviceName + "/status";
+  const char* willTopic = willTopicStr.c_str();
   const char* willMessage = "offline";
   bool willRetain = true;
   uint8_t willQos = 1;
@@ -916,9 +943,9 @@ void fms_mqtt_reconnect() {
     } else {
       ;
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 5000 ) * ( TickType_t ) 
-# 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 63 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 61 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 63 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
     }
   }
@@ -930,7 +957,26 @@ bool ledState_ = false;
 
 static void mqtt_task(void* arg) {
   BaseType_t rc;
-  fms_mqtt_client.setServer(sysCfg.mqtt_server_host /* mqtt server address*/, 1883);
+   fms_nvs_storage.begin("fms_config", false);
+    String host = fms_nvs_storage.getString("host");
+    String port = fms_nvs_storage.getString("port");
+
+    if(host.length() == 0 || port.length() == 0) {
+      gpio_set_level(GPIO_NUM_33, 0x0);
+      vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
+# 80 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+                1000 
+# 80 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+                ) / ( TickType_t ) 1000U ) ));
+      fmsLog(FMS_LOG_ERROR, "[fms_mqtt.ino:79] [DEBUG MQTT] mqtt .. credential .. value is empty");
+      fms_nvs_storage.end();
+
+    }
+
+    fms_nvs_storage.end();
+    Serial0.print("[DEBUG] "); Serial0.printf("HOST : %s , PORT : %s", host, port); Serial0.println();
+
+  fms_mqtt_client.setServer(host.c_str(), atoi(port.c_str()));
   fms_mqtt_client.setCallback(fms_mqtt_callback);
 
   while (true) {
@@ -947,9 +993,9 @@ static void mqtt_task(void* arg) {
       ;
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 88 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -1025,6 +1071,8 @@ ota server
 
 
 /*
+
+
 
 #ifndef USE_V2_OTA_SERVER
 
@@ -1794,8 +1842,10 @@ void optimizeNetworkSettings() {
 
 #endif // USE_V2_OTA_SERVER
 
+
+
 */
-# 405 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 407 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 /* version 1 ota */
 
 
@@ -1893,9 +1943,9 @@ void fms_set_ota_server() {
       esp_task_wdt_init(&wdtConfig);
 
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 501 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+# 503 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                 1000 
-# 501 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 503 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                 ) / ( TickType_t ) 1000U ) ));
       ESP.restart();
     },
@@ -2015,9 +2065,9 @@ static void web_server_task(void* arg) {
     }
 
     vTaskDelay(100 / ( ( TickType_t ) 1000 / 
-# 619 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
+# 621 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino" 3
                     1000 
-# 619 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+# 621 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
                     ));
    // vTaskDelay(pdMS_TO_TICKS(1000));
   }
@@ -2184,7 +2234,6 @@ bool fm_cli_task_create() {
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 
 
-
 /* tatsuno parameter */
 
 
@@ -2221,9 +2270,7 @@ unsigned char showSSID[6] = { 0X5A, 0XA5, 0X40, 0X82, 0X12, 0x00 };
 unsigned char showPASS[6] = { 0X5A, 0XA5, 0X40, 0X82, 0X13, 0x00 };
 unsigned char page[9] = { 0X5A, 0XA5, 0X07, 0X82, 0X00, 0X84, 0X5A, 0X01, 0X00 }; // Page change
 unsigned char deviceary[8] = { 0x5A, 0XA5, 0x05, 0X82, 0x31, 0x00, 0x00, 0x00 };
-
 int wifitrytime = 0;
-
 // to dispenser
 uint8_t enq1[4] = { 0x04, 0x40, 0x51, 0x05 };
 uint8_t enq2[4] = { 0x04, 0x41, 0x51, 0x05 };
@@ -2238,7 +2285,6 @@ uint8_t select1[4] = { 0x04, 0x40, 0x41, 0x05 };
 uint8_t select2[4] = { 0x04, 0x41, 0x41, 0x05 };
 
 unsigned char EOT[1] = { 0x04 };
-
 unsigned char totalizerstatus1[7] = { 0x02, 0x40, 0x41, 0x32, 0x30, 0x03, 0x00 };
 unsigned char totalizerstatus2[7] = { 0x02, 0x41, 0x41, 0x32, 0x30, 0x03, 0x01 };
 unsigned char pump1statusary[7] = { 0x02, 0x40, 0x41, 0x31, 0x35, 0x03, 0x06 };
@@ -2346,9 +2392,9 @@ void fms_tatsuno_init() {
   tatsuno.begin(19200, true, 16, 17);
   //fms_save_tatsuno_config(tatsunoConfig); /* Save Tatsuno configuration to NVS storage*/
   vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 164 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 160 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
             1000 
-# 164 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 160 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
             ) / ( TickType_t ) 1000U ) ));
   fms_load_tatsuno_config(tatsunoConfig); /* Load Tatsuno configuration from NVS storage */
   fms_tatsuno_device_setup(); /* Setup Tatsuno device*/
@@ -2457,7 +2503,6 @@ void fms_tatsuno_protocol_main() {
     //   reconnect();
     // }
     // client.loop();
-
     mainfun();
   }
 
@@ -2470,17 +2515,14 @@ void fms_tatsuno_protocol_main() {
     enqactivetime1 = millis() / 1000;
     // delay(10);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 2 ) * ( TickType_t ) 
-# 284 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 279 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
               1000 
-# 284 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 279 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
               ) / ( TickType_t ) 1000U ) )); // Adjusted delay for speed
     //delay(2); //speed change here
-   Serial0.printf("Buffer[%d] : 0x%02X", i , Buffer[i]);
-
+    Serial0.printf("Buffer[%d] : 0x%02X", i , Buffer[i]);
     i++;
-
     if (Buffer[i - 1] == 0x00) i = 0; // might delete later
-
     if (Buffer[i - 1] == 0x04) {
       // Serial.println(addresscount);
       // Serial.println("[fms_tatsuno_fun.ino]  get04");
@@ -2536,7 +2578,6 @@ void fms_tatsuno_protocol_main() {
             }
           }
           break;
-
         default:
           // if nothing else matches, do the default
           // default is optional
@@ -2544,19 +2585,15 @@ void fms_tatsuno_protocol_main() {
       }
 
       if (addresscount >= 2) addresscount = 0;
-
     }
-
     else if (Buffer[i - 1] == 0x03) { // GetdataFrom dispenser
       Buffer[i] = Serial1 /* uart2 serial port*/.read();
       // delay(20); //speed
       delay(2); //speed
       // Serial.println("[fms_tatsuno_fun.ino]  getCRCdata");
       i = 0;
-
       //loadoffadd
       // delay(100);  //speed
-
       messageClassified();
 
     } else if (Buffer[i - 1] == 0x10) { // Get ACK From dispenser
@@ -2566,7 +2603,6 @@ void fms_tatsuno_protocol_main() {
       }
       i = 0;
     }
-
     // i++;
   } else pumpenqactive();
 }
@@ -3323,9 +3359,9 @@ void sendEOT() {
 void txledonoff() {
   gpio_set_level(GPIO_NUM_33,0x0);
   vTaskDelay(10 / ( ( TickType_t ) 1000 / 
-# 1133 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 1119 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                  1000 
-# 1133 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 1119 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                  )); // delay for 10 ms
   gpio_set_level(GPIO_NUM_33, 0x1);
 }
@@ -3333,9 +3369,9 @@ void txledonoff() {
 void rxledonoff() {
   gpio_set_level(GPIO_NUM_13, 0x1);
   vTaskDelay(10 / ( ( TickType_t ) 1000 / 
-# 1139 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 1125 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                  1000 
-# 1139 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 1125 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                  )); // delay for 10 ms
   gpio_set_level(GPIO_NUM_13, 0x0);
 }
@@ -3457,7 +3493,7 @@ void finalsend() {
     delay(30);
     if (Serial1 /* uart2 serial port*/.available()) {
    char ch = Serial1 /* uart2 serial port*/.read();
-    Serial0.printf("U got char: %c (0x%02X)", ch, ch);
+    Serial0.printf("U got char: %c (0x%02X)\n", ch, ch);
 
     }
     sendenq(pumpnum);
@@ -3561,6 +3597,9 @@ void finalsend() {
 
       if (waitcount < 1) {
         fms_mqtt_client.publish(ppfinal, ppbuffer);
+        if(!fms_mqtt_client.connected()) {
+          Serial0.println("[fms_tatsuno_fun.ino] save to sd storage final message");
+        }
       }
 
       // client.publish(pumpfinalbuf, ppbuffer);
@@ -4408,15 +4447,15 @@ void hmisetup() {
       fmsLog(FMS_LOG_INFO, "[fms_tatsuno_fun.ino:2289 [hmi]] WiFi initialized, connecting to %s... wpa:%s", ssidBuf, passBuf);
       gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 2210 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 2199 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                 1000 
-# 2210 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 2199 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       gpio_set_level(GPIO_NUM_33, 0x1);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 2212 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
+# 2201 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino" 3
                 1000 
-# 2212 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+# 2201 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
                 ) / ( TickType_t ) 1000U ) )); // Wait for 1 second before repeating
       wifitrytime++;
       }

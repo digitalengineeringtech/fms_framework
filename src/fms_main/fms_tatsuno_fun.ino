@@ -1243,7 +1243,7 @@ void finalsend() {
     delay(30);
     if (fms_uart2_serial.available()) {
    char ch = fms_uart2_serial.read();
-    Serial.printf("U got char: %c (0x%02X)", ch, ch);
+    Serial.printf("U got char: %c (0x%02X)\n", ch, ch);
 
     }
     sendenq(pumpnum);
@@ -1347,6 +1347,9 @@ void finalsend() {
 
       if (waitcount < 1) {
         fms_mqtt_client.publish(ppfinal, ppbuffer);
+        if(!fms_mqtt_client.connected()) {
+          Serial.println("[fms_tatsuno_fun.ino] save to sd storage final message");
+        }
       }
 
       // client.publish(pumpfinalbuf, ppbuffer);

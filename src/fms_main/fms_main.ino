@@ -59,13 +59,13 @@ void setup() {
 #ifdef USE_CLI
   fms_cli.begin(115200);  // Initialize the CLI with a baud rate of 115200
   fms_cli.register_command("wifi",         "Configure WiFi settings",       handle_wifi_command, 2, 2);
-  fms_cli.register_command("wifi_connect", "Connect to WiFi network",       handle_wifi_connect_command, 2, 2);
+  //fms_cli.register_command("wifi_connect", "Connect to WiFi network",       handle_wifi_connect_command, 2, 2);
   fms_cli.register_command("restart",      "Restart the system",            handle_restart_command);
-  fms_cli.register_command("wifiscan_safe", "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
+  //fms_cli.register_command("wifiscan_safe", "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread",      "Read current WiFi status",     handle_wifi_read_command);
-  fms_cli.register_command("wifi_test",     "Test WiFi connection",         handle_wifi_test_command);
+  //fms_cli.register_command("wifi_test",     "Test WiFi connection",         handle_wifi_test_command);
   fms_cli.register_command("uuid_change",   "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
-  fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
+  //fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
   fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
   fms_cli.register_command("mqtt_config"   ,"Configure Mqtt settings",     handle_mqtt_command,2,2);
 #endif
