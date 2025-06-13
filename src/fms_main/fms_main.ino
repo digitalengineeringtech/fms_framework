@@ -59,27 +59,35 @@ void setup() {
 #ifdef USE_CLI
   fms_cli.begin(115200);  // Initialize the CLI with a baud rate of 115200
   fms_cli.register_command("wifi",         "Configure WiFi settings",       handle_wifi_command, 2, 2);
-  //fms_cli.register_command("wifi_connect", "Connect to WiFi network",       handle_wifi_connect_command, 2, 2);
+  fms_cli.register_command("wifi_connect", "Connect to WiFi network",       handle_wifi_connect_command, 2, 2);
   fms_cli.register_command("restart",      "Restart the system",            handle_restart_command);
-  //fms_cli.register_command("wifiscan_safe", "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
+  fms_cli.register_command("wifiscan_safe", "Scan for WiFi networks (safe mode)", handle_wifi_scan_safe_command);
   fms_cli.register_command("wifiread",      "Read current WiFi status",     handle_wifi_read_command);
-  //fms_cli.register_command("wifi_test",     "Test WiFi connection",         handle_wifi_test_command);
+  fms_cli.register_command("wifi_test",     "Test WiFi connection",         handle_wifi_test_command);
   fms_cli.register_command("uuid_change",   "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
-  //fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
+  fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
   fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
   fms_cli.register_command("mqtt_config"   ,"Configure Mqtt settings",     handle_mqtt_command,2,2);
 #endif
 
   fms_pin_mode(BUILTIN_LED, OUTPUT);
 
+
   /* test features protocol selection 
- // fms_load_protocol_config();  // load protocol config from nvs storage
+fms_load_protocol_config();  // load protocol config from nvs storage
 
   while (sysCfg.protocol == "0") {  // wait for protocol to be set
     FMS_LOG_ERROR("Protocol not set, waiting...");
     vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
   }
   */
+
+
+  fms_run_sd_test();                        // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
+  fms_boot_count(true);                     // boot count
+  fms_load_config();  // load config from nvs storage
+ 
 
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
@@ -88,9 +96,6 @@ void setup() {
   enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
 
-  fms_run_sd_test();                        // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
-  fms_boot_count(true);                     // boot count
 
 #ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");

@@ -207,3 +207,12 @@ void fms_set_protocol_config(DisConfig& cfg) {
   }
   fms_nvs_storage.end();
 }
+
+void fms_load_config() {
+  if (!fms_nvs_storage.begin("fms_config", false)) {
+    FMS_LOG_ERROR("[fms_main_func:205] Failed to initialize NVS storage");
+    return;
+  }
+  deviceName = fms_nvs_storage.getString("uuid", "ultm_25505v01_");
+  FMS_LOG_INFO("[fms_main_func:209] Device UUID: %s", deviceName.c_str());
+}

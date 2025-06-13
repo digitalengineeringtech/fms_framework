@@ -70,9 +70,10 @@ void setup() {
 
   fms_pin_mode(2, 0x03);
 
+
   /* test features protocol selection 
 
- // fms_load_protocol_config();  // load protocol config from nvs storage
+fms_load_protocol_config();  // load protocol config from nvs storage
 
 
 
@@ -85,17 +86,19 @@ void setup() {
   }
 
   */
-# 85 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+# 86 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+  fms_run_sd_test(); // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
+  fms_boot_count(true); // boot count
+  fms_load_config(); // load config from nvs storage
+
+
+
   fms_pin_mode(25, 0x03); // Multiplexer
   fms_pin_mode(26, 0x03);
   fms_pin_mode(27 /* enable input (active LOW) */, 0x03);
   enable_mux(27 /* enable input (active LOW) */); // enable multiplexer (active low)
-
-
-  fms_run_sd_test(); // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(true); // show serial logging data on Serial Monitor
-  fms_boot_count(true); // boot count
-# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
   fms_tatsuno_init(); // tatsuno init
 
 
@@ -886,6 +889,15 @@ void fms_set_protocol_config(DisConfig& cfg) {
     fmsLog(FMS_LOG_ERROR, "[Protocol Config] Failed to save some configuration values");
   }
   fms_nvs_storage.end();
+}
+
+void fms_load_config() {
+  if (!fms_nvs_storage.begin("fms_config", false)) {
+    fmsLog(FMS_LOG_ERROR, "[fms_main_func:205] Failed to initialize NVS storage");
+    return;
+  }
+  deviceName = fms_nvs_storage.getString("uuid", "ultm_25505v01_");
+  fmsLog(FMS_LOG_INFO, "[fms_main_func:209] Device UUID: %s", deviceName.c_str());
 }
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 //#define FMS_MQTT_DEBUG

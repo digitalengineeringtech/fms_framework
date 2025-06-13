@@ -456,6 +456,129 @@ class CommandDialog(QDialog):
     def get_command(self):
         return self.command_input.text()
 
+class MQTTConfigDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("MQTT Configuration")
+        self.resize(400, 200)
+        
+        layout = QFormLayout()
+        
+        self.broker_input = QLineEdit()
+        self.port_input = QSpinBox()
+        self.port_input.setRange(1, 65535)
+        self.port_input.setValue(1883)
+        
+        layout.addRow("Broker Address:", self.broker_input)
+        layout.addRow("Port:", self.port_input)
+        
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        
+        layout.addRow(buttons)
+        self.setLayout(layout)
+    
+    def get_values(self):
+        return self.broker_input.text(), self.port_input.value()
+
+class DeviceSetupDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Device Protocol Configuration")
+        self.resize(600, 400)
+        
+        # Main layout
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        
+        # Protocol Selection
+        protocol_group = QGroupBox("Protocol Selection")
+        protocol_layout = QHBoxLayout()
+        protocol_layout.setAlignment(Qt.AlignLeft)
+        
+        protocol_label = QLabel("Select Protocol:")
+        protocol_label.setMinimumWidth(120)
+        self.protocol_combo = QComboBox()
+        self.protocol_combo.addItems(["tatsuno", "gilbarco", "redstar", "haungyang"])
+        
+        protocol_layout.addWidget(protocol_label)
+        protocol_layout.addWidget(self.protocol_combo)
+        protocol_layout.addStretch()
+        protocol_group.setLayout(protocol_layout)
+        
+        # Device Configuration
+        config_group = QGroupBox("Device Configuration")
+        config_layout = QGridLayout()
+        config_layout.setColumnStretch(1, 1)
+        config_layout.setHorizontalSpacing(15)
+        config_layout.setVerticalSpacing(10)
+        
+        # Device and Nozzle configuration
+        self.devSpin = QSpinBox()
+        self.devSpin.setRange(0, 255)
+        self.nozSpin = QSpinBox()
+        self.nozSpin.setRange(0, 255)
+        
+        config_layout.addWidget(QLabel("Device Number:"), 0, 0)
+        config_layout.addWidget(self.devSpin, 0, 1)
+        config_layout.addWidget(QLabel("Nozzle Number:"), 1, 0)
+        config_layout.addWidget(self.nozSpin, 1, 1)
+        
+        # Pump IDs
+        pump_group = QGroupBox("Pump ID Configuration")
+        pump_layout = QGridLayout()
+        pump_layout.setHorizontalSpacing(15)
+        pump_layout.setVerticalSpacing(10)
+        
+        self.pumpSpins = []
+        for i in range(8):
+            label = QLabel(f"Pump ID {i+1}:")
+            spin = QSpinBox()
+            spin.setRange(0, 255)
+            self.pumpSpins.append(spin)
+            
+            # Create a 2-column layout (4 rows x 2 columns)
+            row = i // 2
+            col = (i % 2) * 2
+            pump_layout.addWidget(label, row, col)
+            pump_layout.addWidget(spin, row, col + 1)
+        
+        pump_group.setLayout(pump_layout)
+        
+        # Add all groups to the main layout
+        layout.addWidget(protocol_group)
+        layout.addWidget(config_group)
+        config_group.setLayout(config_layout)
+        layout.addWidget(pump_group)
+        
+        # Add a spacer before the buttons
+        layout.addSpacing(10)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        self.sendBtn = QPushButton("Send Configuration")
+        self.sendBtn.setMinimumWidth(200)
+        self.sendBtn.clicked.connect(self.accept)
+        
+        cancelBtn = QPushButton("Cancel")
+        cancelBtn.clicked.connect(self.reject)
+        
+        button_layout.addStretch()
+        button_layout.addWidget(self.sendBtn)
+        button_layout.addWidget(cancelBtn)
+        button_layout.addStretch()
+        
+        layout.addLayout(button_layout)
+    
+    def get_configuration(self):
+        return {
+            'protocol': self.protocol_combo.currentText(),
+            'device': self.devSpin.value(),
+            'nozzle': self.nozSpin.value(),
+            'pumps': [spin.value() for spin in self.pumpSpins]
+        }
+
 class FMSDebugUI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -480,7 +603,7 @@ class FMSDebugUI(QMainWindow):
         
         # Setup UI
         self.setup_ui()
-        self.setup_toolbar()  # Add this line after setup_ui()
+        self.setup_toolbar()
         self.load_settings()
         self.refresh_ports()
         
@@ -498,7 +621,6 @@ class FMSDebugUI(QMainWindow):
         # Create tabs
         self.tabs.addTab(self.create_log_tab(), "Logs & Commands")
         self.tabs.addTab(self.create_device_discovery_tab(), "Find Device")
-        self.tabs.addTab(self.create_device_setup_tab(), "Device Setup")
         
         main_layout.addWidget(self.tabs)
         self.setCentralWidget(main_widget)
@@ -516,6 +638,12 @@ class FMSDebugUI(QMainWindow):
         help_action.triggered.connect(self.show_command_dialog)
         toolbar.addSeparator()
         
+        # Device Setup action
+        setup_action = toolbar.addAction("Device Setup")
+        setup_action.setStatusTip("Configure device protocol settings")
+        setup_action.triggered.connect(self.show_device_setup_dialog)
+        toolbar.addSeparator()
+        
         # About
         about_action = toolbar.addAction("About")
         about_action.setStatusTip("About FMS Debug Logger")
@@ -524,52 +652,6 @@ class FMSDebugUI(QMainWindow):
     def create_log_tab(self):
         log_tab = QWidget()
         layout = QVBoxLayout(log_tab)
-        # log_tab.setStyleSheet("""
-        #     QWidget {
-        #         background-color: #f8f9fa;
-        #         border-radius: 8px;
-        #         padding: 15px;
-        #     }
-        #     QGroupBox {
-        #         background-color: white;
-        #         border: 1px solid #dee2e6;
-        #         border-radius: 6px;
-        #         margin-top: 12px;
-        #         font-weight: bold;
-        #     }
-        #     QGroupBox::title {
-        #         color: #495057;
-        #     }
-        #     QLabel {
-        #         color: #495057;
-        #     }
-        #     QSpinBox {
-        #         padding: 5px;
-        #         border: 1px solid #ced4da;
-        #         border-radius: 4px;
-        #         min-width: 80px;
-        #     }
-        #     QPushButton {
-        #         background-color: #007bff;
-        #         color: white;
-        #         border: none;
-        #         padding: 8px 16px;
-        #         border-radius: 4px;
-        #         font-weight: bold;
-        #     }
-        #     QPushButton:hover {
-        #         background-color: #0056b3;
-        #     }
-        #     QPushButton:pressed {
-        #         background-color: #004085;
-        #     }
-        #     QComboBox {
-        #         padding: 5px;
-        #         border: 1px solid #ced4da;
-        #         border-radius: 4px;
-        #         min-width: 200px;
-        #     }
-        # """)
        
         # Top controls
         top_layout = QHBoxLayout()
@@ -671,6 +753,13 @@ class FMSDebugUI(QMainWindow):
         quick_layout.addWidget(uuid_button, 5, 1)
         quick_layout.addWidget(help_button, 6, 0)
         
+        # Add Mqtt Commands 
+        quick_layout.addWidget(QLabel("<b>MQTT Commands</b>"), 7, 0, 1, 2)
+        mqtt_connect_button = QPushButton("MQTT Connect")
+        mqtt_connect_button.clicked.connect(self.show_mqtt_dialog)
+        quick_layout.addWidget(mqtt_connect_button, 8, 0)
+
+
         quick_commands_group.setLayout(quick_layout)
         top_layout.addWidget(quick_commands_group)
 
@@ -814,160 +903,27 @@ class FMSDebugUI(QMainWindow):
         
         return device_tab
     
-    def create_device_setup_tab(self):
-        device_setup_tab = QWidget()
-        layout = QVBoxLayout(device_setup_tab)
-        
-        # Header
-        header = QLabel("Device Protocol Configuration")
-        header.setAlignment(Qt.AlignCenter)
-        header.setStyleSheet("""
-            QLabel {
-                font-size: 16px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin: 10px;
-                padding: 5px;
-            }
-        """)
-        layout.addWidget(header)
-        
-        # Main content container with margins
-        content_widget = QWidget()
-        # content_widget.setStyleSheet("""
-        #     QWidget {
-        #         background-color: #f8f9fa;
-        #         border-radius: 8px;
-        #         padding: 15px;
-        #     }
-        #     QGroupBox {
-        #         background-color: white;
-        #         border: 1px solid #dee2e6;
-        #         border-radius: 6px;
-        #         margin-top: 12px;
-        #         font-weight: bold;
-        #     }
-        #     QGroupBox::title {
-        #         color: #495057;
-        #     }
-        #     QLabel {
-        #         color: #495057;
-        #     }
-        #     QSpinBox {
-        #         padding: 5px;
-        #         border: 1px solid #ced4da;
-        #         border-radius: 4px;
-        #         min-width: 80px;
-        #     }
-        #     QPushButton {
-        #         background-color: #007bff;
-        #         color: white;
-        #         border: none;
-        #         padding: 8px 16px;
-        #         border-radius: 4px;
-        #         font-weight: bold;
-        #     }
-        #     QPushButton:hover {
-        #         background-color: #0056b3;
-        #     }
-        #     QPushButton:pressed {
-        #         background-color: #004085;
-        #     }
-        #     QComboBox {
-        #         padding: 5px;
-        #         border: 1px solid #ced4da;
-        #         border-radius: 4px;
-        #         min-width: 200px;
-        #     }
-        # """)
-        
-        content_layout = QVBoxLayout(content_widget)
-        content_layout.setSpacing(15)
-        
-        # Protocol Selection
-        protocol_group = QGroupBox("Protocol Selection")
-        protocol_layout = QHBoxLayout()
-        protocol_layout.setAlignment(Qt.AlignLeft)
-        
-        protocol_label = QLabel("Select Protocol:")
-        protocol_label.setMinimumWidth(120)
-        self.protocol_combo = QComboBox()
-        self.protocol_combo.addItems(self.protocols)
-        
-        protocol_layout.addWidget(protocol_label)
-        protocol_layout.addWidget(self.protocol_combo)
-        protocol_layout.addStretch()
-        protocol_group.setLayout(protocol_layout)
-        
-        # Device Configuration
-        config_group = QGroupBox("Device Configuration")
-        config_layout = QGridLayout()
-        config_layout.setColumnStretch(1, 1)
-        config_layout.setHorizontalSpacing(15)
-        config_layout.setVerticalSpacing(10)
-        
-        # Device and Nozzle configuration
-        self.devSpin = QSpinBox()
-        self.devSpin.setRange(0, 255)
-        self.nozSpin = QSpinBox()
-        self.nozSpin.setRange(0, 255)
-        
-        config_layout.addWidget(QLabel("Device Number:"), 0, 0)
-        config_layout.addWidget(self.devSpin, 0, 1)
-        config_layout.addWidget(QLabel("Nozzle Number:"), 1, 0)
-        config_layout.addWidget(self.nozSpin, 1, 1)
-        
-        # Pump IDs
-        pump_group = QGroupBox("Pump ID Configuration")
-        pump_layout = QGridLayout()
-        pump_layout.setHorizontalSpacing(15)
-        pump_layout.setVerticalSpacing(10)
-        
-        self.pumpSpins = []
-        for i in range(8):
-            label = QLabel(f"Pump ID {i+1}:")
-            spin = QSpinBox()
-            spin.setRange(0, 255)
-            self.pumpSpins.append(spin)
+    def show_device_setup_dialog(self):
+        dialog = DeviceSetupDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            config = dialog.get_configuration()
+            proto = config['protocol']
+            dev = config['device']
+            noz = config['nozzle']
+            pumps = config['pumps']
             
-            # Create a 2-column layout (4 rows x 2 columns)
-            row = i // 2
-            col = (i % 2) * 2
-            pump_layout.addWidget(label, row, col)
-            pump_layout.addWidget(spin, row, col + 1)
-        
-        pump_group.setLayout(pump_layout)
-        
-        # Add all groups to the content layout
-        content_layout.addWidget(protocol_group)
-        content_layout.addWidget(config_group)
-        config_group.setLayout(config_layout)
-        content_layout.addWidget(pump_group)
-        
-        # Add a spacer before the send button
-        content_layout.addSpacing(10)
-        
-        # Send Button with container for alignment
-        button_container = QWidget()
-        button_layout = QHBoxLayout(button_container)
-        button_layout.setContentsMargins(0, 0, 0, 0)
-        
-        self.sendBtn = QPushButton("Send Configuration")
-        self.sendBtn.setMinimumWidth(200)
-        self.sendBtn.clicked.connect(self.sendConfig)
-        
-        button_layout.addStretch()
-        button_layout.addWidget(self.sendBtn)
-        button_layout.addStretch()
-        
-        content_layout.addWidget(button_container)
-        
-        # Add the content widget to the main layout
-        layout.addWidget(content_widget)
-        layout.addStretch()
-        
-        return device_setup_tab
-
+            command = f"protocol_config {proto} {dev} {noz} " + ' '.join(map(str, pumps)) + "\n"
+            try:
+                if self.serial_thread and self.serial_thread.running:
+                    self.serial_thread.send_command(command)
+                    QMessageBox.information(self, "Success", f"Configuration sent for {proto} protocol")
+                else:
+                    QMessageBox.warning(self, "Error", "Serial connection not established")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to send configuration: {str(e)}")
+            self.add_to_command_history(command.strip())
+            self.update_command_history_display()
+    
     def sendConfig(self):
         proto = self.protocol_combo.currentText()
         if proto not in ["tatsuno", "gilbarco", "redstar", "haungyang"]:
@@ -1327,6 +1283,14 @@ class FMSDebugUI(QMainWindow):
             if command:
                 self.send_cli_command(command)
     
+    def show_mqtt_dialog(self):
+        dialog = MQTTConfigDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            host, port= dialog.get_values()
+            if host and port:
+                command = f'mqtt_config "{host}" "{port}" '
+                self.send_cli_command(command)
+
     def show_about_dialog(self):
         about_text = (
             "<h2>Ultm FMS Setup Tool</h2>"

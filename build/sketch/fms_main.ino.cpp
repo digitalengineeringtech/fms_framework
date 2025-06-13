@@ -58,7 +58,7 @@ fmsLanfeng lanfeng(22, 22);                         // set re de pin (DTR PIN)s
 
 #line 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup();
-#line 119 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 124 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void loop();
 #line 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_wifi_command(const std::vector<String>& args);
@@ -116,6 +116,8 @@ void init_staus_leds();
 void fms_load_protocol_config();
 #line 174 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_set_protocol_config(DisConfig& cfg);
+#line 211 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+void fms_load_config();
 #line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
 #line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
@@ -295,14 +297,22 @@ void setup() {
 
   fms_pin_mode(BUILTIN_LED, OUTPUT);
 
+
   /* test features protocol selection 
- // fms_load_protocol_config();  // load protocol config from nvs storage
+fms_load_protocol_config();  // load protocol config from nvs storage
 
   while (sysCfg.protocol == "0") {  // wait for protocol to be set
     FMS_LOG_ERROR("Protocol not set, waiting...");
     vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
   }
   */
+
+
+  fms_run_sd_test();                        // demo test fix this load configure data from sd card
+  fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
+  fms_boot_count(true);                     // boot count
+  fms_load_config();  // load config from nvs storage
+ 
 
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
@@ -311,9 +321,6 @@ void setup() {
   enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
 
-  fms_run_sd_test();                        // demo test fix this load configure data from sd card
-  fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
-  fms_boot_count(true);                     // boot count
 
 #ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
@@ -1172,6 +1179,15 @@ void fms_set_protocol_config(DisConfig& cfg) {
     FMS_LOG_ERROR("[Protocol Config] Failed to save some configuration values");
   }
   fms_nvs_storage.end();
+}
+
+void fms_load_config() {
+  if (!fms_nvs_storage.begin("fms_config", false)) {
+    FMS_LOG_ERROR("[fms_main_func:205] Failed to initialize NVS storage");
+    return;
+  }
+  deviceName = fms_nvs_storage.getString("uuid", "ultm_25505v01_");
+  FMS_LOG_INFO("[fms_main_func:209] Device UUID: %s", deviceName.c_str());
 }
 
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"

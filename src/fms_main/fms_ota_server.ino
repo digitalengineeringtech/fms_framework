@@ -425,6 +425,7 @@ void fms_info_response() {            // mini version show in ota page
   json.addString("status",            updateStatus);
   json.addInt("progress",             otaProgress);
   json.addBool("otaInProgress",       otaInProgress);
+ 
   //json.addLong("flashChipSize", ESP.getFlashChipSize());
   cachedInfoResponse = json.toString();
 }
