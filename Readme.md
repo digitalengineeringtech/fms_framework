@@ -14,11 +14,11 @@ Fuel Station Monitoring System
 - [Skills](#skills)
 - [Badges](#badges)
 
-## Flow
+<!-- ## Flow
 1. board number
 2. crc 
-3. 
-![App Screenshot](https://github.com/digitalengineeringtech/fms_framework/blob/main/Flow.jpg)
+3.  -->
+<!-- ![App Screenshot](https://github.com/digitalengineeringtech/fms_framework/blob/main/Flow.jpg) -->
 
 ## VS Code Extension
 
