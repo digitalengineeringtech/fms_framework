@@ -1,6 +1,9 @@
 #ifndef _FMS_TATSUNO_H
 #define _FMS_TATSUNO_H
 
+#ifndef USE_TATSUNO
+
+
 #include <Arduino.h>
 
 // Debug logging configuration
@@ -53,5 +56,8 @@ public:
     
     // Add other public methods as needed
 };
+
+
+#endif
 
 #endif // _FMS_TATSUNO_H

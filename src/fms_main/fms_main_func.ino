@@ -13,11 +13,9 @@ void fms_boot_count(bool bootsave) {
     FMS_LOG_ERROR("[fms_main_func.ino:13] Failed to initialize NVS storage");
     return;
   }
-
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0) + 1;
   app_cpu = xPortGetCoreID();
   FMS_LOG_INFO("[fms_main_func.ino:19] CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
-
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end();  // Close NVS storage
 }
@@ -216,3 +214,5 @@ void fms_load_config() {
   deviceName = fms_nvs_storage.getString("uuid", "ultm_25505v01_");
   FMS_LOG_INFO("[fms_main_func:209] Device UUID: %s", deviceName.c_str());
 }
+
+

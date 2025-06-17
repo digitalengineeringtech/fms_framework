@@ -17,12 +17,6 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 #define CLI_PASSWORD         "admin"              /* cli password change this password*/
 /* end change note  */
 
-#define FMS_TATSUNO_DEBUG_OPEN
-
-//#define USE_V2_OTA_SERVER
-/* #define USE_RESTAR */
-#define USE_TATSUNO
-// #define USE_REDSTAR
 
 #include "_fms_main.h"
 #include "src/_fms_cli.h"
@@ -31,22 +25,30 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 #include "src/_fms_lanfeng.h"
 #include <src/_fms_redstar.h>           /* test features */
 #include <src/_fms_tatsuno.h>
-#include <src/_fms_filemanager.h>  /* test features */
+#include <src/_fms_filemanager.h>        /* test features */
+#include <src/_fms_touch.h>
 
-
+// #define USE_TOUCH
+// #define FMS_TATSUNO_DEBUG_OPEN
+// #undef USE_TATSUNO
+// #define USE_V2_OTA_SERVER
+// #define USE_RESTAR 
+// #define USE_TATSUNO
+// #define USE_REDSTAR
+// #define USE_TOUCH
 // #define DISABLE_MQTT_DEBUG
 // #ifdef DISABLE_MQTT_DEBUGP
 // #undef FMS_MQTT_DEBUG
 // #endif
 // #define USE_MQTT_DEBUG
+// #define  USE_LANFENG        // Undefine USE_LANFENG to disable the library
 
 #define USE_CLI
-#define DISABLE_LANFENG  // Uncomment this line to disable the library
+#define USE_TATSUNO
+#define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
-#undef USE_LANFENG        // Undefine USE_LANFENG to disable the library
+#undef USE_LANFENG
 #endif
-
-
 
 FMS_FileManager fileManager;
 fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
@@ -56,9 +58,9 @@ fmsLanfeng lanfeng(22, 22);                         // set re de pin (DTR PIN)s
 
 /* Main function */
 
-#line 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 59 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup();
-#line 124 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void loop();
 #line 11 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
 void handle_wifi_command(const std::vector<String>& args);
@@ -118,13 +120,17 @@ void fms_load_protocol_config();
 void fms_set_protocol_config(DisConfig& cfg);
 #line 211 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void fms_load_config();
-#line 12 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
-void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
+#line 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_mqtt_led_update();
 #line 30 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_mqtt_set_connected(bool connected);
+#line 38 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+void fms_mqtt_callback(char* topic, byte* payload, unsigned int length);
+#line 55 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_subsbribe_topics();
-#line 37 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 62 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 void fms_mqtt_reconnect();
-#line 72 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+#line 102 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 static void mqtt_task(void* arg);
 #line 8 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mux_pc817.ino"
 void selectMuxChannel(uint8_t channel);
@@ -136,25 +142,25 @@ void disable_mux(int pin);
 void test_mux();
 #line 413 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void fms_info_response();
-#line 432 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+#line 433 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void handleDashboard();
-#line 447 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+#line 448 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void handleLogin();
-#line 463 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+#line 464 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void handleLogout();
-#line 468 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+#line 469 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 void fms_set_ota_server();
-#line 601 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
+#line 602 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_ota_server.ino"
 static void web_server_task(void* arg);
-#line 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+#line 9 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 bool fms_sd_init();
-#line 23 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+#line 25 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 void fms_sd_dir(fs::FS& fs, const char* dirname, uint8_t levels);
-#line 54 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+#line 56 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 void fms_config_load_sd_test();
-#line 60 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+#line 62 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 bool write_data_sd(char* input);
-#line 70 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+#line 72 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 static void sd_task(void* arg);
 #line 2 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
 void _led_state();
@@ -164,105 +170,105 @@ bool create_task(TaskFunction_t task_func, const char* name, uint32_t stack_size
 bool fms_task_create();
 #line 41 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_task.ino"
 bool fm_cli_task_create();
-#line 156 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 140 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_init();
-#line 234 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 218 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_protocol_main();
-#line 273 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 256 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void mainfun();
-#line 369 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 348 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void tatsuno_pump_setting(char* topic, String payload);
-#line 518 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 497 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void messageClassified();
-#line 693 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 672 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpreqmqtt();
-#line 723 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 702 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pplivemqtt();
-#line 794 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 773 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedCRC();
-#line 885 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 864 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun();
-#line 913 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 892 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 uint16_t calculate_crc(uint8_t* data, int length, uint16_t polynomial);
-#line 931 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 910 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void BufferClear();
-#line 935 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 914 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpactive();
-#line 951 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 930 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpenqactive();
-#line 973 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 952 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void fms_tatsuno_device_setup();
-#line 1076 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1055 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendenq(int eq);
-#line 1098 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1073 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendACK1();
-#line 1107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1082 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendEOT();
-#line 1117 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1092 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void txledonoff();
-#line 1123 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1100 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void rxledonoff();
-#line 1129 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1107 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void cancelfinalsend();
-#line 1152 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1130 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void finalsend();
-#line 1373 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1351 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendcrcfun();
-#line 1433 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1411 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangefun();
-#line 1471 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1449 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpmqttnumchange();
-#line 1567 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1545 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendpumpstatus(int pump);
-#line 1618 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1596 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumppresetfun();
-#line 1716 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1694 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void reloadfun();
-#line 1970 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1948 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricereqfun();
-#line 1983 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1961 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1Totalizerstatus();
-#line 1992 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1970 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2Totalizerstatus();
-#line 2001 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1979 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2status();
-#line 2011 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1989 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1status();
-#line 2020 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 1998 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump1Select();
-#line 2028 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2006 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pump2Select();
-#line 2036 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2014 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangeapprove2fun();
-#line 2047 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2025 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pricechangeapprove1fun();
-#line 2058 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2036 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void finalmqtt1();
-#line 2133 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2111 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumpidchange();
-#line 2138 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2116 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumapprofun();
-#line 2152 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2130 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void hmisetup();
-#line 2268 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2246 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void saveall();
-#line 2294 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2272 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void writeString(String ssid, String password);
-#line 2304 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2282 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void mqttpumpidchange(int pumpid);
-#line 2404 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2382 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void pumappproSend();
-#line 2454 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2432 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedPreset();
-#line 2529 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2507 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun1();
-#line 2562 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2540 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 unsigned char BCCfun2();
-#line 2588 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2566 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void resendpreset();
-#line 2617 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2595 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void sendCalculatedAppro();
-#line 2694 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
+#line 2672 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_tatsuno_fun.ino"
 void resendappro();
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate);
@@ -278,9 +284,12 @@ bool initialize_fms_wifi(bool flag);
 bool wifi_led_ticker();
 #line 49 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_wifi.ino"
 static void wifi_task(void *arg);
-#line 57 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+#line 59 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 void setup() {
-  init_staus_leds();  // initialize status LEDs
+
+  init_staus_leds();                         // initialize status LEDs
+  gpio_set_level(LED_RED, LOW);              // turn on red led
+
 #ifdef USE_CLI
   fms_cli.begin(115200);  // Initialize the CLI with a baud rate of 115200
   fms_cli.register_command("wifi",         "Configure WiFi settings",       handle_wifi_command, 2, 2);
@@ -294,26 +303,13 @@ void setup() {
   fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
   fms_cli.register_command("mqtt_config"   ,"Configure Mqtt settings",     handle_mqtt_command,2,2);
 #endif
-
-  fms_pin_mode(BUILTIN_LED, OUTPUT);
-
-
-  /* test features protocol selection 
-fms_load_protocol_config();  // load protocol config from nvs storage
-
-  while (sysCfg.protocol == "0") {  // wait for protocol to be set
-    FMS_LOG_ERROR("Protocol not set, waiting...");
-    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
-  }
-  */
-
-
+ 
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
   fms_boot_count(true);                     // boot count
-  fms_load_config();  // load config from nvs storage
+  fms_load_config();                        // load config from nvs storage
  
-
+/* not included in v1 */
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
   fms_pin_mode(MUX_S1, OUTPUT);
@@ -321,7 +317,7 @@ fms_load_protocol_config();  // load protocol config from nvs storage
   enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
 
-
+/* not included in v1 */
 #ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
   lanfeng.init(1, fms_uart2_serial);       // add slave id
@@ -335,15 +331,26 @@ fms_load_protocol_config();  // load protocol config from nvs storage
   fms_tatsuno_init();                      // tatsuno init
 #endif
 
+/* task create */
+  if (fms_initialize_wifi()) {             // wifi is connected create all task s
+    fms_task_create();
+  }
+
+
+
+  /* test features protocol selection */
+  /*
+  fms_load_protocol_config();  // load protocol config from nvs storage
+  while (sysCfg.protocol == "0") {  // wait for protocol to be set
+    FMS_LOG_ERROR("Protocol not set, waiting...");
+    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+  }
   // /* test features
   // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
   //   fms_task_create();
   // }
-  // */
+ */
 
-  if (fms_initialize_wifi()) {             // wifi is connected create all task s
-    fms_task_create();
-  }
 }
 
 void loop() {
@@ -1190,8 +1197,12 @@ void fms_load_config() {
   FMS_LOG_INFO("[fms_main_func:209] Device UUID: %s", deviceName.c_str());
 }
 
+
+
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
 //#define FMS_MQTT_DEBUG
+
+
 #ifdef FMS_MQTT_DEBUG
   #define FMS_MQTT_LOG_DEBUG(format, ...) Serial.print("[fms_mqtt.ino][DEBUG] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
   #define FMS_MQTT_LOG_ERROR(format, ...) Serial.print("[fms_mqtt.ino][ERROR] "); Serial.printf(format, ##__VA_ARGS__); Serial.println()
@@ -1202,6 +1213,30 @@ void fms_load_config() {
 
 
 char fms_nmf_tp_prefix[64];
+static const unsigned long BLINK_INTERVAL = 500; // 1 second blink interval
+static bool mqtt_connected = false;
+static bool led_state = false;
+static unsigned long previous_millis = 0;
+
+void fms_mqtt_led_update() {
+    if (!mqtt_connected) {
+        unsigned long current_millis = millis();
+        if (current_millis - previous_millis >= BLINK_INTERVAL) {
+            previous_millis = current_millis;
+            led_state = !led_state;
+            gpio_set_level(LED_GREEN, led_state);
+        }
+    }
+}
+
+void fms_mqtt_set_connected(bool connected) {
+    mqtt_connected = connected;
+    if (connected) {
+        gpio_set_level(LED_GREEN, 1); // LED off when connected
+    }
+}
+
+
 void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("fms_mqtt.ino:13:Message arrived [");
   Serial.print(topic);
@@ -1219,7 +1254,6 @@ void fms_mqtt_callback(char* topic, byte* payload, unsigned int length) {
   #endif
 }
 
-
 void fms_subsbribe_topics() {
   for (uint8_t i = 0; i < fms_sub_topics_count; i++) {
     FMS_MQTT_LOG_DEBUG("Subscribing to topic: %s", fms_sub_topics[i]);
@@ -1229,7 +1263,6 @@ void fms_subsbribe_topics() {
 
 void fms_mqtt_reconnect() {
   // for check client connection online or offline
-
   String willTopicStr = String("device/") + deviceName + "/status";
   const char* willTopic = willTopicStr.c_str();
   const char* willMessage = "offline";
@@ -1237,6 +1270,11 @@ void fms_mqtt_reconnect() {
   uint8_t willQos = 1;
 
   while (!fms_mqtt_client.connected()) {
+        gpio_set_level(LED_GREEN, 0);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        gpio_set_level(LED_GREEN,1);
+        vTaskDelay(pdMS_TO_TICKS(100));
+  
     FMS_MQTT_LOG_DEBUG("MQTT initialized, connecting to %s:%d...", MQTT_SERVER, 1883);
     String clientId = String(deviceName) + String(random(0xffff), HEX);
     if (fms_mqtt_client.connect(clientId.c_str(),sysCfg.mqtt_user,sysCfg.mqtt_password,willTopic,willQos,willRetain,willMessage)) {
@@ -1244,6 +1282,7 @@ void fms_mqtt_reconnect() {
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
       fms_mqtt_client.publish(willTopic, "online", true);
       fms_subsbribe_topics();
+      fms_mqtt_set_connected(true);
       /* old feature use below style */
       // Uncomment the following lines to subscribe to additional topics
       // fms_mqtt_client.subscribe("detpos/#");
@@ -1286,12 +1325,9 @@ static void mqtt_task(void* arg) {
     unsigned long currentMillis = millis();
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
+        
       fms_mqtt_reconnect();
-      if (currentMillis - previous_Millis >= interval) {
-        previous_Millis = currentMillis;
-        ledState_ = !ledState_;
-        gpio_set_level(LED_GREEN, ledState_);
-      }
+      
     } else {
       FMS_MQTT_LOG_DEBUG("Connected to MQTT server");
     }
@@ -1762,6 +1798,7 @@ void fms_info_response() {            // mini version show in ota page
   json.addString("status",            updateStatus);
   json.addInt("progress",             otaProgress);
   json.addBool("otaInProgress",       otaInProgress);
+ 
   //json.addLong("flashChipSize", ESP.getFlashChipSize());
   cachedInfoResponse = json.toString();
 }
@@ -2685,10 +2722,12 @@ void check_server_response_nozzle_id(bool check) {
 #endif
 #line 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 /*
-  * fms_sd.cpp
+  *  fms_sd.cpp
   *  Created on: 2020. 12. 10.
-  *   author : thet htar khaing
+  *  author : thet htar khaing
 */
+/* upgrade in version 2 */
+/* not included in version 1 */
 
 bool fms_sd_init() {
   if (!SD.begin(SD_CARD_CS_PIN)) {
@@ -2822,24 +2861,8 @@ bool fm_cli_task_create() {
 #ifdef USE_TATSUNO
 /* tatsuno parameter */
 #define RESPONSE_BUFFER_SIZE 50
-
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
-
-/*
-#define LED_RED                     GPIO_NUM_32
-#define LED_GREEN                   GPIO_NUM_14 
-#define LED_BLUE                    GPIO_NUM_13
-#define LED_YELLOW                  GPIO_NUM_33
-*/
-
-#define wifiled         33
-#define powerled        32
-#define TXled           27
-#define RXled           26
 #define DIR_PIN         22
-
-// #define RXD2 16
-// #define TXD2 17
 
 String incommingMessage;
 String incommingmsg1;
@@ -3052,7 +3075,7 @@ bool fms_load_tatsuno_config(TatsunoConfig& cfg) {
 /* end save tatsuno config */
 
 void fms_tatsuno_protocol_main() {
-  gpio_set_level(LED_BLUE, 1);
+
   // if (!digitalRead(hmi)) hmivalue = true;
  hmivalue = false;  // Set to false for testing, change as needed
   if (hmivalue) {
@@ -3063,12 +3086,16 @@ void fms_tatsuno_protocol_main() {
       if (!fms_mqtt_client.connected()) {
         //  serverConnectionIcon("disconnected");
         Serial.println("[fms_tatsuno_fun.ino]  Cloud disconnect");
+        gpio_set_level(LED_GREEN, 0);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        gpio_set_level(LED_GREEN,1);
+        vTaskDelay(pdMS_TO_TICKS(100));
         myfirst = true;
-        gpio_set_level(LED_RED, LOW);
+  
       } else {
         // Serial.println("[fms_tatsuno_fun.ino]  Connected to the Cloud");
-          gpio_set_level(LED_RED, HIGH);
-          gpio_set_level(LED_GREEN, HIGH);
+           gpio_set_level(LED_GREEN, LOW);
+   
         if (myfirst) {
           sendenq(1);
           mainfun();
@@ -3079,12 +3106,7 @@ void fms_tatsuno_protocol_main() {
       }
     } else {
       Serial.println("[fms_tatsuno_fun.ino]  Not Connected");
-     // initWiFi();
     }
-    // if (!client.connected()) {
-    //   reconnect();
-    // }
-    // client.loop();
     mainfun();
   }
  
@@ -3144,15 +3166,11 @@ void fms_tatsuno_protocol_main() {
               sendpumpstatus(1);
               Serial.println("[fms_tatsuno_fun.ino]  i gety");
             }
-
-
             else {
               Serial.println("[fms_tatsuno_fun.ino]  yep ");
               sendenq(addresscount);
-
               //loadoffadd
               // delay(100);  //speed
-
             }
           }
           break;
@@ -3769,7 +3787,7 @@ void pumpactive() {
 }
 
 void pumpenqactive() {
-
+  txledonoff();
   enqactivetime = millis() / 1000;
 
   if ((enqactivetime - enqactivetime1) > 3) {
@@ -3894,7 +3912,6 @@ void fms_tatsuno_device_setup() {
 }
 
 void sendenq(int eq) {
-
   // last add
   // delay(50);   
   delay(10);  //speed
@@ -3903,10 +3920,7 @@ void sendenq(int eq) {
   delay(10);  //speed
   if (eq == 1) fms_uart2_serial.write(enq1, sizeof(enq1));
   else if (eq == 2) fms_uart2_serial.write(enq2, sizeof(enq2));
-
   Serial.printf("[fms_tatsuno_fun.ino] SendEnq : %d \n", eq);
-
-
   delay(3.5);
   // delay(6.8);
   // delay(4);
@@ -3935,15 +3949,18 @@ void sendEOT() {
 }
 
 void txledonoff() {
-  gpio_set_level(LED_YELLOW,LOW);
+  gpio_set_level(LED_BLUE,LOW);
   vTaskDelay(10 / portTICK_PERIOD_MS);  // delay for 10 ms
-  gpio_set_level(LED_YELLOW, HIGH);
+  gpio_set_level(LED_BLUE, HIGH);
+  vTaskDelay(10 / portTICK_PERIOD_MS);  // delay for 10 ms
+  
 }
 
 void rxledonoff() {
+  gpio_set_level(LED_BLUE, LOW);
+  vTaskDelay(20 / portTICK_PERIOD_MS);  // delay for 10 ms
   gpio_set_level(LED_BLUE, HIGH);
   vTaskDelay(10 / portTICK_PERIOD_MS);  // delay for 10 ms
-  gpio_set_level(LED_BLUE, LOW);
 }
 ///// cancel final add
 void cancelfinalsend() {
@@ -5656,9 +5673,9 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
 
     while (WiFi.status() != WL_CONNECTED) {
-      gpio_set_level(LED_RED, LOW);
+      gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(100));
-      gpio_set_level(LED_RED, HIGH);
+      gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(100));
 
       FMS_LOG_INFO("[fms_wifi.ino:35] WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
@@ -5680,16 +5697,13 @@ static void wifi_task(void *arg) {
   while (1) {
     if (WiFi.status() != WL_CONNECTED) {
       FMS_LOG_WARNING("[fms_wifi.ino:53] Failed to connect to WiFi");
-      gpio_set_level(LED_RED, LOW);
+      gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(100));
-      gpio_set_level(LED_RED, HIGH);
+      gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(100));
     } else {
       // FMS_LOG_INFO("[fms_wifi.ino:59] Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
-      gpio_set_level(LED_YELLOW, HIGH);
-      gpio_set_level(LED_RED, HIGH);
-      gpio_set_level(LED_BLUE, HIGH);
-      gpio_set_level(LED_GREEN, LOW);
+      gpio_set_level(LED_YELLOW, LOW);
     }
     vTaskDelay(pdMS_TO_TICKS(100));  // Wait for 1 second before repeating
   }

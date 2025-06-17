@@ -1,8 +1,11 @@
 /*
-  * fms_sd.cpp
+  *  fms_sd.cpp
   *  Created on: 2020. 12. 10.
-  *   author : thet htar khaing
+  *  author : thet htar khaing
 */
+
+/* upgrade in version 2 */
+/* not included in version 1 */
 
 bool fms_sd_init() {
   if (!SD.begin(SD_CARD_CS_PIN)) {

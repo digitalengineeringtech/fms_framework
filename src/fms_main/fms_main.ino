@@ -15,12 +15,6 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 #define CLI_PASSWORD         "admin"              /* cli password change this password*/
 /* end change note  */
 
-#define FMS_TATSUNO_DEBUG_OPEN
-
-//#define USE_V2_OTA_SERVER
-/* #define USE_RESTAR */
-#define USE_TATSUNO
-// #define USE_REDSTAR
 
 #include "_fms_main.h"
 #include "src/_fms_cli.h"
@@ -29,22 +23,30 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 #include "src/_fms_lanfeng.h"
 #include <src/_fms_redstar.h>           /* test features */
 #include <src/_fms_tatsuno.h>
-#include <src/_fms_filemanager.h>  /* test features */
+#include <src/_fms_filemanager.h>        /* test features */
+#include <src/_fms_touch.h>
 
-
+// #define USE_TOUCH
+// #define FMS_TATSUNO_DEBUG_OPEN
+// #undef USE_TATSUNO
+// #define USE_V2_OTA_SERVER
+// #define USE_RESTAR 
+// #define USE_TATSUNO
+// #define USE_REDSTAR
+// #define USE_TOUCH
 // #define DISABLE_MQTT_DEBUG
 // #ifdef DISABLE_MQTT_DEBUGP
 // #undef FMS_MQTT_DEBUG
 // #endif
 // #define USE_MQTT_DEBUG
+// #define  USE_LANFENG        // Undefine USE_LANFENG to disable the library
 
 #define USE_CLI
-#define DISABLE_LANFENG  // Uncomment this line to disable the library
+#define USE_TATSUNO
+#define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
-#undef USE_LANFENG        // Undefine USE_LANFENG to disable the library
+#undef USE_LANFENG
 #endif
-
-
 
 FMS_FileManager fileManager;
 fms_cli fms_cli(fms_cli_serial, CLI_PASSWORD);      // Use "admin" as the default password change your admin pass here
@@ -55,7 +57,10 @@ fmsLanfeng lanfeng(22, 22);                         // set re de pin (DTR PIN)s
 /* Main function */
 
 void setup() {
-  init_staus_leds();  // initialize status LEDs
+
+  init_staus_leds();                         // initialize status LEDs
+  gpio_set_level(LED_RED, LOW);              // turn on red led
+
 #ifdef USE_CLI
   fms_cli.begin(115200);  // Initialize the CLI with a baud rate of 115200
   fms_cli.register_command("wifi",         "Configure WiFi settings",       handle_wifi_command, 2, 2);
@@ -69,26 +74,13 @@ void setup() {
   fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
   fms_cli.register_command("mqtt_config"   ,"Configure Mqtt settings",     handle_mqtt_command,2,2);
 #endif
-
-  fms_pin_mode(BUILTIN_LED, OUTPUT);
-
-
-  /* test features protocol selection 
-fms_load_protocol_config();  // load protocol config from nvs storage
-
-  while (sysCfg.protocol == "0") {  // wait for protocol to be set
-    FMS_LOG_ERROR("Protocol not set, waiting...");
-    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
-  }
-  */
-
-
+ 
   fms_run_sd_test();                        // demo test fix this load configure data from sd card
   fmsEnableSerialLogging(true);             // show serial logging data on Serial Monitor
   fms_boot_count(true);                     // boot count
-  fms_load_config();  // load config from nvs storage
+  fms_load_config();                        // load config from nvs storage
  
-
+/* not included in v1 */
 #ifdef USE_MUX_PC817
   fms_pin_mode(MUX_S0, OUTPUT);             // Multiplexer
   fms_pin_mode(MUX_S1, OUTPUT);
@@ -96,7 +88,7 @@ fms_load_protocol_config();  // load protocol config from nvs storage
   enable_mux(MUX_E);                        // enable multiplexer (active low)
 #endif
 
-
+/* not included in v1 */
 #ifdef USE_LANFENG                         // lanfeng Protocol
   FMS_LOG_INFO("[LANFENG] Starting Lanfeng");
   lanfeng.init(1, fms_uart2_serial);       // add slave id
@@ -110,15 +102,26 @@ fms_load_protocol_config();  // load protocol config from nvs storage
   fms_tatsuno_init();                      // tatsuno init
 #endif
 
+/* task create */
+  if (fms_initialize_wifi()) {             // wifi is connected create all task s
+    fms_task_create();
+  }
+
+
+
+  /* test features protocol selection */
+  /*
+  fms_load_protocol_config();  // load protocol config from nvs storage
+  while (sysCfg.protocol == "0") {  // wait for protocol to be set
+    FMS_LOG_ERROR("Protocol not set, waiting...");
+    vTaskDelay(pdMS_TO_TICKS(1000));  // wait for 1 second
+  }
   // /* test features
   // if (fms_initialize_wifi() && sysCfg.protocol != "0") {  // wifi is connected create all task s
   //   fms_task_create();
   // }
-  // */
+ */
 
-  if (fms_initialize_wifi()) {             // wifi is connected create all task s
-    fms_task_create();
-  }
 }
 
 void loop() {

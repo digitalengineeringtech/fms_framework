@@ -32,6 +32,8 @@
 #include <esp_ota_ops.h> 
 #include <EEPROM.h>
 
+#include <MFRC522.h>
+
 Ticker ticker;
 
 #define BUILTIN_LED                     2  

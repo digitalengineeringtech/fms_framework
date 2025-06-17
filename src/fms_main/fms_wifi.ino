@@ -27,9 +27,9 @@ bool initialize_fms_wifi(bool flag) {
     WiFi.begin(sysCfg.wifi_ssid, sysCfg.wifi_password);
 
     while (WiFi.status() != WL_CONNECTED) {
-      gpio_set_level(LED_RED, LOW);
+      gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(100));
-      gpio_set_level(LED_RED, HIGH);
+      gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(100));
 
       FMS_LOG_INFO("[fms_wifi.ino:35] WiFi initialized, connecting to %s... wpa:%s", sysCfg.wifi_ssid, sysCfg.wifi_password);
@@ -51,16 +51,13 @@ static void wifi_task(void *arg) {
   while (1) {
     if (WiFi.status() != WL_CONNECTED) {
       FMS_LOG_WARNING("[fms_wifi.ino:53] Failed to connect to WiFi");
-      gpio_set_level(LED_RED, LOW);
+      gpio_set_level(LED_YELLOW, LOW);
       vTaskDelay(pdMS_TO_TICKS(100));
-      gpio_set_level(LED_RED, HIGH);
+      gpio_set_level(LED_YELLOW, HIGH);
       vTaskDelay(pdMS_TO_TICKS(100));
     } else {
       // FMS_LOG_INFO("[fms_wifi.ino:59] Connected to WiFi, IP: %s", WiFi.localIP().toString().c_str());
-      gpio_set_level(LED_YELLOW, HIGH);
-      gpio_set_level(LED_RED, HIGH);
-      gpio_set_level(LED_BLUE, HIGH);
-      gpio_set_level(LED_GREEN, LOW);
+      gpio_set_level(LED_YELLOW, LOW);
     }
     vTaskDelay(pdMS_TO_TICKS(100));  // Wait for 1 second before repeating
   }

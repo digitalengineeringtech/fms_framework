@@ -2,24 +2,8 @@
 #ifdef USE_TATSUNO
 /* tatsuno parameter */
 #define RESPONSE_BUFFER_SIZE 50
-
 // char* Buffer[RESPONSE_BUFFER_SIZE];  // Buffer for incoming data
-
-/*
-#define LED_RED                     GPIO_NUM_32
-#define LED_GREEN                   GPIO_NUM_14 
-#define LED_BLUE                    GPIO_NUM_13
-#define LED_YELLOW                  GPIO_NUM_33
-*/
-
-#define wifiled         33
-#define powerled        32
-#define TXled           27
-#define RXled           26
 #define DIR_PIN         22
-
-// #define RXD2 16
-// #define TXD2 17
 
 String incommingMessage;
 String incommingmsg1;
@@ -232,7 +216,7 @@ bool fms_load_tatsuno_config(TatsunoConfig& cfg) {
 /* end save tatsuno config */
 
 void fms_tatsuno_protocol_main() {
-  gpio_set_level(LED_BLUE, 1);
+
   // if (!digitalRead(hmi)) hmivalue = true;
  hmivalue = false;  // Set to false for testing, change as needed
   if (hmivalue) {
@@ -243,12 +227,16 @@ void fms_tatsuno_protocol_main() {
       if (!fms_mqtt_client.connected()) {
         //  serverConnectionIcon("disconnected");
         Serial.println("[fms_tatsuno_fun.ino]  Cloud disconnect");
+        gpio_set_level(LED_GREEN, 0);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        gpio_set_level(LED_GREEN,1);
+        vTaskDelay(pdMS_TO_TICKS(100));
         myfirst = true;
-        gpio_set_level(LED_RED, LOW);
+  
       } else {
         // Serial.println("[fms_tatsuno_fun.ino]  Connected to the Cloud");
-          gpio_set_level(LED_RED, HIGH);
-          gpio_set_level(LED_GREEN, HIGH);
+           gpio_set_level(LED_GREEN, LOW);
+   
         if (myfirst) {
           sendenq(1);
           mainfun();
@@ -259,12 +247,7 @@ void fms_tatsuno_protocol_main() {
       }
     } else {
       Serial.println("[fms_tatsuno_fun.ino]  Not Connected");
-     // initWiFi();
     }
-    // if (!client.connected()) {
-    //   reconnect();
-    // }
-    // client.loop();
     mainfun();
   }
  
@@ -324,15 +307,11 @@ void fms_tatsuno_protocol_main() {
               sendpumpstatus(1);
               Serial.println("[fms_tatsuno_fun.ino]  i gety");
             }
-
-
             else {
               Serial.println("[fms_tatsuno_fun.ino]  yep ");
               sendenq(addresscount);
-
               //loadoffadd
               // delay(100);  //speed
-
             }
           }
           break;
@@ -949,7 +928,7 @@ void pumpactive() {
 }
 
 void pumpenqactive() {
-
+  txledonoff();
   enqactivetime = millis() / 1000;
 
   if ((enqactivetime - enqactivetime1) > 3) {
@@ -1074,7 +1053,6 @@ void fms_tatsuno_device_setup() {
 }
 
 void sendenq(int eq) {
-
   // last add
   // delay(50);   
   delay(10);  //speed
@@ -1083,10 +1061,7 @@ void sendenq(int eq) {
   delay(10);  //speed
   if (eq == 1) fms_uart2_serial.write(enq1, sizeof(enq1));
   else if (eq == 2) fms_uart2_serial.write(enq2, sizeof(enq2));
-
   Serial.printf("[fms_tatsuno_fun.ino] SendEnq : %d \n", eq);
-
-
   delay(3.5);
   // delay(6.8);
   // delay(4);
@@ -1115,15 +1090,18 @@ void sendEOT() {
 }
 
 void txledonoff() {
-  gpio_set_level(LED_YELLOW,LOW);
+  gpio_set_level(LED_BLUE,LOW);
   vTaskDelay(10 / portTICK_PERIOD_MS);  // delay for 10 ms
-  gpio_set_level(LED_YELLOW, HIGH);
+  gpio_set_level(LED_BLUE, HIGH);
+  vTaskDelay(10 / portTICK_PERIOD_MS);  // delay for 10 ms
+  
 }
 
 void rxledonoff() {
+  gpio_set_level(LED_BLUE, LOW);
+  vTaskDelay(20 / portTICK_PERIOD_MS);  // delay for 10 ms
   gpio_set_level(LED_BLUE, HIGH);
   vTaskDelay(10 / portTICK_PERIOD_MS);  // delay for 10 ms
-  gpio_set_level(LED_BLUE, LOW);
 }
 ///// cancel final add
 void cancelfinalsend() {

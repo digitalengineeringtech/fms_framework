@@ -346,10 +346,14 @@ d:\FMS\ Framework\development_version\fms_framework\build\sketch\fms_main.ino.cp
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.4-2f7dcd86-v1\esp32/include/esp_bootloader_format/include/esp_bootloader_desc.h \
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\tools\esp32-arduino-libs\idf-release_v5.4-2f7dcd86-v1\esp32/include/bootloader_support/include/esp_flash_partitions.h \
  C:\Users\trion\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.2.0\libraries\EEPROM\src/EEPROM.h \
+ C:\Users\trion\Documents\Arduino\libraries\MFRC522\src/MFRC522.h \
+ C:\Users\trion\Documents\Arduino\libraries\MFRC522\src/require_cpp11.h \
+ C:\Users\trion\Documents\Arduino\libraries\MFRC522\src/deprecated.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_cli.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_debug.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_json_helper.h \
  d:\FMS\ Framework\development_version\fms_framework\build\sketch\src/_fms_lanfeng.h \
  d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_redstar.h \
  d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_tatsuno.h \
- d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_filemanager.h
+ d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_filemanager.h \
+ d:\FMS\ Framework\development_version\fms_framework\src\fms_main/src/_fms_touch.h
