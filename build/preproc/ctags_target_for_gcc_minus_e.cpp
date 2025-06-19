@@ -16,7 +16,7 @@
 /* device login page */
 const String correctUsername = "admin"; /* change your login username here*/
 const String correctPassword = "admin"; /* change your login pass here*/
-const String firmwareVersion = "0.4.0"; /* Current firmware version*/
+const String firmwareVersion = "2.0.0"; /* Current firmware version*/
 String deviceName = "ultm_25505v01_"; /* device ID (for)  change here like this user can change with configpanel*/
 
 /* end change note  */
@@ -32,9 +32,8 @@ String deviceName = "ultm_25505v01_"; /* device ID (for)  change here like this 
 # 27 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 # 28 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino" 2
 
-// #define USE_TOUCH
+
 // #define FMS_TATSUNO_DEBUG_OPEN
-// #undef USE_TATSUNO
 // #define USE_V2_OTA_SERVER
 // #define USE_RESTAR 
 // #define USE_TATSUNO
@@ -46,7 +45,14 @@ String deviceName = "ultm_25505v01_"; /* device ID (for)  change here like this 
 // #endif
 // #define USE_MQTT_DEBUG
 // #define  USE_LANFENG        // Undefine USE_LANFENG to disable the library
-# 51 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
+
+
+//#define USE_TATSUNO
+
+
+
+
+
 FMS_FileManager fileManager;
 fms_cli fms_cli(Serial0 /* cli serial port*/, "admin" /* cli password change this password*/); // Use "admin" as the default password change your admin pass here
 Redstar redstar(Serial1 /* uart2 serial port*/); // create redstar object
@@ -70,8 +76,9 @@ void setup() {
   fms_cli.register_command("wifi_test", "Test WiFi connection", handle_wifi_test_command);
   fms_cli.register_command("uuid_change", "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
   fms_cli.register_command("protocol", "Set Protocol", handle_protocol_command, 1, 1);
-  fms_cli.register_command("protocol_config","Set Protococl Congfig", handle_protocol_config_command, 11, 11);
+  fms_cli.register_command("protocol_config","Set Protocol Config", handle_protocol_config_command, 11, 11);
   fms_cli.register_command("mqtt_config" ,"Configure Mqtt settings", handle_mqtt_command,2,2);
+  fms_cli.register_command("noz_config", "Configure Nozzle settings", handle_nozzle_command, 16, 16);
 
 
   fms_run_sd_test(); // demo test fix this load configure data from sd card
@@ -88,10 +95,7 @@ void setup() {
 
 
 /* not included in v1 */
-# 102 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
-  fms_tatsuno_init(); // tatsuno init
-
-
+# 105 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main.ino"
 /* task create */
   if (fms_initialize_wifi()) { // wifi is connected create all task s
     fms_task_create();
@@ -550,6 +554,84 @@ if (args.size() != 2) {
 }
 
 
+void config_writeStringToEEPROM(int address, String data) { // to store wifi ssid and pass in EEprom
+  int data_length = data.length();
+  for (int i = 0; i < data_length; i++) {
+    EEPROM.write(address + i, data[i]);
+    EEPROM.commit();
+  }
+  EEPROM.write(address + data_length, '\0');
+  EEPROM.commit();
+  Serial0.println("EEPROM write complete");
+}
+
+
+void config_eeprom_writeInt(int add, long data) {
+  byte byte0 = (data >> 24) & 0xff;
+  byte byte1 = (data >> 16) & 0xff;
+  byte byte2 = (data >> 8) & 0xff;
+  byte byte3 = data & 0xff;
+
+  EEPROM.write(add, byte0);
+  EEPROM.write(add + 1, byte1);
+  EEPROM.write(add + 2, byte2);
+  EEPROM.write(add + 3, byte3);
+  EEPROM.commit();
+}
+
+
+void handle_nozzle_command(const std::vector<String>& args) {
+  if (args.size() < 16) {
+    fms_cli.respond("nozzle_config", "Usage: nozzle_config <> <>", false);
+    return;
+  }
+
+  String nozzle_1_fuel_type = args[0];
+  int nozzle_1_fuel_price = args[1].toInt();
+
+  String nozzle_2_fuel_type = args[2];
+  int nozzle_2_fuel_price = args[3].toInt();
+
+  String nozzle_3_fuel_type = args[4];
+  int nozzle_3_fuel_price = args[5].toInt();
+
+  String nozzle_4_fuel_type = args[6];
+  int nozzle_4_fuel_price = args[7].toInt();
+
+  String nozzle_5_fuel_type = args[8];
+  int nozzle_5_fuel_price = args[9].toInt();
+
+  String nozzle_6_fuel_type = args[10];
+  int nozzle_6_fuel_price = args[11].toInt();
+
+  String nozzle_7_fuel_type = args[12];
+  int nozzle_7_fuel_price = args[13].toInt();
+
+  String nozzle_8_fuel_type = args[14];
+  int nozzle_8_fuel_price = args[15].toInt();
+
+/* for touch controller eeprom storage */
+  config_writeStringToEEPROM(200, nozzle_1_fuel_type);
+  config_writeStringToEEPROM(230, nozzle_2_fuel_type);
+  config_writeStringToEEPROM(260, nozzle_3_fuel_type);
+  config_writeStringToEEPROM(290, nozzle_4_fuel_type);
+  config_writeStringToEEPROM(330, nozzle_5_fuel_type);
+  config_writeStringToEEPROM(360, nozzle_6_fuel_type);
+  config_writeStringToEEPROM(390, nozzle_7_fuel_type);
+  config_writeStringToEEPROM(420, nozzle_8_fuel_type);
+
+  config_eeprom_writeInt(114, 2900);
+  config_eeprom_writeInt(118, 3000);
+  config_eeprom_writeInt(122, 2700);
+  config_eeprom_writeInt(81, 3300);
+  config_eeprom_writeInt(85, 0);
+  config_eeprom_writeInt(132, 0);
+  config_eeprom_writeInt(138, 0);
+  config_eeprom_writeInt(144, 0);
+
+
+  fms_cli.respond("nozzle_config" ,"fuel" + String(nozzle_1_fuel_type) , true);
+}
 
 
 static void cli_task(void* arg) {
@@ -557,9 +639,9 @@ static void cli_task(void* arg) {
   // cli command
   while (1) {
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 411 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
+# 489 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino" 3
               1000 
-# 411 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
+# 489 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_cli.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -700,11 +782,9 @@ void fms_boot_count(bool bootsave) {
     fmsLog(FMS_LOG_ERROR, "[fms_main_func.ino:13] Failed to initialize NVS storage");
     return;
   }
-
   sysCfg.bootcount = fms_nvs_storage.getUInt("bootcount", 0) + 1;
   app_cpu = xPortGetCoreID();
   fmsLog(FMS_LOG_INFO, "[fms_main_func.ino:19] CPU %d: Boot count: %lu", app_cpu, sysCfg.bootcount);
-
   fms_nvs_storage.putUInt("bootcount", sysCfg.bootcount);
   fms_nvs_storage.end(); // Close NVS storage
 }
@@ -821,7 +901,7 @@ int fms_decodePumpId(String presetData){
 }
 
 */
-# 131 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
+# 129 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_main_func.ino"
 void init_staus_leds() {
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << GPIO_NUM_32) | (1ULL << GPIO_NUM_14) |
@@ -1015,43 +1095,38 @@ const long interval = 1000; // Interval for sending messages
 bool ledState_ = false;
 
 static void mqtt_task(void* arg) {
-  BaseType_t rc;
-   fms_nvs_storage.begin("fms_config", false);
+    BaseType_t rc;
+    fms_nvs_storage.begin("fms_config", false);
     String host = fms_nvs_storage.getString("host");
     String port = fms_nvs_storage.getString("port");
-
     if(host.length() == 0 || port.length() == 0) {
       gpio_set_level(GPIO_NUM_33, 0x0);
       vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 500 ) * ( TickType_t ) 
-# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 109 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
                 1000 
-# 110 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 109 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
                 ) / ( TickType_t ) 1000U ) ));
       fmsLog(FMS_LOG_ERROR, "[fms_mqtt.ino:79] [DEBUG MQTT] mqtt .. credential .. value is empty");
       fms_nvs_storage.end();
 
     }
 
-    fms_nvs_storage.end();
-    Serial0.print("[DEBUG] "); Serial0.printf("HOST : %s , PORT : %s", host, port); Serial0.println();
-
+  fms_nvs_storage.end();
+  Serial0.print("[DEBUG] "); Serial0.printf("HOST : %s , PORT : %s", host, port); Serial0.println();
   fms_mqtt_client.setServer(host.c_str(), atoi(port.c_str()));
   fms_mqtt_client.setCallback(fms_mqtt_callback);
-
   while (true) {
     unsigned long currentMillis = millis();
     fms_mqtt_client.loop();
     if (!fms_mqtt_client.connected()) {
-
       fms_mqtt_reconnect();
-
     } else {
       ;
     }
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
+# 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino" 3
               1000 
-# 132 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
+# 127 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_mqtt.ino"
               ) / ( TickType_t ) 1000U ) ));
   }
 }
@@ -2140,7 +2215,7 @@ static void web_server_task(void* arg) {
   *  author : thet htar khaing
 
 */
-# 6 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+# 7 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
 /* upgrade in version 2 */
 /* not included in version 1 */
 
@@ -2154,9 +2229,9 @@ bool fms_sd_init() {
     fmsLog(FMS_LOG_ERROR, "No SD card attached");
     ticker.attach(0.6, _led_state);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 1000 ) * ( TickType_t ) 
-# 18 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino" 3
+# 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino" 3
               1000 
-# 18 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+# 19 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
     return false;
   }
@@ -2222,12 +2297,12 @@ static void sd_task(void* arg) {
     * Load config data from sd card
 
     */
-# 82 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+# 83 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
     //rc = xTaskNotify(heventTask, 3, eSetBits);
     vTaskDelay(( ( TickType_t ) ( ( ( TickType_t ) ( 100 ) * ( TickType_t ) 
-# 83 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino" 3
+# 84 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino" 3
               1000 
-# 83 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
+# 84 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_sd.ino"
               ) / ( TickType_t ) 1000U ) ));
     //write_data_sd("HELLO\n\r");
     //
@@ -5038,6 +5113,7 @@ void resendappro() {
 
 
 // end tatsuno protocol 
+# 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_touch_controller.ino"
 # 1 "d:\\FMS Framework\\development_version\\fms_framework\\src\\fms_main\\fms_uart2.ino"
 bool fms_uart2_begin(bool flag, int baudrate) {
   if (flag) {

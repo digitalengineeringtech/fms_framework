@@ -621,7 +621,7 @@ class FMSDebugUI(QMainWindow):
         # Create tabs
         self.tabs.addTab(self.create_log_tab(), "Logs & Commands")
         self.tabs.addTab(self.create_device_discovery_tab(), "Find Device")
-        
+        self.tabs.addTab(self.create_noz_setting_tab(),"NOZZLE SETTING")
         main_layout.addWidget(self.tabs)
         self.setCentralWidget(main_widget)
         
@@ -903,6 +903,74 @@ class FMSDebugUI(QMainWindow):
         
         return device_tab
     
+    def create_noz_setting_tab(self):
+        # Nozzle Configuration Tab
+        nozzle_tab = QWidget()
+        nozzle_layout = QVBoxLayout(nozzle_tab)
+        nozzle_layout.setSpacing(15)
+        
+        # Default values
+        default_names = [
+            "001-Octane Ron(92)",
+            "001-Octane Ron(92)",
+            "004-Diesel",
+            "005-Premium Diesel",
+            "004-Diesel",
+            "002-Octane Ron(95)",
+            "",
+            ""
+        ]
+        default_prices = [3000, 3200, 0, 0, 0, 0, 0, 0]
+        
+        # Create a grid for nozzle groups (2 columns)
+        nozzle_grid = QGridLayout()
+        nozzle_grid.setSpacing(10)
+        self.nozzle_names = []
+        self.nozzle_prices = []
+        
+        for i in range(8):
+            nozzle_group = QGroupBox(f"Nozzle {i+1}")
+            nozzle_group_layout = QGridLayout()
+            nozzle_group_layout.setSpacing(8)
+            
+            name = QLineEdit()
+            name.setPlaceholderText(f"Nozzle {i+1} Name")
+            name.setText(default_names[i])
+            
+            price = QSpinBox()
+            price.setRange(0, 99999)
+            price.setSingleStep(100)
+            price.setValue(default_prices[i])
+            
+            self.nozzle_names.append(name)
+            self.nozzle_prices.append(price)
+            
+            nozzle_group_layout.addWidget(QLabel("Name:"), 0, 0)
+            nozzle_group_layout.addWidget(name, 0, 1)
+            nozzle_group_layout.addWidget(QLabel("Price:"), 1, 0)
+            nozzle_group_layout.addWidget(price, 1, 1)
+            
+            nozzle_group.setLayout(nozzle_group_layout)
+            nozzle_grid.addWidget(nozzle_group, i//2, i%2)
+        
+        nozzle_layout.addLayout(nozzle_grid)
+        return nozzle_tab
+        # tab_widget.addTab(nozzle_tab, "Nozzle Settings")
+        
+        # # Control Buttons
+        # button_layout = QHBoxLayout()
+        # button_layout.setSpacing(10)
+        # save_btn = QPushButton("Save Configuration")
+        # save_btn.clicked.connect(self.save_config)
+        # load_btn = QPushButton("Load Configuration")
+        # load_btn.clicked.connect(self.load_config)
+        # button_layout.addStretch()
+        # button_layout.addWidget(load_btn)
+        # button_layout.addWidget(save_btn)
+        # main_layout.addLayout(button_layout)
+
+
+
     def show_device_setup_dialog(self):
         dialog = DeviceSetupDialog(self)
         if dialog.exec_() == QDialog.Accepted:

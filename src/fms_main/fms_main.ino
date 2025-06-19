@@ -10,7 +10,7 @@
 /* device login page */
 const String correctUsername = "admin";           /* change your login username here*/
 const String correctPassword = "admin";           /* change your login pass here*/
-const String firmwareVersion = "0.4.0";           /* Current firmware version*/
+const String firmwareVersion = "2.0.0";           /* Current firmware version*/
 String deviceName            = "ultm_25505v01_";  /* device ID (for)  change here like this user can change with configpanel*/
 #define CLI_PASSWORD         "admin"              /* cli password change this password*/
 /* end change note  */
@@ -26,9 +26,8 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 #include <src/_fms_filemanager.h>        /* test features */
 #include <src/_fms_touch.h>
 
-// #define USE_TOUCH
+ #define USE_TOUCH
 // #define FMS_TATSUNO_DEBUG_OPEN
-// #undef USE_TATSUNO
 // #define USE_V2_OTA_SERVER
 // #define USE_RESTAR 
 // #define USE_TATSUNO
@@ -42,7 +41,7 @@ String deviceName            = "ultm_25505v01_";  /* device ID (for)  change her
 // #define  USE_LANFENG        // Undefine USE_LANFENG to disable the library
 
 #define USE_CLI
-#define USE_TATSUNO
+//#define USE_TATSUNO
 #define DISABLE_LANFENG
 #ifdef DISABLE_LANFENG
 #undef USE_LANFENG
@@ -71,8 +70,9 @@ void setup() {
   fms_cli.register_command("wifi_test",     "Test WiFi connection",         handle_wifi_test_command);
   fms_cli.register_command("uuid_change",   "Change Your Device Id unique address", handle_device_id_change_command, 1, 1);
   fms_cli.register_command("protocol",      "Set Protocol",                 handle_protocol_command, 1, 1);
-  fms_cli.register_command("protocol_config","Set Protococl Congfig",       handle_protocol_config_command, 11, 11);
+  fms_cli.register_command("protocol_config","Set Protocol Config",       handle_protocol_config_command, 11, 11);
   fms_cli.register_command("mqtt_config"   ,"Configure Mqtt settings",     handle_mqtt_command,2,2);
+  fms_cli.register_command("noz_config", "Configure Nozzle settings",   handle_nozzle_command, 16, 16);
 #endif
  
   fms_run_sd_test();                        // demo test fix this load configure data from sd card

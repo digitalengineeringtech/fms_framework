@@ -402,6 +402,84 @@ if (args.size() != 2) {
 }
 
 
+void config_writeStringToEEPROM(int address, String data) {  // to store wifi ssid and pass in EEprom
+  int data_length = data.length();
+  for (int i = 0; i < data_length; i++) {
+    EEPROM.write(address + i, data[i]);
+    EEPROM.commit();
+  }
+  EEPROM.write(address + data_length, '\0');
+  EEPROM.commit();
+  Serial.println("EEPROM write complete");
+}
+
+
+void config_eeprom_writeInt(int add, long data) {
+  byte byte0 = (data >> 24) & 0xff;
+  byte byte1 = (data >> 16) & 0xff;
+  byte byte2 = (data >> 8) & 0xff;
+  byte byte3 = data & 0xff;
+
+  EEPROM.write(add, byte0);
+  EEPROM.write(add + 1, byte1);
+  EEPROM.write(add + 2, byte2);
+  EEPROM.write(add + 3, byte3);
+  EEPROM.commit();
+}
+
+
+void handle_nozzle_command(const std::vector<String>& args) {
+  if (args.size() < 16) {
+    fms_cli.respond("nozzle_config", "Usage: nozzle_config <> <>", false);
+    return;
+  }
+
+  String nozzle_1_fuel_type  = args[0];
+  int nozzle_1_fuel_price    = args[1].toInt();
+
+  String nozzle_2_fuel_type  = args[2];
+  int nozzle_2_fuel_price    = args[3].toInt();
+
+  String nozzle_3_fuel_type  = args[4];
+  int nozzle_3_fuel_price    = args[5].toInt();
+
+  String nozzle_4_fuel_type  = args[6];
+  int nozzle_4_fuel_price    = args[7].toInt();
+
+  String nozzle_5_fuel_type  = args[8];
+  int nozzle_5_fuel_price    = args[9].toInt();
+
+  String nozzle_6_fuel_type  = args[10];
+  int nozzle_6_fuel_price    = args[11].toInt();
+
+  String nozzle_7_fuel_type  = args[12];
+  int nozzle_7_fuel_price    = args[13].toInt();
+
+  String nozzle_8_fuel_type  = args[14];
+  int nozzle_8_fuel_price    = args[15].toInt();
+
+/* for touch controller eeprom storage */
+  config_writeStringToEEPROM(200, nozzle_1_fuel_type);
+  config_writeStringToEEPROM(230, nozzle_2_fuel_type);
+  config_writeStringToEEPROM(260, nozzle_3_fuel_type);
+  config_writeStringToEEPROM(290, nozzle_4_fuel_type);
+  config_writeStringToEEPROM(330, nozzle_5_fuel_type);
+  config_writeStringToEEPROM(360, nozzle_6_fuel_type);
+  config_writeStringToEEPROM(390, nozzle_7_fuel_type);
+  config_writeStringToEEPROM(420, nozzle_8_fuel_type);
+
+  config_eeprom_writeInt(114, 2900);
+  config_eeprom_writeInt(118, 3000);
+  config_eeprom_writeInt(122, 2700);
+  config_eeprom_writeInt(81, 3300);
+  config_eeprom_writeInt(85, 0);
+  config_eeprom_writeInt(132, 0);
+  config_eeprom_writeInt(138, 0);
+  config_eeprom_writeInt(144, 0);
+
+
+  fms_cli.respond("nozzle_config" ,"fuel" + String(nozzle_1_fuel_type) , true);
+}
 
 
 static void cli_task(void* arg) {
